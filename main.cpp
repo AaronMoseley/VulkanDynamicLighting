@@ -211,7 +211,7 @@ private:
 
     std::set<int> pressedKeys;
 
-    size_t maxObjects = 1000;
+    size_t maxObjects = 10000;
 
     float lightOrbitRadius = 5.0f;
     float lightOrbitSpeed = 1.0f;
@@ -289,7 +289,7 @@ private:
         {
             RenderObject newObject;
 
-            if ((double)rand() / (RAND_MAX) >= 0.0f)
+            if ((double)rand() / (RAND_MAX) >= 0.5f)
             {
                 newObject = Cube(objectPositions[i],
                     glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
@@ -1684,15 +1684,17 @@ private:
 
             RenderObject newObject;
 
-            if ((double)rand() / (RAND_MAX) >= 0.0f)
+            float positionRange = 100.0f;
+
+            if ((double)rand() / (RAND_MAX) >= 0.5f)
             {
-                newObject = Cube(glm::vec3(((double)rand() / (RAND_MAX)) * 10.0f, ((double)rand() / (RAND_MAX)) * 10.0f, ((double)rand() / (RAND_MAX)) * 10.0f),
+                newObject = Cube(glm::vec3(((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange),
                     glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
                     glm::vec3(0.5f, 0.5f, 0.5f),
                     glm::vec3(0.5f, 0.5f, 0.5f));
             }
             else {
-                newObject = Tetrahedron(glm::vec3(((double)rand() / (RAND_MAX)) * 10.0f, ((double)rand() / (RAND_MAX)) * 10.0f, ((double)rand() / (RAND_MAX)) * 10.0f),
+                newObject = Tetrahedron(glm::vec3(((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange),
                     glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
                     glm::vec3(0.5f, 0.5f, 0.5f),
                     glm::vec3(0.5f, 0.5f, 0.5f));
@@ -1726,7 +1728,11 @@ private:
 
             for (auto it = nameToObjectMap.begin(); it != nameToObjectMap.end(); it++)
             {
-                it->second.erase(it->second.begin() + deleteIndex);
+                auto deleteIterator = std::find(it->second.begin(), it->second.end(), deleteIndex);
+                if (deleteIterator != it->second.end())
+                {
+					it->second.erase(deleteIterator);
+                }
             }
 
             objects.erase(objects.begin() + deleteIndex);

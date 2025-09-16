@@ -6,7 +6,7 @@
 
 #define UINT32_MAX ((uint32_t)-1)
 
-const int MAX_FRAMES_IN_FLIGHT = 2;
+const int MAX_FRAMES_IN_FLIGHT = 3;
 
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #define GLM_FORCE_RADIANS
@@ -14,6 +14,9 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+
+#define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.h"
 
 #include <limits> // Necessary for std::numeric_limits
 #include <algorithm> // Necessary for std::clamp
@@ -91,32 +94,6 @@ bool partyMode = false;
 
 bool pState = false;
 
-void processInput(GLFWwindow* window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
-
-    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS && !pState)
-    {
-        partyMode = !partyMode;
-        pState = true;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_RELEASE)
-    {
-        pState = false;
-    }
-}
-
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
     if (firstMouse) // initially set to true
@@ -164,6 +141,8 @@ private:
     const bool enableValidationLayers = true;
 #endif
 
+    bool renderedFirstFrame = false;
+
     const uint32_t WIDTH = 800;
     const uint32_t HEIGHT = 600;
 
@@ -189,22 +168,26 @@ private:
     VkPipeline graphicsPipeline;
     std::vector<VkFramebuffer> swapChainFramebuffers;
     VkCommandPool commandPool;
-    VkCommandBuffer commandBuffer;
-    VkSemaphore imageAvailableSemaphore;
-    VkSemaphore renderFinishedSemaphore;
-    VkFence inFlightFence;
+    //VkCommandBuffer commandBuffer;
+    std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> imageAvailableSemaphores;
+    std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> renderFinishedSemaphores;
+    std::array<VkFence, MAX_FRAMES_IN_FLIGHT> inFlightFences;
+    std::array<std::map<std::string, int>, MAX_FRAMES_IN_FLIGHT> numObjectsForFrame;
+    //std::map<std::string, VkSemaphore> instanceBufferSemaphores;
 
     std::map<std::string, VkBuffer> vertexBuffers;
     std::map<std::string, VkBuffer> indexBuffers;
 
-    std::map<std::string, VkDeviceMemory> vertexBufferMemory;
-    std::map<std::string, VkDeviceMemory> indexBufferMemory;
+    std::map<std::string, VmaAllocation> vertexBufferMemory;
+    std::map<std::string, VmaAllocation> indexBufferMemory;
 
     std::map<std::string, uint16_t> vertexBufferSizes;
     std::map<std::string, uint16_t> indexBufferSizes;
 
+    std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> frameCommandBuffers;
+
     std::vector<VkBuffer> uniformBuffers;
-    std::vector<VkDeviceMemory> uniformBuffersMemory;
+    std::vector<VmaAllocation> uniformBuffersMemory;
     std::vector<void*> uniformBuffersMapped;
 
     uint32_t currentFrame = 0;
@@ -216,14 +199,21 @@ private:
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
 
-    RenderObject* lightSourceObject;
+	size_t lightObjectIndex = 0;
 
     bool framebufferResized = false;
 
-    std::map<std::string, VkBuffer> instanceBuffers;
-    std::map<std::string, VkDeviceMemory> instanceBufferMemory;
+    std::array<std::map<std::string, VkBuffer>, MAX_FRAMES_IN_FLIGHT> instanceBuffers;
+    std::array < std::map<std::string, VmaAllocation>, MAX_FRAMES_IN_FLIGHT> instanceBufferMemory;
+    std::array < std::map<std::string, void*>, MAX_FRAMES_IN_FLIGHT> instanceBuffersMapped;
 
-    float lightOrbitRadius = 10.0f;
+    VmaAllocator allocator;
+
+    std::set<int> pressedKeys;
+
+    size_t maxObjects = 1000;
+
+    float lightOrbitRadius = 5.0f;
     float lightOrbitSpeed = 1.0f;
 
     void initWindow() {
@@ -248,9 +238,50 @@ private:
         app->framebufferResized = true;
     }
 
+    void createVMAAllocator()
+    {
+        VmaVulkanFunctions vulkanFunctions = {};
+        vulkanFunctions.vkGetInstanceProcAddr = &vkGetInstanceProcAddr;
+        vulkanFunctions.vkGetDeviceProcAddr = &vkGetDeviceProcAddr;
+
+        VmaAllocatorCreateInfo allocatorCreateInfo = {};
+        allocatorCreateInfo.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+        allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_2;
+        allocatorCreateInfo.physicalDevice = physicalDevice;
+        allocatorCreateInfo.device = device;
+        allocatorCreateInfo.instance = instance;
+        allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
+
+        vmaCreateAllocator(&allocatorCreateInfo, &allocator);
+    }
+
     void createObjects()
     {
         std::srand(std::time(0));
+
+        Cube lightCube = Cube(glm::vec3(lightOrbitRadius),
+            glm::vec3(0.0f),
+            glm::vec3(0.25f),
+            glm::vec3(1.0f));
+
+        lightCube.setLit(false);
+
+        objects.push_back(lightCube);
+
+        lightObjectIndex = 0;
+
+        std::string objName = lightCube.getName();
+        if (nameToObjectMap.find(objName) == nameToObjectMap.end())
+        {
+            std::vector<int> newIndices = { (int)objects.size() - 1 };
+            nameToObjectMap[objName] = newIndices;
+
+            vertexBufferSizes[objName] = static_cast<uint16_t>(lightCube.getVertices().size());
+            indexBufferSizes[objName] = static_cast<uint16_t>(lightCube.getIndices().size());
+        }
+        else {
+            nameToObjectMap[objName].push_back((int)objects.size() - 1);
+        }
 
         glm::vec3 color = glm::vec3(0.6588f, 0.2235f, 0.0392f);
 
@@ -258,7 +289,7 @@ private:
         {
             RenderObject newObject;
 
-            if ((double)rand() / (RAND_MAX) > 0.5f)
+            if ((double)rand() / (RAND_MAX) >= 0.0f)
             {
                 newObject = Cube(objectPositions[i],
                     glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
@@ -287,30 +318,6 @@ private:
                 nameToObjectMap[objName].push_back(i);
             }
         }
-
-        Cube lightCube = Cube(glm::vec3(lightOrbitRadius),
-            glm::vec3(0.0f),
-            glm::vec3(0.25f),
-            glm::vec3(1.0f));
-
-        lightCube.setLit(false);
-
-        objects.push_back(lightCube);
-
-        lightSourceObject = &objects[objects.size() - 1];
-
-        std::string objName = lightCube.getName();
-        if (nameToObjectMap.find(objName) == nameToObjectMap.end())
-        {
-            std::vector<int> newIndices = { (int)objects.size() - 1 };
-            nameToObjectMap[objName] = newIndices;
-
-            vertexBufferSizes[objName] = static_cast<uint16_t>(lightCube.getVertices().size());
-            indexBufferSizes[objName] = static_cast<uint16_t>(lightCube.getIndices().size());
-        }
-        else {
-            nameToObjectMap[objName].push_back((int)objects.size() - 1);
-        }
     }
 
     void initVulkan() {
@@ -319,6 +326,7 @@ private:
         createSurface();
         pickPhysicalDevice();
         createLogicalDevice();
+        createVMAAllocator();
         createSwapChain();
         createImageViews();
         createRenderPass();
@@ -333,7 +341,7 @@ private:
         createUniformBuffers();
         createDescriptorPool();
         createDescriptorSets();
-        createCommandBuffer();
+        createCommandBuffers();
         createSyncObjects();
     }
 
@@ -623,7 +631,7 @@ private:
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
 
-            vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
+            vmaMapMemory(allocator, uniformBuffersMemory[i], &uniformBuffersMapped[i]);
         }
     }
 
@@ -672,10 +680,43 @@ private:
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
-            vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS ||
-            vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create semaphores!");
+        /*for (auto it = nameToObjectMap.begin(); it != nameToObjectMap.end(); it++)
+        {
+            std::string objectName = it->first;
+
+            VkSemaphore currentSemaphore;
+            VkResult result = vkCreateSemaphore(device, &semaphoreInfo, nullptr, &currentSemaphore);
+
+            if (result != VK_SUCCESS)
+            {
+                throw std::runtime_error("failed to create fences!");
+            }
+
+            instanceBufferSemaphores[objectName] = currentSemaphore;
+        }*/
+
+        for (uint32_t frameIndex = 0; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex++)
+        {
+            VkFence currentFence;
+            VkResult result = vkCreateFence(device, &fenceInfo, nullptr, &currentFence);
+
+            if (result != VK_SUCCESS)
+            {
+                throw std::runtime_error("failed to create fences!");
+            }
+
+            inFlightFences[frameIndex] = currentFence;
+
+            VkSemaphore imageAvailableSemaphore;
+            VkSemaphore renderFinishedSemaphore;
+
+            if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
+                vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create semaphores!");
+            }
+
+            imageAvailableSemaphores[frameIndex] = imageAvailableSemaphore;
+            renderFinishedSemaphores[frameIndex] = renderFinishedSemaphore;
         }
     }
 
@@ -727,15 +768,17 @@ private:
     }
 
     void drawObjectCommandBuffer(VkCommandBuffer commandBuffer, std::string objectName) {
-        VkBuffer objectVertexBuffer[] = { vertexBuffers[objectName], instanceBuffers[objectName] };
+        VkBuffer objectVertexBuffer[] = { vertexBuffers[objectName], instanceBuffers[currentFrame][objectName] };
         VkDeviceSize offsets[] = { 0, 0 };
         vkCmdBindVertexBuffers(commandBuffer, 0, 2, objectVertexBuffer, offsets);
+        
 
         if (indexBufferSizes[objectName] > 0)
         {
             vkCmdBindIndexBuffer(commandBuffer, indexBuffers[objectName], 0, VK_INDEX_TYPE_UINT16);
 
-            vkCmdDrawIndexed(commandBuffer, indexBufferSizes[objectName], nameToObjectMap[objectName].size(), 0, 0, 0);
+            vkCmdDrawIndexed(commandBuffer, indexBufferSizes[objectName], numObjectsForFrame[currentFrame][objectName], 0, 0, 0);
+            //vkCmdDrawIndexed(commandBuffer, indexBufferSizes[objectName], nameToObjectMap[objectName].size(), 0, 0, 0);
         }
         else {
             vkCmdDraw(commandBuffer, vertexBufferSizes[objectName], nameToObjectMap[objectName].size(), 0, 0);
@@ -751,15 +794,18 @@ private:
         }
     }
 
-    void createCommandBuffer() {
+    void createCommandBuffers() {
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = commandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = 1;
 
-        if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS) {
-            throw std::runtime_error("failed to allocate command buffers!");
+        for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            if (vkAllocateCommandBuffers(device, &allocInfo, &frameCommandBuffers[i]) != VK_SUCCESS) {
+                throw std::runtime_error("failed to allocate command buffers!");
+            }
         }
     }
 
@@ -1355,14 +1401,20 @@ private:
         }
     }
 
-    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
+    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VmaAllocation& allocation) {
         VkBufferCreateInfo bufferInfo{};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         bufferInfo.size = size;
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+        VmaAllocationCreateInfo allocInfo = {};
+        allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+        allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+
+        vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer, &allocation, nullptr);
+
+        /*if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
             throw std::runtime_error("failed to create buffer!");
         }
 
@@ -1378,7 +1430,7 @@ private:
             throw std::runtime_error("failed to allocate buffer memory!");
         }
 
-        vkBindBufferMemory(device, buffer, bufferMemory, 0);
+        vkBindBufferMemory(device, buffer, bufferMemory, 0);*/
     }
 
     void createVertexBuffers() {
@@ -1388,12 +1440,6 @@ private:
 
             if (vertexBuffers.find(objectName) == vertexBuffers.end())
             {
-                //VkBuffer vertexBuffer;
-                //VkDeviceMemory vertexMemory;
-
-                //vertexBuffers[objectName] = vertexBuffer;
-                //vertexBufferMemory[objectName] = vertexMemory;
-
                 createVertexBuffer(objectName, objects[i]);
             }
         }
@@ -1401,25 +1447,26 @@ private:
 
     void createVertexBuffer(std::string name, RenderObject object) {
         VkBuffer currVertexBuffer;
-        VkDeviceMemory currVertexBufferMemory;
+        VmaAllocation currVertexBufferMemory;
 
         VkDeviceSize bufferSize = sizeof(object.getVertices()[0]) * object.getVertices().size();
 
         VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
+        VmaAllocation stagingBufferMemory;
         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
         void* data;
-        vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+        VkResult temp = vmaMapMemory(allocator, stagingBufferMemory, &data);
         memcpy(data, object.getVertices().data(), (size_t)bufferSize);
-        vkUnmapMemory(device, stagingBufferMemory);
+        vmaUnmapMemory(allocator, stagingBufferMemory);
 
         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, currVertexBuffer, currVertexBufferMemory);
 
         copyBuffer(stagingBuffer, currVertexBuffer, bufferSize);
 
-        vkDestroyBuffer(device, stagingBuffer, nullptr);
-        vkFreeMemory(device, stagingBufferMemory, nullptr);
+        vmaDestroyBuffer(allocator, stagingBuffer, stagingBufferMemory);
+
+        //vmaFreeMemory(allocator, stagingBufferMemory);
 
         vertexBuffers[name] = currVertexBuffer;
         vertexBufferMemory[name] = currVertexBufferMemory;
@@ -1430,6 +1477,8 @@ private:
 
         VkBufferCopy copyRegion{};
         copyRegion.size = size;
+        copyRegion.srcOffset = 0;
+        copyRegion.dstOffset = 0;
         vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
         endSingleTimeCommands(commandBuffer);
@@ -1452,25 +1501,25 @@ private:
 
     void createIndexBuffer(std::string name, RenderObject object) {
         VkBuffer currIndexBuffer;
-        VkDeviceMemory currIndexMemory;
+        VmaAllocation currIndexMemory;
 
         VkDeviceSize bufferSize = sizeof(object.getIndices()[0]) * object.getIndices().size();
 
         VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
+        VmaAllocation stagingBufferMemory;
         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
         void* data;
-        vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+        vmaMapMemory(allocator, stagingBufferMemory, &data);
         memcpy(data, object.getIndices().data(), (size_t)bufferSize);
-        vkUnmapMemory(device, stagingBufferMemory);
+        vmaUnmapMemory(allocator, stagingBufferMemory);
 
         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, currIndexBuffer, currIndexMemory);
 
         copyBuffer(stagingBuffer, currIndexBuffer, bufferSize);
 
-        vkDestroyBuffer(device, stagingBuffer, nullptr);
-        vkFreeMemory(device, stagingBufferMemory, nullptr);
+        vmaDestroyBuffer(allocator, stagingBuffer, stagingBufferMemory);
+        //vmaFreeMemory(allocator, stagingBufferMemory);
 
         indexBuffers[name] = currIndexBuffer;
         indexBufferMemory[name] = currIndexMemory;
@@ -1571,14 +1620,16 @@ private:
         return buffer;
     }
 
-    void UpdateObjects(float deltaTime, float currentFrame)
+    void UpdateObjects(float deltaTime, float currentFrameTime)
     {
+        vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
+        objects[lightObjectIndex].SetPosition(glm::vec3(lightOrbitRadius * cos(currentFrameTime), lightOrbitRadius * sin(currentFrameTime), lightOrbitRadius * cos(currentFrameTime)));
+
         for (int i = 0; i < objects.size(); i++)
         {
             objects[i].Rotate(glm::vec3(16.0f * deltaTime));
         }
-
-        lightSourceObject->SetPosition(glm::vec3(lightOrbitRadius * cos(currentFrame), lightOrbitRadius * sin(currentFrame), lightOrbitRadius * cos(currentFrame)));
 
         for (auto it = nameToObjectMap.begin(); it != nameToObjectMap.end(); it++)
         {
@@ -1588,69 +1639,181 @@ private:
 
     void mainLoop() {
         while (!glfwWindowShouldClose(window)) {
-            float currentFrame = glfwGetTime();
-            deltaTime = currentFrame - lastFrame;
-            lastFrame = currentFrame;
+            float currentFrameTime = glfwGetTime();
+            deltaTime = currentFrameTime - lastFrame;
+            lastFrame = currentFrameTime;
 
-            processInput(window);
-            UpdateObjects(deltaTime, currentFrame);
-            drawFrame();
             glfwPollEvents();
+            processInput(window);
+            UpdateObjects(deltaTime, currentFrameTime);
+            drawFrame();
         }
 
         vkDeviceWaitIdle(device);
     }
 
+    void processInput(GLFWwindow* window)
+    {
+        if (!renderedFirstFrame)
+            return;
+
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, true);
+
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            camera.ProcessKeyboard(FORWARD, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            camera.ProcessKeyboard(BACKWARD, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            camera.ProcessKeyboard(LEFT, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            camera.ProcessKeyboard(RIGHT, deltaTime);
+
+        if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS && pressedKeys.find(GLFW_KEY_P) == pressedKeys.end())
+        {
+            partyMode = !partyMode;
+            pressedKeys.insert(GLFW_KEY_P);
+        } else if (glfwGetKey(window, GLFW_KEY_P) == GLFW_RELEASE && pressedKeys.find(GLFW_KEY_P) != pressedKeys.end())
+        {
+            pressedKeys.erase(GLFW_KEY_P);
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && pressedKeys.find(GLFW_KEY_R) == pressedKeys.end() && objects.size() < maxObjects - 10)
+        {
+            //vkWaitForFences(device, 1, &instanceBufferFence, VK_TRUE, UINT64_MAX);
+
+            RenderObject newObject;
+
+            if ((double)rand() / (RAND_MAX) >= 0.0f)
+            {
+                newObject = Cube(glm::vec3(((double)rand() / (RAND_MAX)) * 10.0f, ((double)rand() / (RAND_MAX)) * 10.0f, ((double)rand() / (RAND_MAX)) * 10.0f),
+                    glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
+                    glm::vec3(0.5f, 0.5f, 0.5f),
+                    glm::vec3(0.5f, 0.5f, 0.5f));
+            }
+            else {
+                newObject = Tetrahedron(glm::vec3(((double)rand() / (RAND_MAX)) * 10.0f, ((double)rand() / (RAND_MAX)) * 10.0f, ((double)rand() / (RAND_MAX)) * 10.0f),
+                    glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
+                    glm::vec3(0.5f, 0.5f, 0.5f),
+                    glm::vec3(0.5f, 0.5f, 0.5f));
+            }
+
+            objects.push_back(newObject);
+
+            std::string objName = newObject.getName();
+            if (nameToObjectMap.find(objName) == nameToObjectMap.end())
+            {
+                std::vector<int> newIndices = { (int)objects.size() - 1 };
+                nameToObjectMap[objName] = newIndices;
+
+                vertexBufferSizes[objName] = static_cast<uint16_t>(newObject.getVertices().size());
+                indexBufferSizes[objName] = static_cast<uint16_t>(newObject.getIndices().size());
+            }
+            else {
+                nameToObjectMap[objName].push_back((int)objects.size() - 1);
+            }
+
+            //pressedKeys.insert(GLFW_KEY_R);
+        }
+        else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE && pressedKeys.find(GLFW_KEY_R) != pressedKeys.end())
+        {
+            pressedKeys.erase(GLFW_KEY_R);
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS && pressedKeys.find(GLFW_KEY_E) == pressedKeys.end() && objects.size() > 1)
+        {
+            int deleteIndex = objects.size() - 1;
+
+            for (auto it = nameToObjectMap.begin(); it != nameToObjectMap.end(); it++)
+            {
+                it->second.erase(it->second.begin() + deleteIndex);
+            }
+
+            objects.erase(objects.begin() + deleteIndex);
+
+            //pressedKeys.insert(GLFW_KEY_E);
+        }
+        else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_RELEASE && pressedKeys.find(GLFW_KEY_E) != pressedKeys.end())
+        {
+            pressedKeys.erase(GLFW_KEY_E);
+        }
+    }
+
     void CreateInstanceBuffers()
     {
-        for (auto it = nameToObjectMap.begin(); it != nameToObjectMap.end(); it++)
+        for (uint32_t frameIndex = 0; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex++)
         {
-            VkDeviceSize bufferSize = sizeof(InstanceInfo) * it->second.size();
+            for (auto it = nameToObjectMap.begin(); it != nameToObjectMap.end(); it++)
+            {
+                VkDeviceSize bufferSize = sizeof(InstanceInfo) * maxObjects;
 
-            VkBuffer currInstanceBuffer;
-            VkDeviceMemory currInstanceBufferMemory;
+                VkBuffer currInstanceBuffer;
+                VmaAllocation currInstanceBufferMemory;
 
-            createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, currInstanceBuffer, currInstanceBufferMemory);
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, currInstanceBuffer, currInstanceBufferMemory);
 
-            instanceBuffers[it->first] = currInstanceBuffer;
-            instanceBufferMemory[it->first] = currInstanceBufferMemory;
+                instanceBuffers[frameIndex][it->first] = currInstanceBuffer;
+                instanceBufferMemory[frameIndex][it->first] = currInstanceBufferMemory;
+                instanceBuffersMapped[frameIndex][it->first] = malloc(maxObjects * sizeof(InstanceInfo));
+                vmaMapMemory(allocator, instanceBufferMemory[frameIndex][it->first], &instanceBuffersMapped[frameIndex][it->first]);
+            }
         }
     }
 
     void CreateInstanceBuffer(std::string objName)
     {
+        //vkResetFences(device, 1, &instanceBufferFences[objName]);
+        vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
         std::vector<InstanceInfo> objectInfo;
         std::vector<int> objIndices = nameToObjectMap[objName];
 
         for (int i = 0; i < objIndices.size(); i++)
         {
-            objectInfo.push_back(objects[objIndices[i]].getInstanceInfo());
+            int index = objIndices[i];
+
+            if (index < 0 || index >= objects.size())
+            {
+                continue;
+            }
+
+            RenderObject object = objects[index];
+            InstanceInfo info = object.getInstanceInfo();
+            objectInfo.push_back(info);
         }
 
-        VkDeviceSize bufferSize = sizeof(InstanceInfo) * objectInfo.size();
+        numObjectsForFrame[currentFrame][objName] = objectInfo.size();
 
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
+        if (numObjectsForFrame[currentFrame][objName] == 0)
+            return;
+
+        VkDeviceSize bufferSize = numObjectsForFrame[currentFrame][objName] * sizeof(InstanceInfo);
+
+        memcpy(instanceBuffersMapped[currentFrame][objName], objectInfo.data(), bufferSize);
+        vmaFlushAllocation(allocator, instanceBufferMemory[currentFrame][objName], 0, maxObjects * sizeof(InstanceInfo));
+
+        /*VkBuffer stagingBuffer;
+        VmaAllocation stagingBufferMemory;
         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
         void* data;
-        vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, objectInfo.data(), (size_t)bufferSize);
-        vkUnmapMemory(device, stagingBufferMemory);
+        vmaMapMemory(allocator, stagingBufferMemory, &data);
+        memcpy(data, objectInfo.data(), objectInfo.size() * sizeof(InstanceInfo));
+        vmaUnmapMemory(allocator, stagingBufferMemory);
 
-        copyBuffer(stagingBuffer, instanceBuffers[objName], bufferSize);
+        copyBuffer(stagingBuffer, instanceBuffers[currentFrame][objName], bufferSize);
 
-        vkDestroyBuffer(device, stagingBuffer, nullptr);
-        vkFreeMemory(device, stagingBufferMemory, nullptr);
+        vmaDestroyBuffer(allocator, stagingBuffer, stagingBufferMemory);
+        //vmaFreeMemory(allocator, stagingBufferMemory);*/
     }
 
     void drawFrame() {
-        vkWaitForFences(device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
+        vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
-        vkResetFences(device, 1, &inFlightFence);
+        vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
         uint32_t imageIndex;
-        VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+        VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             recreateSwapChain();
@@ -1662,33 +1825,44 @@ private:
 
         updateUniformBuffer(currentFrame);
 
-        vkResetCommandBuffer(commandBuffer, 0);
+        vkResetCommandBuffer(frameCommandBuffers[currentFrame], 0);
 
-        beginDrawFrameCommandBuffer(commandBuffer, imageIndex);
+        beginDrawFrameCommandBuffer(frameCommandBuffers[currentFrame], imageIndex);
 
         for (auto it = nameToObjectMap.begin(); it != nameToObjectMap.end(); it++)
         {
-            drawObjectCommandBuffer(commandBuffer, it->first);
+            drawObjectCommandBuffer(frameCommandBuffers[currentFrame], it->first);
         }
 
-        endDrawFrameCommandBuffer(commandBuffer);
+        endDrawFrameCommandBuffer(frameCommandBuffers[currentFrame]);
 
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = { imageAvailableSemaphore };
-        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        submitInfo.pWaitDstStageMask = waitStages;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer;
+        //VkSemaphore waitSemaphores[] = { imageAvailableSemaphore };
+        std::vector<VkSemaphore> waitSemaphores;
+        std::vector<VkPipelineStageFlags> waitStages;
+        waitSemaphores.push_back(imageAvailableSemaphores[currentFrame]);
+        waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 
-        VkSemaphore signalSemaphores[] = { renderFinishedSemaphore };
+        /*for (auto it = instanceBufferSemaphores.begin(); it != instanceBufferSemaphores.end(); it++)
+        {
+            waitSemaphores.push_back(it->second);
+            waitStages.push_back(VK_PIPELINE_STAGE_VERTEX_INPUT_BIT);
+        }*/
+
+        //VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        submitInfo.waitSemaphoreCount = waitSemaphores.size();
+        submitInfo.pWaitSemaphores = waitSemaphores.data();
+        submitInfo.pWaitDstStageMask = waitStages.data();
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &frameCommandBuffers[currentFrame];
+
+        VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame]};
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence) != VK_SUCCESS) {
+        if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
             throw std::runtime_error("failed to submit draw command buffer!");
         }
 
@@ -1714,6 +1888,7 @@ private:
         }
 
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+        renderedFirstFrame = true;
     }
 
     void updateUniformBuffer(uint32_t currentImage) {
@@ -1742,7 +1917,7 @@ private:
         globalInfo.lightAmbient = ambientColor;
         globalInfo.lightDiffuse = diffuseColor;
         globalInfo.lightSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
-        globalInfo.lightPosition = lightSourceObject->getPosition();
+        globalInfo.lightPosition = objects[lightObjectIndex].getPosition();
 
         memcpy(uniformBuffersMapped[currentImage], &globalInfo, sizeof(globalInfo));
     }
@@ -1764,6 +1939,8 @@ private:
     }
 
     void cleanup() {
+        vkDeviceWaitIdle(device);
+
         cleanupSwapChain();
 
         vkDestroyPipeline(device, graphicsPipeline, nullptr);
@@ -1771,8 +1948,8 @@ private:
         vkDestroyRenderPass(device, renderPass, nullptr);
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            vkDestroyBuffer(device, uniformBuffers[i], nullptr);
-            vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
+            vmaUnmapMemory(allocator, uniformBuffersMemory[i]);
+            vmaDestroyBuffer(allocator, uniformBuffers[i], uniformBuffersMemory[i]);
         }
 
         vkDestroyDescriptorPool(device, descriptorPool, nullptr);
@@ -1781,48 +1958,48 @@ private:
 
         for (auto it = indexBuffers.begin(); it != indexBuffers.end(); it++)
         {
-            vkDestroyBuffer(device, it->second, nullptr);
-        }
-
-        for (auto it = indexBufferMemory.begin(); it != indexBufferMemory.end(); it++)
-        {
-            vkFreeMemory(device, it->second, nullptr);
+            vmaDestroyBuffer(allocator, it->second, indexBufferMemory[it->first]);
         }
 
         for (auto it = vertexBuffers.begin(); it != vertexBuffers.end(); it++)
         {
-            vkDestroyBuffer(device, it->second, nullptr);
+            vmaDestroyBuffer(allocator, it->second, vertexBufferMemory[it->first]);
         }
 
-        for (auto it = vertexBufferMemory.begin(); it != vertexBufferMemory.end(); it++)
+        for (uint32_t frameIndex = 0; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex++)
         {
-            vkFreeMemory(device, it->second, nullptr);
-        }
-
-        for (auto it = instanceBuffers.begin(); it != instanceBuffers.end(); it++)
-        {
-            vkDestroyBuffer(device, it->second, nullptr);
-        }
-
-        for (auto it = instanceBufferMemory.begin(); it != instanceBufferMemory.end(); it++)
-        {
-            vkFreeMemory(device, it->second, nullptr);
+            for (auto it = instanceBuffers[frameIndex].begin(); it != instanceBuffers[frameIndex].end(); it++)
+            {
+                vmaUnmapMemory(allocator, instanceBufferMemory[frameIndex][it->first]);
+                vmaDestroyBuffer(allocator, it->second, instanceBufferMemory[frameIndex][it->first]);
+            }
         }
 
         vkDestroyCommandPool(device, commandPool, nullptr);
 
-        vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
-        vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+            vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+        }
 
-        vkDestroyFence(device, inFlightFence, nullptr);
+        for (uint32_t frameIndex = 0; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex++)
+        {
+            vkDestroyFence(device, inFlightFences[frameIndex], nullptr);
+        }
 
-        vkDestroyDevice(device, nullptr);
+        vmaDestroyAllocator(allocator);
 
-        if (enableValidationLayers) {
+        if (enableValidationLayers) 
+        {
             DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
         }
 
         vkDestroySurfaceKHR(instance, surface, nullptr);
+
+        vkDeviceWaitIdle(device);
+        vkDestroyDevice(device, nullptr);
+
         vkDestroyInstance(instance, nullptr);
 
         glfwDestroyWindow(window);

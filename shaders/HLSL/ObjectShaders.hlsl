@@ -36,14 +36,20 @@ cbuffer GlobalInfo : register(b0)
     float4x4 view;
     float4x4 projection;
     float3 cameraPosition;
-    
-    float3 lightPosition;
-    float3 lightColor;
-    
-    float3 lightAmbient;
-    float3 lightDiffuse;
-    float3 lightSpecular;
+    uint lightCount;
 }
+
+struct LightInfo
+{
+    float4 lightPosition;
+    float4 lightColor;
+   
+    float4 lightAmbient;
+    float4 lightDiffuse;
+    float4 lightSpecular;
+};
+
+StructuredBuffer<LightInfo> lights : register(t1);
 
 VSOutput VSMain(VSInputVertex vertexInput)
 {
@@ -75,27 +81,35 @@ float4 PSMain(VSOutput input) : SV_TARGET
         return float4(input.diffuse, 1.0);
     }
     
-    // ambient
-    float3 ambient = lightAmbient * input.ambient;
+    float3 result = float3(0, 0, 0);
+    
+    for (uint i = 0; i < lightCount; i++)
+    {
+        // ambient
+        float3 ambient = lights[i].lightAmbient.xyz * input.ambient;
 
         // diffuse 
-    float3 norm = normalize(input.normal);
-    float3 lightDir = normalize(lightPosition - input.worldPosition);
-    float diff = max(dot(norm, lightDir), 0.0);
-    float3 diffuse = lightDiffuse * (diff * input.diffuse);
+        float3 norm = normalize(input.normal);
+        float3 lightDir = normalize(lights[i].lightPosition.xyz - input.worldPosition);
+        float diff = max(dot(norm, lightDir), 0.0);
+        float3 diffuse = lights[i].lightDiffuse.xyz * (diff * input.diffuse);
 
         // specular
-    float3 viewDir = normalize(cameraPosition - input.worldPosition);
-    float3 reflectDir = reflect(-lightDir, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), input.shininess);
-    float3 specular = lightSpecular * (spec * input.specular);
+        float3 viewDir = normalize(cameraPosition - input.worldPosition);
+        float3 reflectDir = reflect(-lightDir, norm);
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), input.shininess);
+        float3 specular = lights[i].lightSpecular.xyz * (spec * input.specular);
      
-    float distance = length(lightPosition - input.worldPosition);
-    float lerpT = distance / 100.0;
+        float distance = length(lights[i].lightPosition.xyz - input.worldPosition);
+        float lerpT = distance / 100.0;
     
-    lerpT = min(lerpT, 1.0);
+        lerpT = min(lerpT, 1.0);
     
-    float3 result = ambient + diffuse + specular;
+        float3 currentResult = ambient + diffuse + specular;
+        currentResult = currentResult * (1.0 - lerpT);
+
+        result += currentResult;
+    }
     
-    return float4(result, 1.0) * (1.0 - lerpT);
+    return float4(result, 1.0);
 }

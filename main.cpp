@@ -190,6 +190,12 @@ private:
     std::vector<VmaAllocation> uniformBuffersMemory;
     std::vector<void*> uniformBuffersMapped;
 
+    std::vector<VkBuffer> lightInfoBuffers;
+	std::vector<VmaAllocation> lightInfoBuffersMemory;
+	std::vector<void*> lightInfoBuffersMapped;
+
+    size_t maxLightCount = 2;
+
     uint32_t currentFrame = 0;
 
     VkDescriptorPool descriptorPool;
@@ -578,7 +584,7 @@ private:
         allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
         allocInfo.pSetLayouts = layouts.data();
 
-        descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+        descriptorSets.resize(MAX_FRAMES_IN_FLIGHT * 2);
         if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate descriptor sets!");
         }
@@ -589,7 +595,12 @@ private:
             bufferInfo.offset = 0;
             bufferInfo.range = sizeof(GlobalInfo);
 
-            std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+            VkDescriptorBufferInfo lightBufferInfo{};
+            lightBufferInfo.buffer = lightInfoBuffers[i];
+            lightBufferInfo.offset = 0;
+            lightBufferInfo.range = sizeof(LightInfo) * maxLightCount;
+
+            std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrites[0].dstSet = descriptorSets[i];
@@ -599,16 +610,26 @@ private:
             descriptorWrites[0].descriptorCount = 1;
             descriptorWrites[0].pBufferInfo = &bufferInfo;
 
+            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[1].dstSet = descriptorSets[i];
+            descriptorWrites[1].dstBinding = 1;
+            descriptorWrites[1].dstArrayElement = 0;
+            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            descriptorWrites[1].descriptorCount = 1;
+            descriptorWrites[1].pBufferInfo = &lightBufferInfo;
+
             vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
         }
     }
 
     void createDescriptorPool() {
-        std::array<VkDescriptorPoolSize, 2> poolSizes{};
+        std::array<VkDescriptorPoolSize, 3> poolSizes{};
         poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
         poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+		poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		poolSizes[2].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
         VkDescriptorPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -628,10 +649,18 @@ private:
         uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
         uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
 
+		VkDeviceSize lightBufferSize = sizeof(LightInfo) * maxLightCount;
+
+        lightInfoBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+		lightInfoBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
+		lightInfoBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
+
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
-
             vmaMapMemory(allocator, uniformBuffersMemory[i], &uniformBuffersMapped[i]);
+
+			createBuffer(lightBufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, lightInfoBuffers[i], lightInfoBuffersMemory[i]);
+			vmaMapMemory(allocator, lightInfoBuffersMemory[i], &lightInfoBuffersMapped[i]);
         }
     }
 
@@ -643,7 +672,14 @@ private:
         globalInfoLayoutBinding.pImmutableSamplers = nullptr;
         globalInfoLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
-        std::array<VkDescriptorSetLayoutBinding, 1> bindings = { globalInfoLayoutBinding };
+        VkDescriptorSetLayoutBinding lightInfoBinding{};
+		lightInfoBinding.binding = 1;
+		lightInfoBinding.descriptorCount = 1;
+		lightInfoBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		lightInfoBinding.pImmutableSamplers = nullptr;
+		lightInfoBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        std::array<VkDescriptorSetLayoutBinding, 2> bindings = { globalInfoLayoutBinding, lightInfoBinding };
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -1924,14 +1960,26 @@ private:
 			objects[lightObjectIndex].setColor(lightColor);
         }
 
+        globalInfo.lightCount = 1;
+
         glm::vec3 diffuseColor = lightColor * 0.5f;
         glm::vec3 ambientColor = diffuseColor * 0.2f;
 
-        globalInfo.lightColor = lightColor;
-        globalInfo.lightAmbient = ambientColor;
-        globalInfo.lightDiffuse = diffuseColor;
-        globalInfo.lightSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
-        globalInfo.lightPosition = objects[lightObjectIndex].getPosition();
+        std::array<LightInfo, 2> lightInfos;
+
+        lightInfos[0].lightColor = glm::vec4(lightColor, 1.0);
+        lightInfos[0].lightAmbient = glm::vec4(ambientColor, 1.0);
+        lightInfos[0].lightDiffuse = glm::vec4(diffuseColor, 1.0);
+        lightInfos[0].lightSpecular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        lightInfos[0].lightPosition = glm::vec4(objects[lightObjectIndex].getPosition(), 1.0);
+
+        lightInfos[1].lightColor = glm::vec4(lightColor, 1.0);
+        lightInfos[1].lightAmbient = glm::vec4(ambientColor, 1.0);
+        lightInfos[1].lightDiffuse = glm::vec4(diffuseColor, 1.0);
+        lightInfos[1].lightSpecular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        lightInfos[1].lightPosition = glm::vec4(camera.Position, 1.0);
+
+        memcpy(lightInfoBuffersMapped[currentImage], &lightInfos, sizeof(lightInfos));
 
         memcpy(uniformBuffersMapped[currentImage], &globalInfo, sizeof(globalInfo));
     }
@@ -1964,6 +2012,10 @@ private:
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             vmaUnmapMemory(allocator, uniformBuffersMemory[i]);
             vmaDestroyBuffer(allocator, uniformBuffers[i], uniformBuffersMemory[i]);
+
+			vmaUnmapMemory(allocator, lightInfoBuffersMemory[i]);
+            vmaDestroyBuffer(allocator, lightInfoBuffers[i], lightInfoBuffersMemory[i]);
+
         }
 
         vkDestroyDescriptorPool(device, descriptorPool, nullptr);

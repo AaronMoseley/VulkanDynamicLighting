@@ -16,13 +16,16 @@ struct GlobalInfo {
     glm::mat4 view;
     glm::mat4 proj;
     glm::vec3 cameraPosition;
+    uint32_t lightCount;
+};
 
-    glm::vec3 lightPosition;
-    glm::vec3 lightColor;
+struct LightInfo {
+    glm::vec4 lightPosition;
+    glm::vec4 lightColor;
 
-    glm::vec3 lightAmbient;
-    glm::vec3 lightDiffuse;
-    glm::vec3 lightSpecular;
+    glm::vec4 lightAmbient;
+    glm::vec4 lightDiffuse;
+    glm::vec4 lightSpecular;
 };
 
 struct InstanceInfo {

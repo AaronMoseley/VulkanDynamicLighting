@@ -42,36 +42,6 @@ cbuffer GlobalInfo : register(b0)
     float3 lightSpecular;
 }
 
-float3x3 InverseFloat3x3(float3x3 m)
-{
-    float3 a = m[0];
-    float3 b = m[1];
-    float3 c = m[2];
-
-    float3 r0 = cross(b, c);
-    float3 r1 = cross(c, a);
-    float3 r2 = cross(a, b);
-
-    float invDet = 1.0 / dot(r2, c); // determinant
-
-    return float3x3(
-        r0 * invDet,
-        r1 * invDet,
-        r2 * invDet
-    );
-}
-
-float3x3 ComputeNormalMatrix(float4x4 modelMatrix)
-{
-    // Extract 3x3 part (rotation + scale)
-    float3x3 upper3x3 = (float3x3) modelMatrix;
-
-    // Compute inverse transpose
-    float3x3 invTranspose = transpose(InverseFloat3x3(upper3x3));
-
-    return invTranspose;
-}
-
 VSOutput VSMain(VSInputVertex vertexInput)
 {
     VSOutput output;

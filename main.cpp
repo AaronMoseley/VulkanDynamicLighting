@@ -1972,7 +1972,7 @@ private:
         lightInfos[0].lightDiffuse = glm::vec4(diffuseColor, 1.0);
         lightInfos[0].lightSpecular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         lightInfos[0].lightPosition = glm::vec4(objects[lightObjectIndex].getPosition(), 1.0);
-        lightInfos[0].maxLightDistance = 50.0f;
+        lightInfos[0].maxLightDistance = 25.0f;
 
         lightInfos[1].lightColor = glm::vec4(lightColor, 1.0);
         lightInfos[1].lightAmbient = glm::vec4(ambientColor, 1.0);

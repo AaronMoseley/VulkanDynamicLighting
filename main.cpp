@@ -308,14 +308,14 @@ private:
             std::string objName = newObject.getName();
             if (nameToObjectMap.find(objName) == nameToObjectMap.end())
             {
-                std::vector<int> newIndices = { i };
+                std::vector<int> newIndices = { i + 1 };
                 nameToObjectMap[objName] = newIndices;
 
                 vertexBufferSizes[objName] = static_cast<uint16_t>(newObject.getVertices().size());
                 indexBufferSizes[objName] = static_cast<uint16_t>(newObject.getIndices().size());
             }
             else {
-                nameToObjectMap[objName].push_back(i);
+                nameToObjectMap[objName].push_back(i + 1);
             }
         }
     }
@@ -905,8 +905,8 @@ private:
     }
 
     void createGraphicsPipeline() {
-        auto vertShaderCode = readFile("shaders/vert.spv");
-        auto fragShaderCode = readFile("shaders/frag.spv");
+        auto vertShaderCode = readFile("shaders/HLSL/VertexShader.spv");
+        auto fragShaderCode = readFile("shaders/HLSL/PixelShader.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -915,13 +915,13 @@ private:
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
         vertShaderStageInfo.module = vertShaderModule;
-        vertShaderStageInfo.pName = "main";
+        vertShaderStageInfo.pName = "VSMain";
 
         VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
         fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
         fragShaderStageInfo.module = fragShaderModule;
-        fragShaderStageInfo.pName = "main";
+        fragShaderStageInfo.pName = "PSMain";
 
         VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
@@ -1672,6 +1672,12 @@ private:
         if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS && pressedKeys.find(GLFW_KEY_P) == pressedKeys.end())
         {
             partyMode = !partyMode;
+
+            if (!partyMode)
+            {
+                objects[lightObjectIndex].setColor(glm::vec3(1.0f, 1.0f, 1.0f));
+            }
+
             pressedKeys.insert(GLFW_KEY_P);
         } else if (glfwGetKey(window, GLFW_KEY_P) == GLFW_RELEASE && pressedKeys.find(GLFW_KEY_P) != pressedKeys.end())
         {
@@ -1914,6 +1920,8 @@ private:
             lightColor.x = (sin(glfwGetTime() * 2.0f) + 1.0f) / 2.0f;
             lightColor.y = (sin(glfwGetTime() * 0.7f) + 1.0f) / 2.0f;
             lightColor.z = (sin(glfwGetTime() * 1.3f) + 1.0f) / 2.0f;
+
+			objects[lightObjectIndex].setColor(lightColor);
         }
 
         glm::vec3 diffuseColor = lightColor * 0.5f;

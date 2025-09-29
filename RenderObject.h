@@ -27,6 +27,7 @@ struct GlobalInfo {
 
 struct InstanceInfo {
     glm::mat4 modelMatrix;
+    glm::mat4 modelMatrixInverse;
 
     glm::vec3 ambient;
     glm::vec3 diffuse;
@@ -53,8 +54,8 @@ struct Vertex {
         return result;
     }
 
-    static std::array<VkVertexInputAttributeDescription, 11> getAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 11> attributeDescriptions{};
+    static std::array<VkVertexInputAttributeDescription, 15> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 15> attributeDescriptions{};
 
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
@@ -73,23 +74,30 @@ struct Vertex {
             attributeDescriptions[i].offset = sizeof(glm::vec4) * (i - 2);
         }
 
-        for (uint32_t i = 6; i < 9; i++)
+        for (uint32_t i = 6; i < 10; i++) {
+            attributeDescriptions[i].binding = 1; // instance buffer binding index
+            attributeDescriptions[i].location = i; // consecutive locations (e.g., 2,3,4,5)
+            attributeDescriptions[i].format = VK_FORMAT_R32G32B32A32_SFLOAT; // vec4 per row
+            attributeDescriptions[i].offset = sizeof(glm::mat4) + sizeof(glm::vec4) * (i - 6);
+        }
+
+        for (uint32_t i = 10; i < 13; i++)
         {
             attributeDescriptions[i].binding = 1;
             attributeDescriptions[i].location = i;
             attributeDescriptions[i].format = VK_FORMAT_R32G32B32_SFLOAT;
-            attributeDescriptions[i].offset = sizeof(glm::mat4) + (sizeof(glm::vec3) * (i - 6));
+            attributeDescriptions[i].offset = (2 * sizeof(glm::mat4)) + (sizeof(glm::vec3) * (i - 10));
         }
 
-        attributeDescriptions[9].binding = 1;
-        attributeDescriptions[9].location = 9;
-        attributeDescriptions[9].format = VK_FORMAT_R32_SFLOAT;
-        attributeDescriptions[9].offset = offsetof(InstanceInfo, shininess);
+        attributeDescriptions[13].binding = 1;
+        attributeDescriptions[13].location = 13;
+        attributeDescriptions[13].format = VK_FORMAT_R32_SFLOAT;
+        attributeDescriptions[13].offset = offsetof(InstanceInfo, shininess);
         
-        attributeDescriptions[10].binding = 1;
-        attributeDescriptions[10].location = 10;
-        attributeDescriptions[10].format = VK_FORMAT_R32_UINT;
-        attributeDescriptions[10].offset = offsetof(InstanceInfo, lit);
+        attributeDescriptions[14].binding = 1;
+        attributeDescriptions[14].location = 14;
+        attributeDescriptions[14].format = VK_FORMAT_R32_UINT;
+        attributeDescriptions[14].offset = offsetof(InstanceInfo, lit);
 
         return attributeDescriptions;
     }
@@ -122,6 +130,9 @@ public:
 
     bool getLit();
     void setLit(bool lit);
+
+	glm::vec3 getColor();
+	void setColor(glm::vec3 color);
 
     bool isIndexed();
 

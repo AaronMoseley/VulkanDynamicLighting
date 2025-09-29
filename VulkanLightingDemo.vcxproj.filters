@@ -23,14 +23,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\shader.frag">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="shaders\shader.vert">
-      <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="RenderObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -46,5 +38,10 @@
     <ClInclude Include="vk_mem_alloc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="shaders\HLSL\ObjectShaders.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

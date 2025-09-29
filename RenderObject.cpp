@@ -102,6 +102,16 @@ uint32_t RenderObject::getIndicesSize()
 	return static_cast<uint32_t>(m_indices.size());
 }
 
+glm::vec3 RenderObject::getColor()
+{
+	return m_color;
+}
+
+void RenderObject::setColor(glm::vec3 color)
+{
+	m_color = color;
+}
+
 InstanceInfo RenderObject::getInstanceInfo()
 {
 	InstanceInfo result;
@@ -114,6 +124,11 @@ InstanceInfo RenderObject::getInstanceInfo()
 	result.modelMatrix = glm::rotate(result.modelMatrix, glm::radians(m_rotation.r), glm::vec3(1.0f, 0.0f, 0.0f));
 	result.modelMatrix = glm::rotate(result.modelMatrix, glm::radians(m_rotation.g), glm::vec3(0.0f, 1.0f, 0.0f));
 	result.modelMatrix = glm::rotate(result.modelMatrix, glm::radians(m_rotation.b), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	//need to transpose the matrix because hlsl expects column major matrices
+	result.modelMatrix = glm::transpose(result.modelMatrix);
+
+	result.modelMatrixInverse = glm::inverse(result.modelMatrix);
 
 	result.ambient = m_color;
 	result.diffuse = m_color;

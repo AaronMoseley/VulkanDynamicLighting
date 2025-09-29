@@ -47,6 +47,8 @@ struct LightInfo
     float4 lightAmbient;
     float4 lightDiffuse;
     float4 lightSpecular;
+    
+    float maxLightDistance;
 };
 
 StructuredBuffer<LightInfo> lights : register(t1);
@@ -101,7 +103,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
         float3 specular = lights[i].lightSpecular.xyz * (spec * input.specular);
      
         float distance = length(lights[i].lightPosition.xyz - input.worldPosition);
-        float lerpT = distance / 100.0;
+        float lerpT = distance / lights[i].maxLightDistance;
     
         lerpT = min(lerpT, 1.0);
     

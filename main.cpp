@@ -194,7 +194,7 @@ private:
 	std::vector<VmaAllocation> lightInfoBuffersMemory;
 	std::vector<void*> lightInfoBuffersMapped;
 
-    size_t maxLightCount = 2;
+    size_t maxLightCount = 50;
 
     uint32_t currentFrame = 0;
 
@@ -1949,6 +1949,8 @@ private:
 
         globalInfo.cameraPosition = camera.Position;
 
+        globalInfo.lightCount = 2;
+
         glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
         if (partyMode)
@@ -1960,8 +1962,6 @@ private:
 			objects[lightObjectIndex].setColor(lightColor);
         }
 
-        globalInfo.lightCount = 1;
-
         glm::vec3 diffuseColor = lightColor * 0.5f;
         glm::vec3 ambientColor = diffuseColor * 0.2f;
 
@@ -1972,12 +1972,14 @@ private:
         lightInfos[0].lightDiffuse = glm::vec4(diffuseColor, 1.0);
         lightInfos[0].lightSpecular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         lightInfos[0].lightPosition = glm::vec4(objects[lightObjectIndex].getPosition(), 1.0);
+        lightInfos[0].maxLightDistance = 50.0f;
 
         lightInfos[1].lightColor = glm::vec4(lightColor, 1.0);
         lightInfos[1].lightAmbient = glm::vec4(ambientColor, 1.0);
         lightInfos[1].lightDiffuse = glm::vec4(diffuseColor, 1.0);
         lightInfos[1].lightSpecular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         lightInfos[1].lightPosition = glm::vec4(camera.Position, 1.0);
+		lightInfos[1].maxLightDistance = 10.0f;
 
         memcpy(lightInfoBuffersMapped[currentImage], &lightInfos, sizeof(lightInfos));
 

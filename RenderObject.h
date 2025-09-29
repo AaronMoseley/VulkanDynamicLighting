@@ -26,6 +26,8 @@ struct LightInfo {
     glm::vec4 lightAmbient;
     glm::vec4 lightDiffuse;
     glm::vec4 lightSpecular;
+
+    float maxLightDistance;
 };
 
 struct InstanceInfo {

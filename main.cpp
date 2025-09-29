@@ -1951,32 +1951,38 @@ private:
 
         globalInfo.lightCount = 2;
 
-        glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+        glm::vec3 whiteLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
+		glm::vec3 partyLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+        partyLightColor.x = (sin(glfwGetTime() * 2.0f) + 1.0f) / 2.0f;
+        partyLightColor.y = (sin(glfwGetTime() * 0.7f) + 1.0f) / 2.0f;
+        partyLightColor.z = (sin(glfwGetTime() * 1.3f) + 1.0f) / 2.0f;
+
+		glm::vec3 mainLightColor = whiteLightColor;
         if (partyMode)
         {
-            lightColor.x = (sin(glfwGetTime() * 2.0f) + 1.0f) / 2.0f;
-            lightColor.y = (sin(glfwGetTime() * 0.7f) + 1.0f) / 2.0f;
-            lightColor.z = (sin(glfwGetTime() * 1.3f) + 1.0f) / 2.0f;
-
-			objects[lightObjectIndex].setColor(lightColor);
+            objects[lightObjectIndex].setColor(partyLightColor);
+			mainLightColor = partyLightColor;
         }
 
-        glm::vec3 diffuseColor = lightColor * 0.5f;
-        glm::vec3 ambientColor = diffuseColor * 0.2f;
+        glm::vec3 mainDiffuseColor = mainLightColor * 0.5f;
+        glm::vec3 mainAmbientColor = mainDiffuseColor * 0.2f;
+
+		glm::vec3 whiteDiffuseColor = whiteLightColor * 0.5f;
+		glm::vec3 whiteAmbientColor = whiteDiffuseColor * 0.2f;
 
         std::array<LightInfo, 2> lightInfos;
 
-        lightInfos[0].lightColor = glm::vec4(lightColor, 1.0);
-        lightInfos[0].lightAmbient = glm::vec4(ambientColor, 1.0);
-        lightInfos[0].lightDiffuse = glm::vec4(diffuseColor, 1.0);
+        lightInfos[0].lightColor = glm::vec4(mainLightColor, 1.0);
+        lightInfos[0].lightAmbient = glm::vec4(mainAmbientColor, 1.0);
+        lightInfos[0].lightDiffuse = glm::vec4(mainDiffuseColor, 1.0);
         lightInfos[0].lightSpecular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         lightInfos[0].lightPosition = glm::vec4(objects[lightObjectIndex].getPosition(), 1.0);
         lightInfos[0].maxLightDistance = 25.0f;
 
-        lightInfos[1].lightColor = glm::vec4(lightColor, 1.0);
-        lightInfos[1].lightAmbient = glm::vec4(ambientColor, 1.0);
-        lightInfos[1].lightDiffuse = glm::vec4(diffuseColor, 1.0);
+        lightInfos[1].lightColor = glm::vec4(whiteLightColor, 1.0);
+        lightInfos[1].lightAmbient = glm::vec4(whiteAmbientColor, 1.0);
+        lightInfos[1].lightDiffuse = glm::vec4(whiteDiffuseColor, 1.0);
         lightInfos[1].lightSpecular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         lightInfos[1].lightPosition = glm::vec4(camera.Position, 1.0);
 		lightInfos[1].maxLightDistance = 10.0f;

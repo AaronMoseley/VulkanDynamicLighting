@@ -44,6 +44,7 @@ struct InstanceInfo {
 struct Vertex {
     glm::vec3 pos;
     glm::vec3 normal;
+    glm::vec2 texCoord;
 
     static std::array<VkVertexInputBindingDescription, 2> getBindingDescriptions() {
         std::array<VkVertexInputBindingDescription, 2> result;
@@ -59,8 +60,8 @@ struct Vertex {
         return result;
     }
 
-    static std::array<VkVertexInputAttributeDescription, 15> getAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 15> attributeDescriptions{};
+    static std::array<VkVertexInputAttributeDescription, 16> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 16> attributeDescriptions{};
 
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
@@ -72,37 +73,42 @@ struct Vertex {
         attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions[1].offset = offsetof(Vertex, normal);
 
-        for (uint32_t i = 2; i < 6; i++) {
+        attributeDescriptions[2].binding = 0;
+        attributeDescriptions[2].location = 2;
+        attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+
+        for (uint32_t i = 3; i < 7; i++) {
             attributeDescriptions[i].binding = 1; // instance buffer binding index
             attributeDescriptions[i].location = i; // consecutive locations (e.g., 2,3,4,5)
             attributeDescriptions[i].format = VK_FORMAT_R32G32B32A32_SFLOAT; // vec4 per row
-            attributeDescriptions[i].offset = sizeof(glm::vec4) * (i - 2);
+            attributeDescriptions[i].offset = sizeof(glm::vec4) * (i - 3);
         }
 
-        for (uint32_t i = 6; i < 10; i++) {
+        for (uint32_t i = 7; i < 11; i++) {
             attributeDescriptions[i].binding = 1; // instance buffer binding index
             attributeDescriptions[i].location = i; // consecutive locations (e.g., 2,3,4,5)
             attributeDescriptions[i].format = VK_FORMAT_R32G32B32A32_SFLOAT; // vec4 per row
-            attributeDescriptions[i].offset = sizeof(glm::mat4) + sizeof(glm::vec4) * (i - 6);
+            attributeDescriptions[i].offset = sizeof(glm::mat4) + sizeof(glm::vec4) * (i - 7);
         }
 
-        for (uint32_t i = 10; i < 13; i++)
+        for (uint32_t i = 11; i < 14; i++)
         {
             attributeDescriptions[i].binding = 1;
             attributeDescriptions[i].location = i;
             attributeDescriptions[i].format = VK_FORMAT_R32G32B32_SFLOAT;
-            attributeDescriptions[i].offset = (2 * sizeof(glm::mat4)) + (sizeof(glm::vec3) * (i - 10));
+            attributeDescriptions[i].offset = (2 * sizeof(glm::mat4)) + (sizeof(glm::vec3) * (i - 11));
         }
 
-        attributeDescriptions[13].binding = 1;
-        attributeDescriptions[13].location = 13;
-        attributeDescriptions[13].format = VK_FORMAT_R32_SFLOAT;
-        attributeDescriptions[13].offset = offsetof(InstanceInfo, shininess);
-        
         attributeDescriptions[14].binding = 1;
         attributeDescriptions[14].location = 14;
-        attributeDescriptions[14].format = VK_FORMAT_R32_UINT;
-        attributeDescriptions[14].offset = offsetof(InstanceInfo, lit);
+        attributeDescriptions[14].format = VK_FORMAT_R32_SFLOAT;
+        attributeDescriptions[14].offset = offsetof(InstanceInfo, shininess);
+        
+        attributeDescriptions[15].binding = 1;
+        attributeDescriptions[15].location = 15;
+        attributeDescriptions[15].format = VK_FORMAT_R32_UINT;
+        attributeDescriptions[15].offset = offsetof(InstanceInfo, lit);
 
         return attributeDescriptions;
     }

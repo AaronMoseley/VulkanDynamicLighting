@@ -3,17 +3,18 @@ struct VSInputVertex
     //Vertex attributes
     [[vk::location(0)]] float3 position : POSITION; // Vertex position
     [[vk::location(1)]] float3 normal : NORMAL; // Vertex normal
+    [[vk::location(2)]] float2 texCoord : TEXCOORD0; // Vertex texture coordinates
     
     //Instance attributes
-    [[vk::location(2)]] float4x4 model : TEXCOORD0; //4 locations for 4 * float4
-    [[vk::location(6)]] float4x4 modelMatrixInverted : TEXCOORD1; //4 locations for 4 * float4
+    [[vk::location(3)]] float4x4 model : TEXCOORD1; //4 locations for 4 * float4
+    [[vk::location(7)]] float4x4 modelMatrixInverted : TEXCOORD2; //4 locations for 4 * float4
     
-    [[vk::location(10)]] float3 ambient : COLOR2;
-    [[vk::location(11)]] float3 diffuse : COLOR3;
-    [[vk::location(12)]] float3 specular : COLOR4;
+    [[vk::location(11)]] float3 ambient : COLOR3;
+    [[vk::location(12)]] float3 diffuse : COLOR4;
+    [[vk::location(13)]] float3 specular : COLOR5;
     
-    [[vk::location(13)]] float shininess : COLOR5;
-    [[vk::location(14)]] uint lit : COLOR6;
+    [[vk::location(14)]] float shininess : COLOR6;
+    [[vk::location(15)]] uint lit : COLOR7;
 };
 
 //Vertex shader output to fragment shader input
@@ -21,13 +22,14 @@ struct VSOutput
 {
     [[vk::location(0)]] float4 position : SV_POSITION;
     [[vk::location(1)]] float3 worldPosition : TEXCOORD1;
+    [[vk::location(2)]] float2 texCoord : TEXCOORD0;
     
-    [[vk::location(2)]] float3 normal : NORMAL2;
-    [[vk::location(3)]] float3 ambient : COLOR3;
-    [[vk::location(4)]] float3 diffuse : COLOR4;
-    [[vk::location(5)]] float3 specular : COLOR5;
-    [[vk::location(6)]] float shininess : COLOR6;
-    [[vk::location(7)]] uint lit : COLOR7;
+    [[vk::location(3)]] float3 normal : NORMAL2;
+    [[vk::location(4)]] float3 ambient : COLOR3;
+    [[vk::location(5)]] float3 diffuse : COLOR4;
+    [[vk::location(6)]] float3 specular : COLOR5;
+    [[vk::location(7)]] float shininess : COLOR6;
+    [[vk::location(8)]] uint lit : COLOR7;
 };
 
 // Uniform buffer (constant buffer)
@@ -53,6 +55,9 @@ struct LightInfo
 
 StructuredBuffer<LightInfo> lights : register(t1);
 
+Texture2D myTexture : register(t2);
+SamplerState mySampler : register(s2);
+
 VSOutput VSMain(VSInputVertex vertexInput)
 {
     VSOutput output;
@@ -72,29 +77,35 @@ VSOutput VSMain(VSInputVertex vertexInput)
     output.specular = vertexInput.specular;
     output.shininess = vertexInput.shininess;
     output.lit = vertexInput.lit;
+    output.texCoord = vertexInput.texCoord;
     
     return output;
 }
 
 float4 PSMain(VSOutput input) : SV_TARGET
 {   
+    float4 texColor = myTexture.Sample(mySampler, input.texCoord);
+    
     if (input.lit == 0)
     {
-        return float4(input.diffuse, 1.0);
+        return float4(input.diffuse, 1.0) * texColor;
     }
+    
+    float3 objectDiffuse = texColor.xyz * input.diffuse;
+    float3 objectAmbient = texColor.xyz * input.ambient;
     
     float3 result = float3(0, 0, 0);
     
     for (uint i = 0; i < lightCount; i++)
     {
         // ambient
-        float3 ambient = lights[i].lightAmbient.xyz * input.ambient;
+        float3 ambient = lights[i].lightAmbient.xyz * objectAmbient;
 
         // diffuse 
         float3 norm = normalize(input.normal);
         float3 lightDir = normalize(lights[i].lightPosition.xyz - input.worldPosition);
         float diff = max(dot(norm, lightDir), 0.0);
-        float3 diffuse = lights[i].lightDiffuse.xyz * (diff * input.diffuse);
+        float3 diffuse = lights[i].lightDiffuse.xyz * (diff * objectDiffuse);
 
         // specular
         float3 viewDir = normalize(cameraPosition - input.worldPosition);

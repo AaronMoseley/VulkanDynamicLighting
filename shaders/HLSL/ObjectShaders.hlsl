@@ -15,6 +15,9 @@ struct VSInputVertex
     
     [[vk::location(14)]] float shininess : COLOR6;
     [[vk::location(15)]] uint lit : COLOR7;
+    
+    [[vk::location(16)]] uint textured : TEXTCOORD8;
+    [[vk::location(17)]] uint textureIndex : TEXCOORD9;
 };
 
 //Vertex shader output to fragment shader input
@@ -30,6 +33,8 @@ struct VSOutput
     [[vk::location(6)]] float3 specular : COLOR5;
     [[vk::location(7)]] float shininess : COLOR6;
     [[vk::location(8)]] uint lit : COLOR7;
+    [[vk::location(9)]] uint textured : TEXTCOORD8;
+    [[vk::location(10)]] uint textureIndex : TEXCOORD9;
 };
 
 // Uniform buffer (constant buffer)
@@ -55,8 +60,8 @@ struct LightInfo
 
 StructuredBuffer<LightInfo> lights : register(t1);
 
-Texture2D myTexture : register(t2);
-SamplerState mySampler : register(s2);
+Texture2D textures[] : register(t2);
+SamplerState textureSamplers[] : register(s2);
 
 VSOutput VSMain(VSInputVertex vertexInput)
 {
@@ -78,13 +83,20 @@ VSOutput VSMain(VSInputVertex vertexInput)
     output.shininess = vertexInput.shininess;
     output.lit = vertexInput.lit;
     output.texCoord = vertexInput.texCoord;
+    output.textured = vertexInput.textured;
+    output.textureIndex = vertexInput.textureIndex;
     
     return output;
 }
 
 float4 PSMain(VSOutput input) : SV_TARGET
 {   
-    float4 texColor = myTexture.Sample(mySampler, input.texCoord);
+    float4 texColor = float4(1.0, 1.0, 1.0, 1.0);
+    
+    if (input.textured == 1)
+    {
+        texColor = textures[NonUniformResourceIndex(input.textureIndex)].Sample(textureSamplers[input.textureIndex], input.texCoord);
+    }
     
     if (input.lit == 0)
     {

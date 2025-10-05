@@ -39,6 +39,9 @@ struct InstanceInfo {
     glm::vec3 specular;
     float shininess;
     uint32_t lit;
+
+    uint32_t textured;
+    uint32_t textureIndex;
 };
 
 struct Vertex {
@@ -60,8 +63,8 @@ struct Vertex {
         return result;
     }
 
-    static std::array<VkVertexInputAttributeDescription, 16> getAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 16> attributeDescriptions{};
+    static std::array<VkVertexInputAttributeDescription, 18> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 18> attributeDescriptions{};
 
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
@@ -110,6 +113,16 @@ struct Vertex {
         attributeDescriptions[15].format = VK_FORMAT_R32_UINT;
         attributeDescriptions[15].offset = offsetof(InstanceInfo, lit);
 
+        attributeDescriptions[16].binding = 1;
+        attributeDescriptions[16].location = 16;
+        attributeDescriptions[16].format = VK_FORMAT_R32_UINT;
+        attributeDescriptions[16].offset = offsetof(InstanceInfo, textured);
+
+        attributeDescriptions[17].binding = 1;
+        attributeDescriptions[17].location = 17;
+        attributeDescriptions[17].format = VK_FORMAT_R32_UINT;
+        attributeDescriptions[17].offset = offsetof(InstanceInfo, textureIndex);
+
         return attributeDescriptions;
     }
 };
@@ -152,6 +165,12 @@ public:
 
     InstanceInfo getInstanceInfo();
 
+	void setTextured(bool textured);
+	void setTextureIndex(uint32_t textureIndex);
+
+	bool getTextured();
+	uint32_t getTextureIndex();
+
 protected:
 	glm::vec3 m_position;
 	glm::vec3 m_rotation;
@@ -162,4 +181,7 @@ protected:
     std::string m_name = "EmptyObject";
     bool m_useIndices = false;
     bool m_lit = true;
+
+    bool m_textured = true;
+	uint32_t m_textureIndex = 1;
 };

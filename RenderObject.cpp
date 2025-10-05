@@ -112,6 +112,26 @@ void RenderObject::setColor(glm::vec3 color)
 	m_color = color;
 }
 
+void RenderObject::setTextured(bool textured)
+{
+	m_textured = textured;
+}
+
+void RenderObject::setTextureIndex(uint32_t textureIndex)
+{
+	m_textureIndex = textureIndex;
+}
+
+bool RenderObject::getTextured()
+{
+	return m_textured;
+}
+
+uint32_t RenderObject::getTextureIndex()
+{
+	return m_textureIndex;
+}
+
 InstanceInfo RenderObject::getInstanceInfo()
 {
 	InstanceInfo result;
@@ -136,6 +156,9 @@ InstanceInfo RenderObject::getInstanceInfo()
 	result.shininess = 32.0f;
 
 	result.lit = (m_lit) ? 1 : 0;
+
+	result.textured = (m_textured) ? 1 : 0;
+	result.textureIndex = m_textureIndex;
 
 	return result;
 }

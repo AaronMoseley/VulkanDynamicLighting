@@ -316,6 +316,20 @@ private:
                     color);
             }
 
+            if (objects.size() % 3 == 0)
+            {
+                newObject.setTextured(true);
+                newObject.setTextureIndex(0);
+            }
+            else if (objects.size() % 3 == 1)
+            {
+                newObject.setTextured(true);
+                newObject.setTextureIndex(1);
+            }
+            else {
+                newObject.setTextured(false);
+            }
+
             objects.push_back(newObject);
 
             std::string objName = newObject.getName();

@@ -1870,8 +1870,19 @@ private:
                     glm::vec3(0.5f, 0.5f, 0.5f));
             }
 
-            newObject.setTextured(objects.size() % 2 == 0);
-            newObject.setTextureIndex((objects.size() * 4) % 2);
+            if (objects.size() % 3 == 0)
+            {
+                newObject.setTextured(true);
+				newObject.setTextureIndex(0);
+            }
+            else if (objects.size() % 3 == 1)
+            {
+				newObject.setTextured(true);
+                newObject.setTextureIndex(1);
+            }
+            else {
+				newObject.setTextured(false);
+            }
 
             objects.push_back(newObject);
 

@@ -182,6 +182,6 @@ protected:
     bool m_useIndices = false;
     bool m_lit = true;
 
-    bool m_textured = true;
-	uint32_t m_textureIndex = 1;
+    bool m_textured = false;
+	uint32_t m_textureIndex = 0;
 };

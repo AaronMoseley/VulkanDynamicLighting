@@ -37,6 +37,7 @@ const int MAX_FRAMES_IN_FLIGHT = 3;
 #include "Cube.h"
 #include "Tetrahedron.h"
 #include "Camera.h"
+#include "WindowManager.h"
 
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
@@ -87,40 +88,17 @@ Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
 float deltaTime = 0.0f;	// Time between current frame and last frame
 float lastFrame = 0.0f; // Time of last frame
 
-float lastX = 400.0f, lastY = 300.0f;
-
-bool firstMouse = true;
 bool partyMode = false;
 
 bool pState = false;
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-    if (firstMouse) // initially set to true
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates range from bottom to top
-    lastX = xpos;
-    lastY = ypos;
-
-    camera.ProcessMouseMovement(xoffset, yoffset);
-}
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    camera.ProcessMouseScroll(static_cast<float>(yoffset));
-}
 
 class VulkanLightingDemo {
 public:
     void run() {
         createObjects();
-        initWindow();
+
+        windowManager = new WindowManager(800, 600, "Vulkan Demo");
+
         initVulkan();
         mainLoop();
         cleanup();
@@ -149,7 +127,6 @@ private:
     std::vector<RenderObject> objects;
     std::map<std::string, std::vector<int>> nameToObjectMap;
 
-    GLFWwindow* window;
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -221,34 +198,12 @@ private:
 
     VmaAllocator allocator;
 
-    std::set<int> pressedKeys;
+    WindowManager* windowManager;
 
     size_t maxObjects = 10000;
 
     float lightOrbitRadius = 5.0f;
     float lightOrbitSpeed = 1.0f;
-
-    void initWindow() {
-        glfwInit();
-
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-        window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
-        glfwSetWindowUserPointer(window, this);
-        glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-        glfwSetCursorPosCallback(window, mouse_callback);
-
-        glfwSetScrollCallback(window, scroll_callback);
-    }
-
-    static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-        auto app = reinterpret_cast<VulkanLightingDemo*>(glfwGetWindowUserPointer(window));
-        app->framebufferResized = true;
-    }
 
     void createVMAAllocator()
     {
@@ -815,9 +770,9 @@ private:
 
     void recreateSwapChain() {
         int width = 0, height = 0;
-        glfwGetFramebufferSize(window, &width, &height);
+        glfwGetFramebufferSize(windowManager->GetWindow(), &width, &height);
         while (width == 0 || height == 0) {
-            glfwGetFramebufferSize(window, &width, &height);
+            glfwGetFramebufferSize(windowManager->GetWindow(), &width, &height);
             glfwWaitEvents();
         }
 
@@ -1574,7 +1529,7 @@ private:
     }
 
     void createSurface() {
-        if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+        if (glfwCreateWindowSurface(instance, windowManager->GetWindow(), nullptr, &surface) != VK_SUCCESS) {
             throw std::runtime_error("failed to create window surface!");
         }
     }
@@ -1766,7 +1721,7 @@ private:
         }
         else {
             int width, height;
-            glfwGetFramebufferSize(window, &width, &height);
+            glfwGetFramebufferSize(windowManager->GetWindow(), &width, &height);
 
             VkExtent2D actualExtent = {
                 static_cast<uint32_t>(width),
@@ -1816,13 +1771,14 @@ private:
     }
 
     void mainLoop() {
-        while (!glfwWindowShouldClose(window)) {
+        while (!glfwWindowShouldClose(windowManager->GetWindow())) {
             float currentFrameTime = glfwGetTime();
             deltaTime = currentFrameTime - lastFrame;
             lastFrame = currentFrameTime;
 
             glfwPollEvents();
-            processInput(window);
+            processInput(windowManager->GetWindow());
+            windowManager->NewFrame();
             UpdateObjects(deltaTime, currentFrameTime);
             drawFrame();
         }
@@ -1835,19 +1791,22 @@ private:
         if (!renderedFirstFrame)
             return;
 
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        if (windowManager->KeyPressed(GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, true);
 
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        if (windowManager->KeyPressed(GLFW_KEY_W))
             camera.ProcessKeyboard(FORWARD, deltaTime);
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        if (windowManager->KeyPressed(GLFW_KEY_S))
             camera.ProcessKeyboard(BACKWARD, deltaTime);
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        if (windowManager->KeyPressed(GLFW_KEY_A))
             camera.ProcessKeyboard(LEFT, deltaTime);
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        if (windowManager->KeyPressed(GLFW_KEY_D))
             camera.ProcessKeyboard(RIGHT, deltaTime);
 
-        if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS && pressedKeys.find(GLFW_KEY_P) == pressedKeys.end())
+        camera.ProcessMouseMovement(windowManager->GetMouseDelta());
+        camera.ProcessMouseScroll(windowManager->GetScrollDelta().x);
+
+        if (windowManager->KeyPressedThisFrame(GLFW_KEY_P))
         {
             partyMode = !partyMode;
 
@@ -1856,16 +1815,10 @@ private:
                 objects[lightObjectIndex].setColor(glm::vec3(1.0f, 1.0f, 1.0f));
             }
 
-            pressedKeys.insert(GLFW_KEY_P);
-        } else if (glfwGetKey(window, GLFW_KEY_P) == GLFW_RELEASE && pressedKeys.find(GLFW_KEY_P) != pressedKeys.end())
-        {
-            pressedKeys.erase(GLFW_KEY_P);
         }
 
-        if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && pressedKeys.find(GLFW_KEY_R) == pressedKeys.end() && objects.size() < maxObjects - 10)
+        if (windowManager->KeyPressed(GLFW_KEY_R) && objects.size() < maxObjects - 10)
         {
-            //vkWaitForFences(device, 1, &instanceBufferFence, VK_TRUE, UINT64_MAX);
-
             RenderObject newObject;
 
             float positionRange = 100.0f;
@@ -1912,15 +1865,9 @@ private:
             else {
                 nameToObjectMap[objName].push_back((int)objects.size() - 1);
             }
-
-            //pressedKeys.insert(GLFW_KEY_R);
-        }
-        else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE && pressedKeys.find(GLFW_KEY_R) != pressedKeys.end())
-        {
-            pressedKeys.erase(GLFW_KEY_R);
         }
 
-        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS && pressedKeys.find(GLFW_KEY_E) == pressedKeys.end() && objects.size() > 1)
+        if (windowManager->KeyPressed(GLFW_KEY_E) && objects.size() > 1)
         {
             int deleteIndex = objects.size() - 1;
 
@@ -1934,12 +1881,6 @@ private:
             }
 
             objects.erase(objects.begin() + deleteIndex);
-
-            //pressedKeys.insert(GLFW_KEY_E);
-        }
-        else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_RELEASE && pressedKeys.find(GLFW_KEY_E) != pressedKeys.end())
-        {
-            pressedKeys.erase(GLFW_KEY_E);
         }
     }
 
@@ -2238,7 +2179,7 @@ private:
 
         vkDestroyInstance(instance, nullptr);
 
-        glfwDestroyWindow(window);
+        glfwDestroyWindow(windowManager->GetWindow());
 
         glfwTerminate();
     }

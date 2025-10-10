@@ -140,6 +140,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RenderObject.cpp" />
+    <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
@@ -147,6 +148,7 @@
     <ClInclude Include="RenderObject.h" />
     <ClInclude Include="Tetrahedron.h" />
     <ClInclude Include="vk_mem_alloc.h" />
+    <ClInclude Include="WindowManager.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\HLSL\ObjectShaders.hlsl">

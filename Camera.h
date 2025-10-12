@@ -78,7 +78,7 @@ public:
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-    void ProcessMouseMovement(glm::vec2 offset, GLboolean constrainPitch = true)
+    void ProcessMouseMovement(glm::vec2 offset, bool constrainPitch = true)
     {
         //xoffset *= MouseSensitivity;
         //yoffset *= MouseSensitivity;

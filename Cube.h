@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RenderObject.h"
+#include "Factory.h"
 
 std::vector<Vertex> cubeVertices = {
     //top
@@ -77,3 +78,5 @@ public:
         m_name = "Cube";
 	}
 };
+
+REGISTER(RenderObject, Cube);

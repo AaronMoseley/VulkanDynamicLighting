@@ -12,6 +12,8 @@
 #include <string>
 #include <vulkan/vulkan_core.h>
 
+#include <memory>
+
 struct GlobalInfo {
     glm::mat4 view;
     glm::mat4 proj;

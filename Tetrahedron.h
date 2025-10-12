@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RenderObject.h"
+#include "Factory.h"
 
 std::vector<Vertex> tetrahedronVertices = {
     //front
@@ -56,3 +57,5 @@ public:
         m_name = "Tetrahedron";
     }
 };
+
+REGISTER(RenderObject, Tetrahedron);

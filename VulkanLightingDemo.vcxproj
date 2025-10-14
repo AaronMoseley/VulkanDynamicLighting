@@ -138,8 +138,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GraphicsBuffer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RenderObject.cpp" />
+    <ClCompile Include="VulkanCommonFunctions.cpp" />
+    <ClCompile Include="VulkanCommonFunctions.h" />
     <ClCompile Include="VulkanInterface.cpp" />
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>
@@ -147,6 +150,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Cube.h" />
     <ClInclude Include="Factory.h" />
+    <ClInclude Include="GraphicsBuffer.h" />
     <ClInclude Include="RenderObject.h" />
     <ClInclude Include="Tetrahedron.h" />
     <ClInclude Include="vk_mem_alloc.h" />

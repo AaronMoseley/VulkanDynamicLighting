@@ -14,6 +14,7 @@
 #include "WindowManager.h"
 #include "VulkanCommonFunctions.h"
 #include "GraphicsBuffer.h"
+#include "GraphicsImage.h"
 
 #include "Factory.h"
 
@@ -88,13 +89,12 @@ private:
     void CreateCommandBuffers();
     void CreateSyncObjects();
 
-    bool HasStencilComponent(VkFormat format);
     VkFormat FindDepthFormat();
     VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-    VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
-    void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VmaAllocation& imageMemory);
-    void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-    void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+    //VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+    //void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VmaAllocation& imageMemory);
+    //void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+    //void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
     void RecreateSwapChain();
     void BeginDrawFrameCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
     void DrawObjectCommandBuffer(VkCommandBuffer commandBuffer, std::string objectName);
@@ -135,10 +135,10 @@ private:
     VkSurfaceKHR surface;
     VkQueue presentQueue;
     VkSwapchainKHR swapChain;
-    std::vector<VkImage> swapChainImages;
-    VkFormat swapChainImageFormat;
+    std::vector<GraphicsImage*> swapChainImages;
+    //VkFormat swapChainImageFormat;
     VkExtent2D swapChainExtent;
-    std::vector<VkImageView> swapChainImageViews;
+    //std::vector<VkImageView> swapChainImageViews;
     VkRenderPass renderPass;
     VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;
@@ -161,9 +161,9 @@ private:
 	std::vector<GraphicsBuffer*> lightInfoBuffers;
 
     std::array<std::string, 2> textureFiles = { "textures/SandTexture.png", "textures/OtherTexture.png" };
-    std::vector<VkImage> textureImages;
-    std::vector<VmaAllocation> textureImagesMemory;
-    std::vector<VkImageView> textureImageViews;
+    std::vector<GraphicsImage*> textureImages;
+    //std::vector<VmaAllocation> textureImagesMemory;
+    //std::vector<VkImageView> textureImageViews;
     std::vector<VkSampler> textureSamplers;
 
     size_t maxLightCount = 50;
@@ -173,9 +173,9 @@ private:
     VkDescriptorPool descriptorPool;
     std::vector<VkDescriptorSet> descriptorSets;
 
-    VkImage depthImage;
-    VmaAllocation depthImageMemory;
-    VkImageView depthImageView;
+    GraphicsImage* depthImage;
+    //VmaAllocation depthImageMemory;
+    //VkImageView depthImageView;
 
     ObjectHandle lightObjectHandle = 1;
 

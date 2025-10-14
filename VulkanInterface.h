@@ -93,8 +93,6 @@ private:
     VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
     VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
     void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VmaAllocation& imageMemory);
-    //VkCommandBuffer BeginSingleTimeCommands();
-    //void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
     void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
     void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
     void RecreateSwapChain();
@@ -109,9 +107,7 @@ private:
     bool IsDeviceSuitable(VkPhysicalDevice device);
     bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
     QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
-    //void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VmaAllocation& allocation);
     void CreateVertexBuffer(std::string name, RenderObject* object);
-    //void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     void CreateIndexBuffer(std::string name, RenderObject* object);
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
@@ -156,9 +152,6 @@ private:
     std::map<std::string, GraphicsBuffer*> vertexBuffers;
     std::map<std::string, GraphicsBuffer*> indexBuffers;
 
-    //std::map<std::string, VmaAllocation> vertexBufferMemory;
-    //std::map<std::string, VmaAllocation> indexBufferMemory;
-
     std::map<std::string, uint16_t> vertexBufferSizes;
     std::map<std::string, uint16_t> indexBufferSizes;
 
@@ -166,14 +159,6 @@ private:
 
 	std::vector<GraphicsBuffer*> uniformBuffers;
 	std::vector<GraphicsBuffer*> lightInfoBuffers;
-
-    //std::vector<VkBuffer> uniformBuffers;
-    //std::vector<VmaAllocation> uniformBuffersMemory;
-    //std::vector<void*> uniformBuffersMapped;
-
-    //std::vector<VkBuffer> lightInfoBuffers;
-    //std::vector<VmaAllocation> lightInfoBuffersMemory;
-    //std::vector<void*> lightInfoBuffersMapped;
 
     std::array<std::string, 2> textureFiles = { "textures/SandTexture.png", "textures/OtherTexture.png" };
     std::vector<VkImage> textureImages;
@@ -197,8 +182,6 @@ private:
     bool framebufferResized = false;
 
     std::array<std::map<std::string, GraphicsBuffer*>, MAX_FRAMES_IN_FLIGHT> instanceBuffers;
-    //std::array < std::map<std::string, VmaAllocation>, MAX_FRAMES_IN_FLIGHT> instanceBufferMemory;
-    //std::array < std::map<std::string, void*>, MAX_FRAMES_IN_FLIGHT> instanceBuffersMapped;
 
     VmaAllocator allocator;
 

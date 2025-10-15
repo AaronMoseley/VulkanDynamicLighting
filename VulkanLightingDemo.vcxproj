@@ -142,6 +142,8 @@
     <ClCompile Include="GraphicsImage.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RenderObject.cpp" />
+    <ClCompile Include="Swapchain.cpp" />
+    <ClCompile Include="TextureImage.cpp" />
     <ClCompile Include="VulkanCommonFunctions.cpp" />
     <ClCompile Include="VulkanCommonFunctions.h" />
     <ClCompile Include="VulkanInterface.cpp" />
@@ -154,7 +156,9 @@
     <ClInclude Include="GraphicsBuffer.h" />
     <ClInclude Include="GraphicsImage.h" />
     <ClInclude Include="RenderObject.h" />
+    <ClInclude Include="Swapchain.h" />
     <ClInclude Include="Tetrahedron.h" />
+    <ClInclude Include="TextureImage.h" />
     <ClInclude Include="vk_mem_alloc.h" />
     <ClInclude Include="VulkanInterface.h" />
     <ClInclude Include="WindowManager.h" />

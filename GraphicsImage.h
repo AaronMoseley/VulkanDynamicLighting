@@ -32,7 +32,7 @@ public:
 	void DestroyImage();
 	void DestroyImageView();
 
-private:
+protected:
 	VkImage m_image;
 	VmaAllocation m_imageMemory;
 

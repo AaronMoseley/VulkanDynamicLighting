@@ -15,6 +15,8 @@
 #include "VulkanCommonFunctions.h"
 #include "GraphicsBuffer.h"
 #include "GraphicsImage.h"
+#include "TextureImage.h"
+#include "Swapchain.h"
 
 #include "Factory.h"
 
@@ -29,21 +31,6 @@
 class VulkanInterface {
 public:
     using ObjectHandle = size_t;
-
-    struct QueueFamilyIndices {
-        std::optional<uint32_t> m_graphicsFamily;
-        std::optional<uint32_t> m_presentFamily;
-
-        bool IsComplete() {
-            return m_graphicsFamily.has_value() && m_presentFamily.has_value();
-        }
-    };
-
-    struct SwapChainSupportDetails {
-        VkSurfaceCapabilitiesKHR capabilities;
-        std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
-    };
 
     VulkanInterface(WindowManager* windowManager, Camera* camera);
 
@@ -70,7 +57,6 @@ private:
     void CreateLogicalDevice();
     void CreateVMAAllocator();
     void CreateSwapChain();
-    void CreateImageViews();
     void CreateRenderPass();
     void CreateDescriptorSetLayout();
     void CreateGraphicsPipeline();
@@ -79,7 +65,6 @@ private:
     void CreateTextureImage();
     void CreateTextureImageView();
     void CreateTextureSampler();
-    void CreateFramebuffers();
     void CreateVertexBuffers();
     void CreateIndexBuffers();
     void CreateInstanceBuffers();
@@ -91,10 +76,6 @@ private:
 
     VkFormat FindDepthFormat();
     VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-    //VkImageView CreateImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
-    //void CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VmaAllocation& imageMemory);
-    //void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-    //void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
     void RecreateSwapChain();
     void BeginDrawFrameCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
     void DrawObjectCommandBuffer(VkCommandBuffer commandBuffer, std::string objectName);
@@ -106,14 +87,9 @@ private:
     std::vector<const char*> GetRequiredExtensions();
     bool IsDeviceSuitable(VkPhysicalDevice device);
     bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
-    QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
     void CreateVertexBuffer(std::string name, RenderObject* object);
     void CreateIndexBuffer(std::string name, RenderObject* object);
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
-    VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-    VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
     std::vector<char> ReadFile(const std::string& filename);
     VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
     void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
@@ -134,16 +110,11 @@ private:
     VkQueue graphicsQueue;
     VkSurfaceKHR surface;
     VkQueue presentQueue;
-    VkSwapchainKHR swapChain;
-    std::vector<GraphicsImage*> swapChainImages;
-    //VkFormat swapChainImageFormat;
-    VkExtent2D swapChainExtent;
-    //std::vector<VkImageView> swapChainImageViews;
+    SwapChain* swapChain;
     VkRenderPass renderPass;
     VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
-    std::vector<VkFramebuffer> swapChainFramebuffers;
     VkCommandPool commandPool;
     std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> imageAvailableSemaphores;
     std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> renderFinishedSemaphores;
@@ -161,10 +132,7 @@ private:
 	std::vector<GraphicsBuffer*> lightInfoBuffers;
 
     std::array<std::string, 2> textureFiles = { "textures/SandTexture.png", "textures/OtherTexture.png" };
-    std::vector<GraphicsImage*> textureImages;
-    //std::vector<VmaAllocation> textureImagesMemory;
-    //std::vector<VkImageView> textureImageViews;
-    std::vector<VkSampler> textureSamplers;
+    std::vector<TextureImage*> textureImages;
 
     size_t maxLightCount = 50;
 
@@ -174,8 +142,6 @@ private:
     std::vector<VkDescriptorSet> descriptorSets;
 
     GraphicsImage* depthImage;
-    //VmaAllocation depthImageMemory;
-    //VkImageView depthImageView;
 
     ObjectHandle lightObjectHandle = 1;
 

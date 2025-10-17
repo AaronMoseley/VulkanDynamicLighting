@@ -17,7 +17,6 @@
 #include "GraphicsImage.h"
 #include "TextureImage.h"
 #include "Swapchain.h"
-
 #include "Factory.h"
 
 #include <map>
@@ -87,8 +86,8 @@ private:
     std::vector<const char*> GetRequiredExtensions();
     bool IsDeviceSuitable(VkPhysicalDevice device);
     bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
-    void CreateVertexBuffer(std::string name, RenderObject* object);
-    void CreateIndexBuffer(std::string name, RenderObject* object);
+    void CreateVertexBuffer(std::string name, MeshRenderer* object);
+    void CreateIndexBuffer(std::string name, MeshRenderer* object);
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     std::vector<char> ReadFile(const std::string& filename);
     VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
@@ -101,7 +100,7 @@ private:
     static const size_t MAX_OBJECTS = 10000;
 
     std::map<ObjectHandle, RenderObject*> objects;
-    std::map<std::string, std::set<ObjectHandle>> nameToObjectMap;
+    std::map<std::string, std::set<ObjectHandle>> meshNameToObjectMap;
 
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
@@ -158,6 +157,8 @@ private:
 
     bool partyMode = false;
     float lightOrbitRadius = 10.0f;
+
+	const std::string customMeshName = "CustomMesh";
 
 
     const std::vector<const char*> validationLayers = {

@@ -65,12 +65,16 @@ private:
     {
         std::srand(std::time(0));
 
-        Cube* lightCube = new Cube(glm::vec3(lightOrbitRadius),
+        RenderObject* lightCube = new RenderObject(
+            glm::vec3(lightOrbitRadius),
             glm::vec3(0.0f),
-            glm::vec3(0.25f),
-            glm::vec3(1.0f));
+            glm::vec3(0.25f)
+        );
 
-        lightCube->setLit(false);
+        lightCube->AddComponent<Cube>();
+		MeshRenderer* lightMesh = lightCube->GetComponent<MeshRenderer>();
+		lightMesh->SetLit(false);
+		lightMesh->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
 
         lightObjectHandle = vulkanInterface->AddObject(lightCube);
         objectHandles.insert(lightObjectHandle);
@@ -80,34 +84,34 @@ private:
 
         for (int i = 0; i < objectPositions.size(); i++)
         {
-            RenderObject* newObject;
+            RenderObject* newObject = new RenderObject(
+                objectPositions[i],
+                glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
+                glm::vec3(0.5f, 0.5f, 0.5f)
+            );
 
             if ((double)rand() / (RAND_MAX) >= 0.0f)
             {
-                newObject = new Cube(objectPositions[i],
-                    glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
-                    glm::vec3(0.5f, 0.5f, 0.5f),
-                    color);
+				newObject->AddComponent<Cube>();
             }
             else {
-                newObject = new Tetrahedron(objectPositions[i],
-                    glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
-                    glm::vec3(0.5f, 0.5f, 0.5f),
-                    color);
+				newObject->AddComponent<Tetrahedron>();
             }
+
+			MeshRenderer* currentMesh = newObject->GetComponent<MeshRenderer>();
+
+			currentMesh->SetColor(color);
 
             if (vulkanInterface->GetObjectCount() % 3 == 0)
             {
-                newObject->setTextured(true);
-                newObject->setTextureIndex(0);
+                currentMesh->SetTexture(0);
             }
             else if (vulkanInterface->GetObjectCount() % 3 == 1)
             {
-                newObject->setTextured(true);
-                newObject->setTextureIndex(1);
+                currentMesh->SetTexture(1);
             }
             else {
-                newObject->setTextured(false);
+                currentMesh->SetTextured(false);
             }
 
             VulkanInterface::ObjectHandle newObjectHandle = vulkanInterface->AddObject(newObject);
@@ -135,7 +139,7 @@ private:
         RenderObject* lightObject = vulkanInterface->GetRenderObject(lightObjectHandle);
         if (lightObject != nullptr)
         {
-            lightObject->SetPosition(glm::vec3(lightOrbitRadius * cos(currentFrameTime), lightOrbitRadius * sin(currentFrameTime), lightOrbitRadius * cos(currentFrameTime)));
+            lightObject->GetComponent<Transform>()->SetPosition(glm::vec3(lightOrbitRadius * cos(currentFrameTime), lightOrbitRadius * sin(currentFrameTime), lightOrbitRadius * cos(currentFrameTime)));
         }
 
         for (auto it = objectHandles.begin(); it != objectHandles.end(); it++)
@@ -147,7 +151,7 @@ private:
                 continue;
             }
 
-            currentObject->Rotate(glm::vec3(16.0f * deltaTime));
+            currentObject->GetComponent<Transform>()->Rotate(glm::vec3(16.0f * deltaTime));
         }
 
         if (!vulkanInterface->HasRenderedFirstFrame())
@@ -175,43 +179,45 @@ private:
             if (!partyMode)
             {
                 RenderObject* lightObject = vulkanInterface->GetRenderObject(lightObjectHandle);
-                lightObject->setColor(glm::vec3(1.0f, 1.0f, 1.0f));
+                lightObject->GetComponent<MeshRenderer>()->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
             }
 
         }
 
         if (windowManager->KeyPressed(GLFW_KEY_R) && vulkanInterface->GetObjectCount() < maxObjects - 10)
         {
-            RenderObject* newObject;
-
             float positionRange = 100.0f;
 
-            if ((double)rand() / (RAND_MAX) >= 0.5f)
+            RenderObject* newObject = new RenderObject(
+                glm::vec3(((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange),
+                glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
+                glm::vec3(0.5f, 0.5f, 0.5f)
+            );
+
+            if ((double)rand() / (RAND_MAX) >= 0.0f)
             {
-                newObject = new Cube(glm::vec3(((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange),
-                    glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
-                    glm::vec3(0.5f, 0.5f, 0.5f),
-                    glm::vec3(0.5f, 0.5f, 0.5f));
+				newObject->AddComponent<Cube>();
             }
             else {
-                newObject = new Tetrahedron(glm::vec3(((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange),
-                    glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
-                    glm::vec3(0.5f, 0.5f, 0.5f),
-                    glm::vec3(0.5f, 0.5f, 0.5f));
+				newObject->AddComponent<Tetrahedron>();
             }
+
+			MeshRenderer* currentMesh = newObject->GetComponent<MeshRenderer>();
+
+            currentMesh->SetColor(glm::vec3(0.9f));
 
             if (vulkanInterface->GetObjectCount() % 3 == 0)
             {
-                newObject->setTextured(true);
-				newObject->setTextureIndex(0);
+                currentMesh->SetTextured(true);
+                currentMesh->SetTexture(0);
             }
             else if (vulkanInterface->GetObjectCount() % 3 == 1)
             {
-				newObject->setTextured(true);
-                newObject->setTextureIndex(1);
+                currentMesh->SetTextured(true);
+                currentMesh->SetTexture(1);
             }
             else {
-				newObject->setTextured(false);
+                currentMesh->SetTextured(false);
             }
 
             VulkanInterface::ObjectHandle newObjectHandle = vulkanInterface->AddObject(newObject);

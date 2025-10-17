@@ -9,14 +9,16 @@ VulkanInterface::VulkanInterface(WindowManager* windowManager, Camera* camera)
 
 void VulkanInterface::InitializeVulkan()
 {
-    Factory objectClasses = FACTORY(RenderObject);
+    Factory objectClasses = FACTORY(MeshRenderer);
 
     std::vector<std::string> objectClassNames = objectClasses.GetRegisteredClasses();
 
     for (size_t i = 0; i < objectClassNames.size(); i++)
     {
-        nameToObjectMap[objectClassNames[i]] = {};
+        meshNameToObjectMap[objectClassNames[i]] = {};
     }
+
+    meshNameToObjectMap[customMeshName] = {};
 
     CreateInstance();
     SetupDebugMessenger();
@@ -61,9 +63,15 @@ VulkanInterface::ObjectHandle VulkanInterface::AddObject(RenderObject* newObject
 
     objects[m_currentObjectHandle] = newObject;
 
-    std::string objName = newObject->getName();
-    
-    nameToObjectMap[objName].insert(m_currentObjectHandle);
+	MeshRenderer* meshComponent = newObject->GetComponent<MeshRenderer>();
+
+    if (meshComponent == nullptr)
+    {
+		return m_currentObjectHandle;
+    }
+	
+    std::string objectName = meshComponent->GetMeshName();
+    meshNameToObjectMap[objectName].insert(m_currentObjectHandle);
 
     return m_currentObjectHandle;
 }
@@ -77,16 +85,23 @@ bool VulkanInterface::RemoveObject(ObjectHandle objectToRemove)
         return false;
     }
 
-    std::string objectName = currentObject->getName();
-
     bool removalSuccessful = true;
 
     removalSuccessful = objects.erase(objectToRemove);
 
-    if (!nameToObjectMap.contains(objectName))
+    MeshRenderer* meshComponent = currentObject->GetComponent<MeshRenderer>();
+
+    if (meshComponent == nullptr)
+    {
+        return removalSuccessful;
+    }
+
+    std::string objectName = meshComponent->GetMeshName();
+
+    if (!meshNameToObjectMap.contains(objectName))
         return false;
 
-    removalSuccessful = nameToObjectMap[objectName].erase(objectToRemove);
+    removalSuccessful = removalSuccessful && meshNameToObjectMap[objectName].erase(objectToRemove);
 
     return removalSuccessful;
 }
@@ -221,12 +236,12 @@ void VulkanInterface::CreateDescriptorSets() {
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = uniformBuffers[i]->GetVkBuffer();
         bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(GlobalInfo);
+        bufferInfo.range = sizeof(VulkanCommonFunctions::GlobalInfo);
 
         VkDescriptorBufferInfo lightBufferInfo{};
         lightBufferInfo.buffer = lightInfoBuffers[i]->GetVkBuffer();
         lightBufferInfo.offset = 0;
-        lightBufferInfo.range = sizeof(LightInfo) * maxLightCount;
+        lightBufferInfo.range = sizeof(VulkanCommonFunctions::LightInfo) * maxLightCount;
 
         std::vector<VkDescriptorImageInfo> imageInfos;
 
@@ -291,11 +306,11 @@ void VulkanInterface::CreateDescriptorPool() {
 }
 
 void VulkanInterface::CreateUniformBuffers() {
-    VkDeviceSize uniformBufferSize = sizeof(GlobalInfo);
+    VkDeviceSize uniformBufferSize = sizeof(VulkanCommonFunctions::GlobalInfo);
 
     uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
-    VkDeviceSize lightBufferSize = sizeof(LightInfo) * maxLightCount;
+    VkDeviceSize lightBufferSize = sizeof(VulkanCommonFunctions::LightInfo) * maxLightCount;
 
     lightInfoBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
@@ -458,7 +473,7 @@ void VulkanInterface::BeginDrawFrameCommandBuffer(VkCommandBuffer commandBuffer,
 }
 
 void VulkanInterface::DrawObjectCommandBuffer(VkCommandBuffer commandBuffer, std::string objectName) {
-    if (nameToObjectMap[objectName].size() <= 0)
+    if (meshNameToObjectMap[objectName].size() <= 0)
         return;
     
     VkBuffer objectVertexBuffer[] = { vertexBuffers[objectName]->GetVkBuffer(), instanceBuffers[currentFrame][objectName]->GetVkBuffer()};
@@ -469,11 +484,11 @@ void VulkanInterface::DrawObjectCommandBuffer(VkCommandBuffer commandBuffer, std
     {
         vkCmdBindIndexBuffer(commandBuffer, indexBuffers[objectName]->GetVkBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-        vkCmdDrawIndexed(commandBuffer, indexBufferSizes[objectName], nameToObjectMap[objectName].size(), 0, 0, 0);
-        //vkCmdDrawIndexed(commandBuffer, indexBufferSizes[objectName], nameToObjectMap[objectName].size(), 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, indexBufferSizes[objectName], meshNameToObjectMap[objectName].size(), 0, 0, 0);
+        //vkCmdDrawIndexed(commandBuffer, indexBufferSizes[objectName], meshNameToObjectMap[objectName].size(), 0, 0, 0);
     }
     else {
-        vkCmdDraw(commandBuffer, vertexBufferSizes[objectName], nameToObjectMap[objectName].size(), 0, 0);
+        vkCmdDraw(commandBuffer, vertexBufferSizes[objectName], meshNameToObjectMap[objectName].size(), 0, 0);
     }
 }
 
@@ -593,8 +608,8 @@ void VulkanInterface::CreateGraphicsPipeline() {
 
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
-    auto bindingDescription = Vertex::getBindingDescriptions();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
+    auto bindingDescription = VulkanCommonFunctions::Vertex::GetBindingDescriptions();
+    auto attributeDescriptions = VulkanCommonFunctions::Vertex::GetAttributeDescriptions();
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -1004,19 +1019,24 @@ void VulkanInterface::CreateSurface() {
 }
 
 void VulkanInterface::CreateVertexBuffers() {
-    Factory objectClasses = FACTORY(RenderObject);
+    Factory objectClasses = FACTORY(MeshRenderer);
 
-    for (auto it = nameToObjectMap.begin(); it != nameToObjectMap.end(); it++)
+    for (auto it = meshNameToObjectMap.begin(); it != meshNameToObjectMap.end(); it++)
     {
-        RenderObject* classInstance = objectClasses.create(it->first);
+        MeshRenderer* classInstance = objectClasses.create(it->first);
+
+        if (classInstance == nullptr)
+        {
+            continue;
+        }
 
         CreateVertexBuffer(it->first, classInstance);
-        vertexBufferSizes[it->first] = static_cast<uint16_t>(classInstance->getVertices().size());
+        vertexBufferSizes[it->first] = static_cast<uint16_t>(classInstance->GetVertices().size());
     }
 }
 
-void VulkanInterface::CreateVertexBuffer(std::string name, RenderObject* object) {
-    VkDeviceSize bufferSize = sizeof(object->getVertices()[0]) * object->getVertices().size();
+void VulkanInterface::CreateVertexBuffer(std::string name, MeshRenderer* meshInfo) {
+    VkDeviceSize bufferSize = sizeof(meshInfo->GetVertices()[0]) * meshInfo->GetVertices().size();
 
     GraphicsBuffer::BufferCreateInfo stagingBufferCreateInfo = {};
 	stagingBufferCreateInfo.size = bufferSize;
@@ -1028,7 +1048,7 @@ void VulkanInterface::CreateVertexBuffer(std::string name, RenderObject* object)
     stagingBufferCreateInfo.device = device;
 
 	GraphicsBuffer* stagingBuffer = new GraphicsBuffer(stagingBufferCreateInfo);
-    stagingBuffer->LoadData(object->getVertices().data(), (size_t)bufferSize);
+    stagingBuffer->LoadData(meshInfo->GetVertices().data(), (size_t)bufferSize);
 
     GraphicsBuffer::BufferCreateInfo vertexBufferCreateInfo = {};
     vertexBufferCreateInfo.size = bufferSize;
@@ -1048,21 +1068,26 @@ void VulkanInterface::CreateVertexBuffer(std::string name, RenderObject* object)
 }
 
 void VulkanInterface::CreateIndexBuffers() {
-    Factory objectClasses = FACTORY(RenderObject);
-    for (auto it = nameToObjectMap.begin(); it != nameToObjectMap.end(); it++)
+    Factory objectClasses = FACTORY(MeshRenderer);
+    for (auto it = meshNameToObjectMap.begin(); it != meshNameToObjectMap.end(); it++)
     {
-        RenderObject* objectInstance = objectClasses.create(it->first);
+        MeshRenderer* classInstance = objectClasses.create(it->first);
 
-        if (!objectInstance->isIndexed())
+        if (classInstance == nullptr)
+        {
+            continue;
+        }
+
+        if (!classInstance->IsIndexed())
             return;
 
-        CreateIndexBuffer(it->first, objectInstance);
-        indexBufferSizes[it->first] = static_cast<uint16_t>(objectInstance->getIndices().size());
+        CreateIndexBuffer(it->first, classInstance);
+        indexBufferSizes[it->first] = static_cast<uint16_t>(classInstance->GetIndices().size());
     }
 }
 
-void VulkanInterface::CreateIndexBuffer(std::string name, RenderObject* object) {
-    VkDeviceSize bufferSize = sizeof(object->getIndices()[0]) * object->getIndices().size();
+void VulkanInterface::CreateIndexBuffer(std::string name, MeshRenderer* meshInfo) {
+    VkDeviceSize bufferSize = sizeof(meshInfo->GetIndices()[0]) * meshInfo->GetIndices().size();
 
     GraphicsBuffer::BufferCreateInfo stagingBufferCreateInfo = {};
     stagingBufferCreateInfo.size = bufferSize;
@@ -1074,7 +1099,7 @@ void VulkanInterface::CreateIndexBuffer(std::string name, RenderObject* object) 
     stagingBufferCreateInfo.device = device;
 
     GraphicsBuffer* stagingBuffer = new GraphicsBuffer(stagingBufferCreateInfo);
-    stagingBuffer->LoadData(object->getIndices().data(), (size_t)bufferSize);
+    stagingBuffer->LoadData(meshInfo->GetIndices().data(), (size_t)bufferSize);
 
     GraphicsBuffer::BufferCreateInfo indexBufferCreateInfo = {};
     indexBufferCreateInfo.size = bufferSize;
@@ -1161,13 +1186,13 @@ void VulkanInterface::CreateVMAAllocator()
 
 void VulkanInterface::CreateInstanceBuffers()
 {
-    Factory objectClasses = FACTORY(RenderObject);
+    Factory objectClasses = FACTORY(MeshRenderer);
 
     for (uint32_t frameIndex = 0; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex++)
     {
-        for (auto it = nameToObjectMap.begin(); it != nameToObjectMap.end(); it++)
+        for (auto it = meshNameToObjectMap.begin(); it != meshNameToObjectMap.end(); it++)
         {
-            VkDeviceSize bufferSize = sizeof(InstanceInfo) * MAX_OBJECTS;
+            VkDeviceSize bufferSize = sizeof(VulkanCommonFunctions::InstanceInfo) * MAX_OBJECTS;
 
 			GraphicsBuffer::BufferCreateInfo instanceBufferCreateInfo = {};
 			instanceBufferCreateInfo.size = bufferSize;
@@ -1188,8 +1213,8 @@ void VulkanInterface::CreateInstanceBuffer(std::string objectName)
 {
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
-    std::vector<InstanceInfo> objectInfo;
-    std::set<ObjectHandle> objectHandles = nameToObjectMap[objectName];
+    std::vector<VulkanCommonFunctions::InstanceInfo> objectInfo;
+    std::set<ObjectHandle> objectHandles = meshNameToObjectMap[objectName];
 
     for (auto it = objectHandles.begin(); it != objectHandles.end(); it++)
     {
@@ -1201,17 +1226,23 @@ void VulkanInterface::CreateInstanceBuffer(std::string objectName)
         }
 
         RenderObject* object = objects[currentHandle];
-        InstanceInfo info = object->getInstanceInfo();
+
+		MeshRenderer* meshRenderer = object->GetComponent<MeshRenderer>();
+
+        if (meshRenderer == nullptr)
+            continue;
+
+        VulkanCommonFunctions::InstanceInfo info = object->GetInstanceInfo();
         objectInfo.push_back(info);
     }
 
-    VkDeviceSize bufferSize = nameToObjectMap[objectName].size() * sizeof(InstanceInfo);
+    VkDeviceSize bufferSize = meshNameToObjectMap[objectName].size() * sizeof(VulkanCommonFunctions::InstanceInfo);
 
 	instanceBuffers[currentFrame][objectName]->LoadData(objectInfo.data(), (size_t)bufferSize);
 }
 
 void VulkanInterface::DrawFrame() {
-    for (auto it = nameToObjectMap.begin(); it != nameToObjectMap.end(); it++)
+    for (auto it = meshNameToObjectMap.begin(); it != meshNameToObjectMap.end(); it++)
     {
         CreateInstanceBuffer(it->first);
     }
@@ -1237,7 +1268,7 @@ void VulkanInterface::DrawFrame() {
 
     BeginDrawFrameCommandBuffer(frameCommandBuffers[currentFrame], imageIndex);
 
-    for (auto it = nameToObjectMap.begin(); it != nameToObjectMap.end(); it++)
+    for (auto it = meshNameToObjectMap.begin(); it != meshNameToObjectMap.end(); it++)
     {
         DrawObjectCommandBuffer(frameCommandBuffers[currentFrame], it->first);
     }
@@ -1297,7 +1328,7 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage) {
     if (objects.size() == 0)
         return;
     
-    GlobalInfo globalInfo;
+    VulkanCommonFunctions::GlobalInfo globalInfo;
 
     globalInfo.view = m_camera->GetViewMatrix();
 
@@ -1320,7 +1351,7 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage) {
     glm::vec3 mainLightColor = whiteLightColor;
     if (partyMode)
     {
-        objects[lightObjectHandle]->setColor(partyLightColor);
+        objects[lightObjectHandle]->GetComponent<MeshRenderer>()->SetColor(partyLightColor);
         mainLightColor = partyLightColor;
     }
 
@@ -1330,13 +1361,13 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage) {
     glm::vec3 whiteDiffuseColor = whiteLightColor * 0.5f;
     glm::vec3 whiteAmbientColor = whiteDiffuseColor * 0.2f;
 
-    std::array<LightInfo, 2> lightInfos;
+    std::array<VulkanCommonFunctions::LightInfo, 2> lightInfos;
 
     lightInfos[0].lightColor = glm::vec4(mainLightColor, 1.0);
     lightInfos[0].lightAmbient = glm::vec4(mainAmbientColor, 1.0);
     lightInfos[0].lightDiffuse = glm::vec4(mainDiffuseColor, 1.0);
     lightInfos[0].lightSpecular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    lightInfos[0].lightPosition = glm::vec4(objects[lightObjectHandle]->getPosition(), 1.0);
+    lightInfos[0].lightPosition = glm::vec4(objects[lightObjectHandle]->GetComponent<Transform>()->GetPosition(), 1.0);
     lightInfos[0].maxLightDistance = 25.0f;
 
     lightInfos[1].lightColor = glm::vec4(whiteLightColor, 1.0);

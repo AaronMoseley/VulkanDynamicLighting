@@ -13,80 +13,113 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Vulkan Interface">
+      <UniqueIdentifier>{388af24a-b32e-4c4a-9857-846b98cc5524}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{70baea43-8ab6-4a00-954f-77d3a228e1e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Components">
+      <UniqueIdentifier>{69636481-3f22-45ad-8e86-7f3b7a41e3fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Objects">
+      <UniqueIdentifier>{7f78b3b9-f7d0-4a5d-8ad2-a04e87c71f92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Management">
+      <UniqueIdentifier>{ad71c773-abcf-423b-9fd3-39afca07a5f6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RenderObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanInterface.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GraphicsBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanCommonFunctions.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanCommonFunctions.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Vulkan Interface</Filter>
     </ClCompile>
     <ClCompile Include="GraphicsImage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureImage.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Vulkan Interface</Filter>
     </ClCompile>
     <ClCompile Include="Swapchain.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureImage.cpp">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanCommonFunctions.cpp">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanCommonFunctions.h">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanInterface.cpp">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectComponent.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderObject.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowManager.cpp">
+      <Filter>Source Files\Management</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshRenderer.cpp">
+      <Filter>Source Files\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RenderObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Cube.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Tetrahedron.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="vk_mem_alloc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WindowManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Factory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanInterface.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Camera.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsBuffer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\Vulkan Interface</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsImage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureImage.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\Vulkan Interface</Filter>
     </ClInclude>
     <ClInclude Include="Swapchain.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureImage.h">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanInterface.h">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectComponent.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderObject.h">
+      <Filter>Source Files\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Tetrahedron.h">
+      <Filter>Source Files\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Cube.h">
+      <Filter>Source Files\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowManager.h">
+      <Filter>Source Files\Management</Filter>
+    </ClInclude>
+    <ClInclude Include="Factory.h">
+      <Filter>Source Files\Management</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshRenderer.h">
+      <Filter>Source Files\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\HLSL\ObjectShaders.hlsl">
-      <Filter>Source Files</Filter>
+      <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

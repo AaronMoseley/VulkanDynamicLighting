@@ -69,13 +69,13 @@
     <ClCompile Include="MeshRenderer.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="FirstPersonController.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vk_mem_alloc.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsBuffer.h">
       <Filter>Source Files\Vulkan Interface</Filter>
@@ -117,6 +117,12 @@
       <Filter>Source Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="LightSource.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="FirstPersonController.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
       <Filter>Source Files\Components</Filter>
     </ClInclude>
   </ItemGroup>

@@ -21,6 +21,25 @@ public:
 	void Move(glm::vec3 amountToMove) { m_position += amountToMove; }
 	void Scale(glm::vec3 amountToScale) { m_scale += amountToScale; }
 
+	glm::vec3 Forward()
+	{
+		glm::vec3 forward;
+		forward.x = cos(glm::radians(m_rotation.y)) * cos(glm::radians(m_rotation.x));
+		forward.y = sin(glm::radians(m_rotation.x));
+		forward.z = sin(glm::radians(m_rotation.y)) * cos(glm::radians(m_rotation.x));
+		return glm::normalize(forward);
+	}
+
+	glm::vec3 Right()
+	{
+		return glm::normalize(glm::cross(Forward(), glm::vec3(0.0f, 1.0f, 0.0f)));
+	}
+
+	glm::vec3 Up()
+	{
+		return glm::normalize(glm::cross(Right(), Forward()));
+	}
+
 private:
 	inline static const std::string m_name = "Transform";
 

@@ -1,7 +1,10 @@
 #include "RenderObject.h"
+#include "Transform.h"
 
-RenderObject::RenderObject()
+RenderObject::RenderObject(WindowManager* windowManager)
 {
+	m_windowManager = windowManager;
+
 	Transform* transform = AddComponent<Transform>();
 
 	transform->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -9,8 +12,10 @@ RenderObject::RenderObject()
 	transform->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 }
 
-RenderObject::RenderObject(glm::vec3 position)
+RenderObject::RenderObject(WindowManager* windowManager, glm::vec3 position)
 {
+	m_windowManager = windowManager;
+
 	Transform* transform = AddComponent<Transform>();
 
 	transform->SetPosition(position);
@@ -18,8 +23,10 @@ RenderObject::RenderObject(glm::vec3 position)
 	transform->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 }
 
-RenderObject::RenderObject(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
+RenderObject::RenderObject(WindowManager* windowManager, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
 {
+	m_windowManager = windowManager;
+
 	Transform* transform = AddComponent<Transform>();
 
 	transform->SetPosition(position);

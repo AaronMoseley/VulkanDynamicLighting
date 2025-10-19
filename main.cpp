@@ -11,15 +11,15 @@
 #include "WindowManager.h"
 #include "VulkanInterface.h"
 #include "Factory.h"
+#include "FirstPersonController.h"
 
 class VulkanLightingDemo {
 public:
     void run() {
         windowManager = new WindowManager(800, 600, "Vulkan Demo");
-        camera = new Camera(glm::vec3(0.0f, 0.0f, 5.0f));
 
         //init vulkan
-        vulkanInterface = new VulkanInterface(windowManager, camera);
+        vulkanInterface = new VulkanInterface(windowManager);
 
         CreateObjects();
         mainLoop();
@@ -33,10 +33,10 @@ private:
 
     WindowManager* windowManager;
     VulkanInterface* vulkanInterface;
-    Camera* camera;
     
     VulkanInterface::ObjectHandle lightObjectHandle;
     std::set<VulkanInterface::ObjectHandle> objectHandles;
+	VulkanInterface::ObjectHandle cameraObjectHandle;
 
     size_t maxObjects = 10000;
 
@@ -65,7 +65,18 @@ private:
     {
         std::srand(std::time(0));
 
+        RenderObject* cameraObject = new RenderObject(
+            windowManager,
+            glm::vec3(0.0f, 0.0f, -5.0f),
+            glm::vec3(0.0f, 0.0f, 0.0f),
+            glm::vec3(1.0f)
+		);
+		cameraObject->AddComponent<Camera>();
+        cameraObject->AddComponent<FirstPersonController>();
+		cameraObjectHandle = vulkanInterface->AddObject(cameraObject);
+
         RenderObject* lightCube = new RenderObject(
+            windowManager,
             glm::vec3(lightOrbitRadius),
             glm::vec3(0.0f),
             glm::vec3(0.25f)
@@ -86,6 +97,7 @@ private:
         for (int i = 0; i < objectPositions.size(); i++)
         {
             RenderObject* newObject = new RenderObject(
+                windowManager,
                 objectPositions[i],
                 glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
                 glm::vec3(0.5f, 0.5f, 0.5f)
@@ -128,8 +140,19 @@ private:
 
             glfwPollEvents();
             processInput(windowManager->GetWindow());
+
+            for (auto it = objectHandles.begin(); it != objectHandles.end(); it++)
+            {
+                std::vector<ObjectComponent*> components = vulkanInterface->GetRenderObject(*it)->GetAllComponents();
+
+                for (size_t i = 0; i < components.size(); i++)
+                {
+                    components[i]->Update(deltaTime);
+                }
+            }
+
+            vulkanInterface->DrawFrame(deltaTime);
             windowManager->NewFrame();
-            vulkanInterface->DrawFrame();
         }
     }
 
@@ -161,35 +184,12 @@ private:
         if (windowManager->KeyPressed(GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, true);
 
-        if (windowManager->KeyPressed(GLFW_KEY_W))
-            camera->ProcessKeyboard(FORWARD, deltaTime);
-        if (windowManager->KeyPressed(GLFW_KEY_S))
-            camera->ProcessKeyboard(BACKWARD, deltaTime);
-        if (windowManager->KeyPressed(GLFW_KEY_A))
-            camera->ProcessKeyboard(LEFT, deltaTime);
-        if (windowManager->KeyPressed(GLFW_KEY_D))
-            camera->ProcessKeyboard(RIGHT, deltaTime);
-
-        camera->ProcessMouseMovement(windowManager->GetMouseDelta());
-        camera->ProcessMouseScroll(windowManager->GetScrollDelta().x);
-
-        if (windowManager->KeyPressedThisFrame(GLFW_KEY_P))
-        {
-            partyMode = !partyMode;
-
-            if (!partyMode)
-            {
-                RenderObject* lightObject = vulkanInterface->GetRenderObject(lightObjectHandle);
-                lightObject->GetComponent<MeshRenderer>()->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
-            }
-
-        }
-
-        if (windowManager->KeyPressed(GLFW_KEY_R) && vulkanInterface->GetObjectCount() < maxObjects - 10)
+        if (windowManager->KeyPressed(GLFW_KEY_R) && vulkanInterface->GetObjectCount() < maxObjects)
         {
             float positionRange = 100.0f;
 
             RenderObject* newObject = new RenderObject(
+                windowManager,
                 glm::vec3(((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange),
                 glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
                 glm::vec3(0.5f, 0.5f, 0.5f)

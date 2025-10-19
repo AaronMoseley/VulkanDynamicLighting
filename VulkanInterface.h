@@ -32,9 +32,9 @@ class VulkanInterface {
 public:
     using ObjectHandle = size_t;
 
-    VulkanInterface(WindowManager* windowManager, Camera* camera);
+    VulkanInterface(WindowManager* windowManager);
 
-    void DrawFrame();
+    void DrawFrame(float deltaTime);
 
     ObjectHandle AddObject(RenderObject* newObject);
     bool RemoveObject(ObjectHandle objectToRemove);
@@ -150,7 +150,6 @@ private:
     VmaAllocator allocator;
 
     WindowManager* m_windowManager;
-    Camera* m_camera;
 
     ObjectHandle m_currentObjectHandle = 0;
 

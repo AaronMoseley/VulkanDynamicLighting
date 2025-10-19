@@ -1,9 +1,8 @@
 #include "VulkanInterface.h"
 
-VulkanInterface::VulkanInterface(WindowManager* windowManager, Camera* camera)
+VulkanInterface::VulkanInterface(WindowManager* windowManager)
 {
     m_windowManager = windowManager;
-    m_camera = camera;
     InitializeVulkan();
 }
 
@@ -1241,7 +1240,7 @@ void VulkanInterface::CreateInstanceBuffer(std::string objectName)
 	instanceBuffers[currentFrame][objectName]->LoadData(objectInfo.data(), (size_t)bufferSize);
 }
 
-void VulkanInterface::DrawFrame() {
+void VulkanInterface::DrawFrame(float deltaTime) {
     for (auto it = meshNameToObjectMap.begin(); it != meshNameToObjectMap.end(); it++)
     {
         CreateInstanceBuffer(it->first);
@@ -1296,6 +1295,10 @@ void VulkanInterface::DrawFrame() {
     VkResult temp = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]);
 
     if (temp != VK_SUCCESS) {
+		Camera* cam = objects[1]->GetComponent<Camera>();
+		Transform* trans = objects[1]->GetComponent<Transform>();
+
+
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
@@ -1329,15 +1332,45 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage) {
         return;
     
     VulkanCommonFunctions::GlobalInfo globalInfo;
+    float aspectRatio = swapChain->GetSwapChainExtent().width / (float)swapChain->GetSwapChainExtent().height;
 
-    globalInfo.view = m_camera->GetViewMatrix();
+	bool cameraFound = false;
+    for (auto it = objects.begin(); it != objects.end(); it++)
+    {
+		Camera* camera = it->second->GetComponent<Camera>();
+        if (camera == nullptr)
+        {
+            continue;
+        }
 
-	float aspectRatio = swapChain->GetSwapChainExtent().width / (float)swapChain->GetSwapChainExtent().height;
+        if (!camera->IsMainCamera())
+        {
+            continue;
+        }
 
-    globalInfo.proj = glm::perspective(glm::radians(m_camera->Zoom), aspectRatio, 0.1f, 10000.0f);
+		globalInfo.view = camera->GetViewMatrix();
+		globalInfo.proj = glm::perspective(glm::radians(camera->GetFOV()), aspectRatio, camera->GetNearPlane(), camera->GetFarPlane());
+        globalInfo.proj[1][1] *= -1;
+		globalInfo.cameraPosition = it->second->GetComponent<Transform>()->GetPosition();
+		cameraFound = true;
+
+        //globalInfo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 6.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        //globalInfo.view = glm::perspective(45.0f, aspectRatio, 0.1f, 10000.0f);
+		//globalInfo.proj[1][1] *= -1;
+		//globalInfo.cameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);
+        //cameraFound = true;
+        break;
+    }
+
+    /*globalInfo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 6.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    globalInfo.view = glm::perspective(20.0f, aspectRatio, 0.1f, 10000.0f);
     globalInfo.proj[1][1] *= -1;
+    globalInfo.cameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);*/
 
-    globalInfo.cameraPosition = m_camera->Position;
+    if (!cameraFound)
+    {
+		throw std::runtime_error("No camera found in the scene. Please add a camera to render the scene.");
+    }
 
     std::vector<VulkanCommonFunctions::LightInfo> lightInfos;
 

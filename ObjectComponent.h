@@ -1,5 +1,7 @@
 #pragma once
 
+#include "WindowManager.h"
+
 #include <string>
 
 class ObjectComponent {
@@ -13,6 +15,10 @@ public:
 	void* GetOwner() { return m_owner; }
 	void SetOwner(void* owner) { m_owner = owner; }
 
+	WindowManager* GetWindowManager() { return m_windowManager; }
+	void SetWindowManager(WindowManager* windowManager) { m_windowManager = windowManager; }
+
 private:
 	void* m_owner = nullptr;
+	WindowManager* m_windowManager = nullptr;
 };

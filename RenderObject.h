@@ -7,7 +7,6 @@
 #include "VulkanCommonFunctions.h"
 #include "ObjectComponent.h"
 #include "Factory.h"
-#include "Transform.h"
 #include "MeshRenderer.h"
 
 #include <glm/glm.hpp>
@@ -20,11 +19,13 @@
 #include <map>
 #include <memory>
 
+class Transform;
+
 class RenderObject {
 public:
-	RenderObject();
-	RenderObject(glm::vec3 position);
-	RenderObject(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
+	RenderObject(WindowManager* windowManager);
+	RenderObject(WindowManager* windowManager, glm::vec3 position);
+	RenderObject(WindowManager* windowManager, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 
 	template <typename T>
 	T* AddComponent()
@@ -33,6 +34,7 @@ public:
 		m_components.push_back(newComponent);
 
 		newComponent->SetOwner(static_cast<void*>(this));
+		newComponent->SetWindowManager(m_windowManager);
 
 		return newComponent;
 	}
@@ -53,8 +55,11 @@ public:
 		return nullptr;
 	}
 
+	std::vector<ObjectComponent*> GetAllComponents() { return m_components; }
+
     VulkanCommonFunctions::InstanceInfo GetInstanceInfo();
 
 private:
 	std::vector<ObjectComponent*> m_components;
+	WindowManager* m_windowManager = nullptr;
 };

@@ -14,7 +14,7 @@ public:
 		VkPhysicalDevice physicalDevice;
 		VkDevice device;
 		VkSurfaceKHR surface;
-		WindowManager* windowManager;
+		std::shared_ptr<WindowManager> windowManager;
 		VmaAllocator allocator;
 		VkCommandPool commandPool;
 		VkQueue graphicsQueue;
@@ -30,7 +30,7 @@ public:
 
 	VkExtent2D GetSwapChainExtent() { return m_swapChainExtent; }
 	VkFramebuffer GetFrameBuffer(size_t index) { return m_swapChainFramebuffers[index]; }
-	GraphicsImage* GetImage(size_t index) { return m_swapChainImages[index]; }
+	std::shared_ptr<GraphicsImage> GetImage(size_t index) { return m_swapChainImages[index]; }
 	VkSwapchainKHR GetVkSwapChain() { return m_swapChain; }
 
 	static bool IsSwapChainAdequate(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
@@ -39,13 +39,13 @@ public:
 
 	static SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 
-	void CreateFrameBuffers(GraphicsImage* depthImage, VkRenderPass renderPass);
+	void CreateFrameBuffers(std::shared_ptr<GraphicsImage> depthImage, VkRenderPass renderPass);
 	void ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
 	void DestroySwapChain();
 
 private:
-	std::vector<GraphicsImage*> m_swapChainImages;
+	std::vector< std::shared_ptr<GraphicsImage>> m_swapChainImages;
 	VkSwapchainKHR m_swapChain;
 	VkExtent2D m_swapChainExtent;
 	std::vector<VkFramebuffer> m_swapChainFramebuffers;
@@ -58,5 +58,5 @@ private:
 	VkCommandPool m_commandPool;
 	VkQueue m_graphicsQueue;
 
-	WindowManager* m_windowManager;
+	std::shared_ptr<WindowManager> m_windowManager;
 };

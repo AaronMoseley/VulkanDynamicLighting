@@ -56,7 +56,7 @@ private:
 		WindowManager* windowManager = static_cast<WindowManager*>(glfwGetWindowUserPointer(window));
 		if (windowManager != nullptr)
 		{
-			windowManager->CursorMoved(xoffset, yoffset);
+			windowManager->ScrollCallback(xoffset, yoffset);
 		}
 	};
 	void ScrollCallback(double xoffset, double yoffset);

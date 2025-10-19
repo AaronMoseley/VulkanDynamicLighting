@@ -28,7 +28,7 @@ GraphicsBuffer::GraphicsBuffer(BufferCreateInfo createInfo)
     vmaMapMemory(m_allocator, m_allocation, &m_mappedData);
 }
 
-void GraphicsBuffer::CopyBuffer(GraphicsBuffer* destintationBuffer, VkDeviceSize copySize)
+void GraphicsBuffer::CopyBuffer(std::shared_ptr<GraphicsBuffer> destintationBuffer, VkDeviceSize copySize)
 {
     VkCommandBuffer commandBuffer = VulkanCommonFunctions::BeginSingleTimeCommands(m_device, m_commandPool);
 

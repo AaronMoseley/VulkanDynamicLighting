@@ -3,6 +3,7 @@
 #include "WindowManager.h"
 
 #include <string>
+#include <memory>
 
 class ObjectComponent {
 public:
@@ -15,10 +16,10 @@ public:
 	void* GetOwner() { return m_owner; }
 	void SetOwner(void* owner) { m_owner = owner; }
 
-	WindowManager* GetWindowManager() { return m_windowManager; }
-	void SetWindowManager(WindowManager* windowManager) { m_windowManager = windowManager; }
+	std::shared_ptr<WindowManager> GetWindowManager() { return m_windowManager; }
+	void SetWindowManager(std::shared_ptr<WindowManager> windowManager) { m_windowManager = windowManager; }
 
 private:
 	void* m_owner = nullptr;
-	WindowManager* m_windowManager = nullptr;
+	std::shared_ptr<WindowManager> m_windowManager = nullptr;
 };

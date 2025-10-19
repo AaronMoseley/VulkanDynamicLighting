@@ -1,33 +1,33 @@
 #include "RenderObject.h"
 #include "Transform.h"
 
-RenderObject::RenderObject(WindowManager* windowManager)
+RenderObject::RenderObject(std::shared_ptr<WindowManager> windowManager)
 {
 	m_windowManager = windowManager;
 
-	Transform* transform = AddComponent<Transform>();
+	std::shared_ptr<Transform> transform = AddComponent<Transform>();
 
 	transform->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
 	transform->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 	transform->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 }
 
-RenderObject::RenderObject(WindowManager* windowManager, glm::vec3 position)
+RenderObject::RenderObject(std::shared_ptr<WindowManager> windowManager, glm::vec3 position)
 {
 	m_windowManager = windowManager;
 
-	Transform* transform = AddComponent<Transform>();
+	std::shared_ptr<Transform> transform = AddComponent<Transform>();
 
 	transform->SetPosition(position);
 	transform->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 	transform->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 }
 
-RenderObject::RenderObject(WindowManager* windowManager, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
+RenderObject::RenderObject(std::shared_ptr<WindowManager> windowManager, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
 {
 	m_windowManager = windowManager;
 
-	Transform* transform = AddComponent<Transform>();
+	std::shared_ptr<Transform> transform = AddComponent<Transform>();
 
 	transform->SetPosition(position);
 	transform->SetRotation(rotation);
@@ -38,14 +38,14 @@ VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()
 {
 	VulkanCommonFunctions::InstanceInfo result {};
 
-	Transform* transform = GetComponent<Transform>();
+	std::shared_ptr<Transform> transform = GetComponent<Transform>();
 
 	if (transform == nullptr)
 	{
 		return result;
 	}
 
-	MeshRenderer* meshRenderer = GetComponent<MeshRenderer>();
+	std::shared_ptr<MeshRenderer> meshRenderer = GetComponent<MeshRenderer>();
 
 	if (meshRenderer == nullptr)
 	{

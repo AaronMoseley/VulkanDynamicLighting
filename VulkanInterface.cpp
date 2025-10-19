@@ -1,6 +1,6 @@
 #include "VulkanInterface.h"
 
-VulkanInterface::VulkanInterface(WindowManager* windowManager)
+VulkanInterface::VulkanInterface(std::shared_ptr<WindowManager> windowManager)
 {
     m_windowManager = windowManager;
     InitializeVulkan();
@@ -56,13 +56,13 @@ void VulkanInterface::CreateTextureSampler()
     }
 }
 
-VulkanInterface::ObjectHandle VulkanInterface::AddObject(RenderObject* newObject)
+VulkanInterface::ObjectHandle VulkanInterface::AddObject(std::shared_ptr <RenderObject> newObject)
 {
     m_currentObjectHandle++;
 
     objects[m_currentObjectHandle] = newObject;
 
-	MeshRenderer* meshComponent = newObject->GetComponent<MeshRenderer>();
+	std::shared_ptr<MeshRenderer> meshComponent = newObject->GetComponent<MeshRenderer>();
 
     if (meshComponent == nullptr)
     {
@@ -77,7 +77,7 @@ VulkanInterface::ObjectHandle VulkanInterface::AddObject(RenderObject* newObject
 
 bool VulkanInterface::RemoveObject(ObjectHandle objectToRemove)
 {
-    RenderObject* currentObject = GetRenderObject(objectToRemove);
+    std::shared_ptr<RenderObject> currentObject = GetRenderObject(objectToRemove);
 
     if (currentObject == nullptr)
     {
@@ -88,7 +88,7 @@ bool VulkanInterface::RemoveObject(ObjectHandle objectToRemove)
 
     removalSuccessful = objects.erase(objectToRemove);
 
-    MeshRenderer* meshComponent = currentObject->GetComponent<MeshRenderer>();
+    std::shared_ptr<MeshRenderer> meshComponent = currentObject->GetComponent<MeshRenderer>();
 
     if (meshComponent == nullptr)
     {
@@ -105,7 +105,7 @@ bool VulkanInterface::RemoveObject(ObjectHandle objectToRemove)
     return removalSuccessful;
 }
 
-RenderObject* VulkanInterface::GetRenderObject(VulkanInterface::ObjectHandle handle)
+std::shared_ptr<RenderObject> VulkanInterface::GetRenderObject(VulkanInterface::ObjectHandle handle)
 {
     if (handle == INVALID_OBJECT_HANDLE)
     {
@@ -140,7 +140,7 @@ void VulkanInterface::CreateDepthResources() {
 	depthImageCreateInfo.device = device;
 	depthImageCreateInfo.commandPool = commandPool;
 	depthImageCreateInfo.graphicsQueue = graphicsQueue;
-	depthImage = new GraphicsImage(depthImageCreateInfo);
+	depthImage = std::make_shared<GraphicsImage>(depthImageCreateInfo);
 
 	depthImage->CreateImageView(VK_IMAGE_ASPECT_DEPTH_BIT);
 
@@ -207,7 +207,7 @@ void VulkanInterface::CreateTextureImage() {
 		textureImageCreateInfo.commandPool = commandPool;
 		textureImageCreateInfo.graphicsQueue = graphicsQueue;
 
-		TextureImage* currentImage = new TextureImage(textureImageCreateInfo);
+		std::shared_ptr<TextureImage> currentImage = std::make_shared<TextureImage>(textureImageCreateInfo);
 		textureImages.push_back(currentImage);
 
 		currentImage->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -332,8 +332,8 @@ void VulkanInterface::CreateUniformBuffers() {
 	lightBufferCreateInfo.graphicsQueue = graphicsQueue;
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        GraphicsBuffer* uniformBuffer = new GraphicsBuffer(uniformBufferCreateInfo);
-		GraphicsBuffer* lightBuffer = new GraphicsBuffer(lightBufferCreateInfo);
+        std::shared_ptr<GraphicsBuffer> uniformBuffer = std::make_shared<GraphicsBuffer>(uniformBufferCreateInfo);
+        std::shared_ptr<GraphicsBuffer> lightBuffer = std::make_shared<GraphicsBuffer>(lightBufferCreateInfo);
 
 		uniformBuffers[i] = uniformBuffer;
 		lightInfoBuffers[i] = lightBuffer;
@@ -1058,7 +1058,7 @@ void VulkanInterface::CreateVertexBuffer(std::string name, MeshRenderer* meshInf
     vertexBufferCreateInfo.graphicsQueue = graphicsQueue;
     vertexBufferCreateInfo.device = device;
 
-	GraphicsBuffer* vertexBuffer = new GraphicsBuffer(vertexBufferCreateInfo);
+    std::shared_ptr<GraphicsBuffer> vertexBuffer = std::make_shared<GraphicsBuffer>(vertexBufferCreateInfo);
 
     stagingBuffer->CopyBuffer(vertexBuffer, bufferSize);
     stagingBuffer->DestroyBuffer();
@@ -1109,7 +1109,7 @@ void VulkanInterface::CreateIndexBuffer(std::string name, MeshRenderer* meshInfo
     indexBufferCreateInfo.graphicsQueue = graphicsQueue;
     indexBufferCreateInfo.device = device;
 
-	GraphicsBuffer* indexBuffer = new GraphicsBuffer(indexBufferCreateInfo);
+    std::shared_ptr<GraphicsBuffer> indexBuffer = std::make_shared<GraphicsBuffer>(indexBufferCreateInfo);
 
 	stagingBuffer->CopyBuffer(indexBuffer, bufferSize);
 
@@ -1202,7 +1202,7 @@ void VulkanInterface::CreateInstanceBuffers()
 			instanceBufferCreateInfo.graphicsQueue = graphicsQueue;
 			instanceBufferCreateInfo.device = device;
 
-			GraphicsBuffer* instanceBuffer = new GraphicsBuffer(instanceBufferCreateInfo);
+            std::shared_ptr<GraphicsBuffer> instanceBuffer = std::make_shared<GraphicsBuffer>(instanceBufferCreateInfo);
 			instanceBuffers[frameIndex][it->first] = instanceBuffer;
         }
     }
@@ -1224,9 +1224,9 @@ void VulkanInterface::CreateInstanceBuffer(std::string objectName)
             continue;
         }
 
-        RenderObject* object = objects[currentHandle];
+        std::shared_ptr<RenderObject> object = objects[currentHandle];
 
-		MeshRenderer* meshRenderer = object->GetComponent<MeshRenderer>();
+		std::shared_ptr<MeshRenderer> meshRenderer = object->GetComponent<MeshRenderer>();
 
         if (meshRenderer == nullptr)
             continue;
@@ -1241,6 +1241,16 @@ void VulkanInterface::CreateInstanceBuffer(std::string objectName)
 }
 
 void VulkanInterface::DrawFrame(float deltaTime) {
+    for (auto it = objects.begin(); it != objects.end(); it++)
+    {
+        std::vector<std::shared_ptr<ObjectComponent>> components = it->second->GetAllComponents();
+
+        for (size_t i = 0; i < components.size(); i++)
+        {
+            components[i]->Update(deltaTime);
+        }
+    }
+
     for (auto it = meshNameToObjectMap.begin(); it != meshNameToObjectMap.end(); it++)
     {
         CreateInstanceBuffer(it->first);
@@ -1295,10 +1305,6 @@ void VulkanInterface::DrawFrame(float deltaTime) {
     VkResult temp = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]);
 
     if (temp != VK_SUCCESS) {
-		Camera* cam = objects[1]->GetComponent<Camera>();
-		Transform* trans = objects[1]->GetComponent<Transform>();
-
-
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
@@ -1337,7 +1343,7 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage) {
 	bool cameraFound = false;
     for (auto it = objects.begin(); it != objects.end(); it++)
     {
-		Camera* camera = it->second->GetComponent<Camera>();
+		std::shared_ptr<Camera> camera = it->second->GetComponent<Camera>();
         if (camera == nullptr)
         {
             continue;
@@ -1351,7 +1357,7 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage) {
 		globalInfo.view = camera->GetViewMatrix();
 		globalInfo.proj = glm::perspective(glm::radians(camera->GetFOV()), aspectRatio, camera->GetNearPlane(), camera->GetFarPlane());
         globalInfo.proj[1][1] *= -1;
-		globalInfo.cameraPosition = it->second->GetComponent<Transform>()->GetPosition();
+		globalInfo.cameraPosition = glm::vec4(it->second->GetComponent<Transform>()->GetPosition(), 10.0f);
 		cameraFound = true;
 
         //globalInfo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 6.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -1376,7 +1382,7 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage) {
 
     for (auto it = objects.begin(); it != objects.end(); it++)
     {
-		LightSource* light = it->second->GetComponent<LightSource>();
+		std::shared_ptr<LightSource> light = it->second->GetComponent<LightSource>();
 
         if (light == nullptr)
         {

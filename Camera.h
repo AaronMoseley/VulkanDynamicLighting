@@ -24,7 +24,7 @@ public:
 
 	glm::mat4 GetViewMatrix()
 	{
-		Transform* transform = static_cast<RenderObject*>(GetOwner())->GetComponent<Transform>();
+		std::shared_ptr<Transform> transform = static_cast<RenderObject*>(GetOwner())->GetComponent<Transform>();
 		glm::vec3 position = transform->GetPosition();
 		return glm::lookAt(position, position + transform->Forward(), transform->Up());
 	}

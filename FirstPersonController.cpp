@@ -2,7 +2,7 @@
 
 void FirstPersonController::Update(float deltaTime)
 {
-	Transform* transform = static_cast<RenderObject*>(GetOwner())->GetComponent<Transform>();
+	std::shared_ptr<Transform> transform = static_cast<RenderObject*>(GetOwner())->GetComponent<Transform>();
 
     glm::vec3 offset = glm::vec3(0.0f);
 
@@ -26,7 +26,6 @@ void FirstPersonController::Update(float deltaTime)
     {
         offset += transform->Right() * velocity;
     }
-
 	transform->Move(offset);
 
 	glm::vec3 rotationDelta = glm::vec3(0.0f);
@@ -46,10 +45,10 @@ void FirstPersonController::Update(float deltaTime)
 		transform->SetRotation(glm::vec3(-89.0f, transform->GetRotation().y, transform->GetRotation().z));
     }
 
-	Camera* camera = static_cast<RenderObject*>(GetOwner())->GetComponent<Camera>();
+	std::shared_ptr<Camera> camera = static_cast<RenderObject*>(GetOwner())->GetComponent<Camera>();
 	float newFOV = camera->GetFOV();
 
-    newFOV += GetWindowManager()->GetScrollDelta().y;
+    newFOV -= GetWindowManager()->GetScrollDelta().y;
     newFOV = glm::clamp(newFOV, 1.0f, 45.0f);
 
 	camera->SetFOV(newFOV);

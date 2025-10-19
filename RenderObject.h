@@ -23,14 +23,14 @@ class Transform;
 
 class RenderObject {
 public:
-	RenderObject(WindowManager* windowManager);
-	RenderObject(WindowManager* windowManager, glm::vec3 position);
-	RenderObject(WindowManager* windowManager, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
+	RenderObject(std::shared_ptr<WindowManager> windowManager);
+	RenderObject(std::shared_ptr<WindowManager> windowManager, glm::vec3 position);
+	RenderObject(std::shared_ptr<WindowManager> windowManager, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 
 	template <typename T>
-	T* AddComponent()
+	std::shared_ptr<T> AddComponent()
 	{
-		T* newComponent = new T();
+		std::shared_ptr<T> newComponent = std::make_shared<T>();
 		m_components.push_back(newComponent);
 
 		newComponent->SetOwner(static_cast<void*>(this));
@@ -40,11 +40,11 @@ public:
 	}
 
 	template <typename T>
-	T* GetComponent()
+	std::shared_ptr<T> GetComponent()
 	{
 		for (size_t i = 0; i < m_components.size(); i++)
 		{
-			T* component = dynamic_cast<T*>(m_components[i]);
+			std::shared_ptr<T> component = std::dynamic_pointer_cast<T>(m_components[i]);
 
 			if (component != nullptr)
 			{
@@ -55,11 +55,11 @@ public:
 		return nullptr;
 	}
 
-	std::vector<ObjectComponent*> GetAllComponents() { return m_components; }
+	std::vector<std::shared_ptr<ObjectComponent>> GetAllComponents() { return m_components; }
 
     VulkanCommonFunctions::InstanceInfo GetInstanceInfo();
 
 private:
-	std::vector<ObjectComponent*> m_components;
-	WindowManager* m_windowManager = nullptr;
+	std::vector<std::shared_ptr<ObjectComponent>> m_components;
+	std::shared_ptr<WindowManager> m_windowManager = nullptr;
 };

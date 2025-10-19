@@ -42,7 +42,7 @@ cbuffer GlobalInfo : register(b0)
 {
     float4x4 view;
     float4x4 projection;
-    float3 cameraPosition;
+    float4 cameraPosition;
     uint lightCount;
 }
 
@@ -120,7 +120,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
         float3 diffuse = lights[i].lightDiffuse.xyz * (diff * objectDiffuse);
 
         // specular
-        float3 viewDir = normalize(cameraPosition - input.worldPosition);
+        float3 viewDir = normalize(cameraPosition.xyz - input.worldPosition);
         float3 reflectDir = reflect(-lightDir, norm);
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), input.shininess);
         float3 specular = lights[i].lightSpecular.xyz * (spec * input.specular);

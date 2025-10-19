@@ -32,16 +32,16 @@ class VulkanInterface {
 public:
     using ObjectHandle = size_t;
 
-    VulkanInterface(WindowManager* windowManager);
+    VulkanInterface(std::shared_ptr<WindowManager> windowManager);
 
     void DrawFrame(float deltaTime);
 
-    ObjectHandle AddObject(RenderObject* newObject);
+    ObjectHandle AddObject(std::shared_ptr <RenderObject> newObject);
     bool RemoveObject(ObjectHandle objectToRemove);
 
     bool HasRenderedFirstFrame() { return renderedFirstFrame; };
     size_t GetObjectCount() { return objects.size(); };
-    RenderObject* GetRenderObject(ObjectHandle handle);
+    std::shared_ptr<RenderObject> GetRenderObject(ObjectHandle handle);
 
     void Cleanup();
 
@@ -100,7 +100,7 @@ private:
     static const int MAX_FRAMES_IN_FLIGHT = 3;
     static const size_t MAX_OBJECTS = 10000;
 
-    std::map<ObjectHandle, RenderObject*> objects;
+    std::map<ObjectHandle, std::shared_ptr<RenderObject>> objects;
     std::map<std::string, std::set<ObjectHandle>> meshNameToObjectMap;
 
     VkInstance instance;
@@ -120,19 +120,19 @@ private:
     std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> renderFinishedSemaphores;
     std::array<VkFence, MAX_FRAMES_IN_FLIGHT> inFlightFences;
 
-    std::map<std::string, GraphicsBuffer*> vertexBuffers;
-    std::map<std::string, GraphicsBuffer*> indexBuffers;
+    std::map<std::string, std::shared_ptr<GraphicsBuffer>> vertexBuffers;
+    std::map<std::string, std::shared_ptr<GraphicsBuffer>> indexBuffers;
 
     std::map<std::string, uint16_t> vertexBufferSizes;
     std::map<std::string, uint16_t> indexBufferSizes;
 
     std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> frameCommandBuffers;
 
-	std::vector<GraphicsBuffer*> uniformBuffers;
-	std::vector<GraphicsBuffer*> lightInfoBuffers;
+	std::vector< std::shared_ptr<GraphicsBuffer>> uniformBuffers;
+	std::vector< std::shared_ptr<GraphicsBuffer>> lightInfoBuffers;
 
     std::array<std::string, 2> textureFiles = { "textures/SandTexture.png", "textures/OtherTexture.png" };
-    std::vector<TextureImage*> textureImages;
+    std::vector< std::shared_ptr<TextureImage>> textureImages;
 
     size_t maxLightCount = 200;
 
@@ -141,15 +141,15 @@ private:
     VkDescriptorPool descriptorPool;
     std::vector<VkDescriptorSet> descriptorSets;
 
-    GraphicsImage* depthImage;
+    std::shared_ptr<GraphicsImage> depthImage;
 
     bool framebufferResized = false;
 
-    std::array<std::map<std::string, GraphicsBuffer*>, MAX_FRAMES_IN_FLIGHT> instanceBuffers;
+    std::array<std::map<std::string, std::shared_ptr<GraphicsBuffer>>, MAX_FRAMES_IN_FLIGHT> instanceBuffers;
 
     VmaAllocator allocator;
 
-    WindowManager* m_windowManager;
+    std::shared_ptr<WindowManager> m_windowManager;
 
     ObjectHandle m_currentObjectHandle = 0;
 

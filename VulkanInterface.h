@@ -32,11 +32,11 @@ class VulkanInterface {
 public:
     using ObjectHandle = size_t;
 
-    VulkanInterface(std::shared_ptr<WindowManager> windowManager, std::shared_ptr<Camera> camera);
+    VulkanInterface(std::shared_ptr<WindowManager> windowManager);
 
-    void DrawFrame();
+    void DrawFrame(float deltaTime);
 
-    ObjectHandle AddObject(std::shared_ptr<RenderObject> newObject);
+    ObjectHandle AddObject(std::shared_ptr <RenderObject> newObject);
     bool RemoveObject(ObjectHandle objectToRemove);
 
     bool HasRenderedFirstFrame() { return renderedFirstFrame; };
@@ -120,19 +120,19 @@ private:
     std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> renderFinishedSemaphores;
     std::array<VkFence, MAX_FRAMES_IN_FLIGHT> inFlightFences;
 
-    std::map<std::string, GraphicsBuffer*> vertexBuffers;
-    std::map<std::string, GraphicsBuffer*> indexBuffers;
+    std::map<std::string, std::shared_ptr<GraphicsBuffer>> vertexBuffers;
+    std::map<std::string, std::shared_ptr<GraphicsBuffer>> indexBuffers;
 
     std::map<std::string, uint16_t> vertexBufferSizes;
     std::map<std::string, uint16_t> indexBufferSizes;
 
     std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> frameCommandBuffers;
 
-	std::vector<GraphicsBuffer*> uniformBuffers;
-	std::vector<GraphicsBuffer*> lightInfoBuffers;
+	std::vector< std::shared_ptr<GraphicsBuffer>> uniformBuffers;
+	std::vector< std::shared_ptr<GraphicsBuffer>> lightInfoBuffers;
 
     std::array<std::string, 2> textureFiles = { "textures/SandTexture.png", "textures/OtherTexture.png" };
-    std::vector<TextureImage*> textureImages;
+    std::vector< std::shared_ptr<TextureImage>> textureImages;
 
     size_t maxLightCount = 200;
 
@@ -150,7 +150,6 @@ private:
     VmaAllocator allocator;
 
     std::shared_ptr<WindowManager> m_windowManager;
-    std::shared_ptr<Camera> m_camera;
 
     ObjectHandle m_currentObjectHandle = 0;
 

@@ -36,7 +36,7 @@ RenderObject::RenderObject(std::shared_ptr<WindowManager> windowManager, glm::ve
 
 VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()
 {
-	VulkanCommonFunctions::InstanceInfo result{};
+	VulkanCommonFunctions::InstanceInfo result {};
 
 	std::shared_ptr<Transform> transform = GetComponent<Transform>();
 
@@ -45,7 +45,7 @@ VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()
 		return result;
 	}
 
-	std::shared_ptr <MeshRenderer> meshRenderer = GetComponent<MeshRenderer>();
+	std::shared_ptr<MeshRenderer> meshRenderer = GetComponent<MeshRenderer>();
 
 	if (meshRenderer == nullptr)
 	{

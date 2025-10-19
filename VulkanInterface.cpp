@@ -1,9 +1,8 @@
 #include "VulkanInterface.h"
 
-VulkanInterface::VulkanInterface(std::shared_ptr<WindowManager> windowManager, std::shared_ptr<Camera> camera)
+VulkanInterface::VulkanInterface(std::shared_ptr<WindowManager> windowManager)
 {
     m_windowManager = windowManager;
-    m_camera = camera;
     InitializeVulkan();
 }
 
@@ -57,7 +56,7 @@ void VulkanInterface::CreateTextureSampler()
     }
 }
 
-VulkanInterface::ObjectHandle VulkanInterface::AddObject(std::shared_ptr<RenderObject> newObject)
+VulkanInterface::ObjectHandle VulkanInterface::AddObject(std::shared_ptr <RenderObject> newObject)
 {
     m_currentObjectHandle++;
 
@@ -208,7 +207,7 @@ void VulkanInterface::CreateTextureImage() {
 		textureImageCreateInfo.commandPool = commandPool;
 		textureImageCreateInfo.graphicsQueue = graphicsQueue;
 
-		TextureImage* currentImage = new TextureImage(textureImageCreateInfo);
+		std::shared_ptr<TextureImage> currentImage = std::make_shared<TextureImage>(textureImageCreateInfo);
 		textureImages.push_back(currentImage);
 
 		currentImage->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -333,8 +332,8 @@ void VulkanInterface::CreateUniformBuffers() {
 	lightBufferCreateInfo.graphicsQueue = graphicsQueue;
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        GraphicsBuffer* uniformBuffer = new GraphicsBuffer(uniformBufferCreateInfo);
-		GraphicsBuffer* lightBuffer = new GraphicsBuffer(lightBufferCreateInfo);
+        std::shared_ptr<GraphicsBuffer> uniformBuffer = std::make_shared<GraphicsBuffer>(uniformBufferCreateInfo);
+        std::shared_ptr<GraphicsBuffer> lightBuffer = std::make_shared<GraphicsBuffer>(lightBufferCreateInfo);
 
 		uniformBuffers[i] = uniformBuffer;
 		lightInfoBuffers[i] = lightBuffer;
@@ -1059,7 +1058,7 @@ void VulkanInterface::CreateVertexBuffer(std::string name, MeshRenderer* meshInf
     vertexBufferCreateInfo.graphicsQueue = graphicsQueue;
     vertexBufferCreateInfo.device = device;
 
-	GraphicsBuffer* vertexBuffer = new GraphicsBuffer(vertexBufferCreateInfo);
+    std::shared_ptr<GraphicsBuffer> vertexBuffer = std::make_shared<GraphicsBuffer>(vertexBufferCreateInfo);
 
     stagingBuffer->CopyBuffer(vertexBuffer, bufferSize);
     stagingBuffer->DestroyBuffer();
@@ -1110,7 +1109,7 @@ void VulkanInterface::CreateIndexBuffer(std::string name, MeshRenderer* meshInfo
     indexBufferCreateInfo.graphicsQueue = graphicsQueue;
     indexBufferCreateInfo.device = device;
 
-	GraphicsBuffer* indexBuffer = new GraphicsBuffer(indexBufferCreateInfo);
+    std::shared_ptr<GraphicsBuffer> indexBuffer = std::make_shared<GraphicsBuffer>(indexBufferCreateInfo);
 
 	stagingBuffer->CopyBuffer(indexBuffer, bufferSize);
 
@@ -1203,7 +1202,7 @@ void VulkanInterface::CreateInstanceBuffers()
 			instanceBufferCreateInfo.graphicsQueue = graphicsQueue;
 			instanceBufferCreateInfo.device = device;
 
-			std::shared_ptr<GraphicsBuffer> instanceBuffer = std::make_shared<GraphicsBuffer>(instanceBufferCreateInfo);
+            std::shared_ptr<GraphicsBuffer> instanceBuffer = std::make_shared<GraphicsBuffer>(instanceBufferCreateInfo);
 			instanceBuffers[frameIndex][it->first] = instanceBuffer;
         }
     }
@@ -1227,7 +1226,7 @@ void VulkanInterface::CreateInstanceBuffer(std::string objectName)
 
         std::shared_ptr<RenderObject> object = objects[currentHandle];
 
-        std::shared_ptr <MeshRenderer> meshRenderer = object->GetComponent<MeshRenderer>();
+		std::shared_ptr<MeshRenderer> meshRenderer = object->GetComponent<MeshRenderer>();
 
         if (meshRenderer == nullptr)
             continue;
@@ -1241,7 +1240,17 @@ void VulkanInterface::CreateInstanceBuffer(std::string objectName)
 	instanceBuffers[currentFrame][objectName]->LoadData(objectInfo.data(), (size_t)bufferSize);
 }
 
-void VulkanInterface::DrawFrame() {
+void VulkanInterface::DrawFrame(float deltaTime) {
+    for (auto it = objects.begin(); it != objects.end(); it++)
+    {
+        std::vector<std::shared_ptr<ObjectComponent>> components = it->second->GetAllComponents();
+
+        for (size_t i = 0; i < components.size(); i++)
+        {
+            components[i]->Update(deltaTime);
+        }
+    }
+
     for (auto it = meshNameToObjectMap.begin(); it != meshNameToObjectMap.end(); it++)
     {
         CreateInstanceBuffer(it->first);
@@ -1329,17 +1338,47 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage) {
         return;
     
     VulkanCommonFunctions::GlobalInfo globalInfo;
+    float aspectRatio = swapChain->GetSwapChainExtent().width / (float)swapChain->GetSwapChainExtent().height;
 
-    globalInfo.view = m_camera->GetViewMatrix();
+	bool cameraFound = false;
+    for (auto it = objects.begin(); it != objects.end(); it++)
+    {
+		std::shared_ptr<Camera> camera = it->second->GetComponent<Camera>();
+        if (camera == nullptr)
+        {
+            continue;
+        }
 
-	float aspectRatio = swapChain->GetSwapChainExtent().width / (float)swapChain->GetSwapChainExtent().height;
+        if (!camera->IsMainCamera())
+        {
+            continue;
+        }
 
-    globalInfo.proj = glm::perspective(glm::radians(m_camera->Zoom), aspectRatio, 0.1f, 10000.0f);
+		globalInfo.view = camera->GetViewMatrix();
+		globalInfo.proj = glm::perspective(glm::radians(camera->GetFOV()), aspectRatio, camera->GetNearPlane(), camera->GetFarPlane());
+        globalInfo.proj[1][1] *= -1;
+		globalInfo.cameraPosition = glm::vec4(it->second->GetComponent<Transform>()->GetPosition(), 10.0f);
+		cameraFound = true;
+
+        //globalInfo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 6.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        //globalInfo.view = glm::perspective(45.0f, aspectRatio, 0.1f, 10000.0f);
+		//globalInfo.proj[1][1] *= -1;
+		//globalInfo.cameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);
+        //cameraFound = true;
+        break;
+    }
+
+    /*globalInfo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 6.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    globalInfo.view = glm::perspective(20.0f, aspectRatio, 0.1f, 10000.0f);
     globalInfo.proj[1][1] *= -1;
+    globalInfo.cameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);*/
 
-    globalInfo.cameraPosition = glm::vec4(m_camera->Position, 0.0f);
+    if (!cameraFound)
+    {
+		throw std::runtime_error("No camera found in the scene. Please add a camera to render the scene.");
+    }
 
-	std::vector<VulkanCommonFunctions::LightInfo> lightInfos;
+    std::vector<VulkanCommonFunctions::LightInfo> lightInfos;
 
     for (auto it = objects.begin(); it != objects.end(); it++)
     {

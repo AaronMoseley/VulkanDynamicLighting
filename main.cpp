@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <set>
+#include <memory>
 
 #include "RenderObject.h"
 #include "Cube.h"
@@ -11,15 +12,15 @@
 #include "WindowManager.h"
 #include "VulkanInterface.h"
 #include "Factory.h"
+#include "FirstPersonController.h"
 
 class VulkanLightingDemo {
 public:
     void run() {
         windowManager = std::make_shared<WindowManager>(800, 600, "Vulkan Demo");
-        camera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 5.0f));
 
         //init vulkan
-        vulkanInterface = std::make_unique<VulkanInterface>(windowManager, camera);
+        vulkanInterface = std::make_shared<VulkanInterface>(windowManager);
 
         CreateObjects();
         mainLoop();
@@ -32,11 +33,11 @@ private:
     const uint32_t HEIGHT = 600;
 
     std::shared_ptr<WindowManager> windowManager;
-    std::unique_ptr<VulkanInterface> vulkanInterface;
-    std::shared_ptr<Camera> camera;
+    std::shared_ptr<VulkanInterface> vulkanInterface;
     
     VulkanInterface::ObjectHandle lightObjectHandle;
     std::set<VulkanInterface::ObjectHandle> objectHandles;
+	VulkanInterface::ObjectHandle cameraObjectHandle;
 
     size_t maxObjects = 10000;
 
@@ -59,11 +60,19 @@ private:
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
 
-    bool partyMode = false;
-
     void CreateObjects()
     {
         std::srand(std::time(0));
+
+        std::shared_ptr<RenderObject> cameraObject = std::make_shared<RenderObject>(
+            windowManager,
+            glm::vec3(0.0f, 0.0f, 5.0f),
+            glm::vec3(0.0f, 0.0f, 0.0f),
+            glm::vec3(1.0f)
+		);
+		cameraObject->AddComponent<Camera>();
+        cameraObject->AddComponent<FirstPersonController>();
+		cameraObjectHandle = vulkanInterface->AddObject(cameraObject);
 
         std::shared_ptr<RenderObject> lightCube = std::make_shared<RenderObject>(
             windowManager,
@@ -73,7 +82,7 @@ private:
         );
 
         lightCube->AddComponent<Cube>();
-        std::shared_ptr<MeshRenderer> lightMesh = lightCube->GetComponent<MeshRenderer>();
+		std::shared_ptr<MeshRenderer> lightMesh = lightCube->GetComponent<MeshRenderer>();
 		lightMesh->SetLit(false);
 		lightMesh->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
 		lightCube->AddComponent<LightSource>();
@@ -101,7 +110,7 @@ private:
 				newObject->AddComponent<Tetrahedron>();
             }
 
-            std::shared_ptr<MeshRenderer> currentMesh = newObject->GetComponent<MeshRenderer>();
+			std::shared_ptr<MeshRenderer> currentMesh = newObject->GetComponent<MeshRenderer>();
 
 			currentMesh->SetColor(color);
 
@@ -130,8 +139,8 @@ private:
 
             glfwPollEvents();
             processInput(windowManager->GetWindow());
+            vulkanInterface->DrawFrame(deltaTime);
             windowManager->NewFrame();
-            vulkanInterface->DrawFrame();
         }
     }
 
@@ -157,37 +166,10 @@ private:
             currentObject->GetComponent<Transform>()->Rotate(glm::vec3(16.0f * deltaTime));
         }
 
-        if (!vulkanInterface->HasRenderedFirstFrame())
-            return;
-
         if (windowManager->KeyPressed(GLFW_KEY_ESCAPE))
             glfwSetWindowShouldClose(window, true);
 
-        if (windowManager->KeyPressed(GLFW_KEY_W))
-            camera->ProcessKeyboard(FORWARD, deltaTime);
-        if (windowManager->KeyPressed(GLFW_KEY_S))
-            camera->ProcessKeyboard(BACKWARD, deltaTime);
-        if (windowManager->KeyPressed(GLFW_KEY_A))
-            camera->ProcessKeyboard(LEFT, deltaTime);
-        if (windowManager->KeyPressed(GLFW_KEY_D))
-            camera->ProcessKeyboard(RIGHT, deltaTime);
-
-        camera->ProcessMouseMovement(windowManager->GetMouseDelta());
-        camera->ProcessMouseScroll(windowManager->GetScrollDelta().x);
-
-        if (windowManager->KeyPressedThisFrame(GLFW_KEY_P))
-        {
-            partyMode = !partyMode;
-
-            if (!partyMode)
-            {
-                std::shared_ptr<RenderObject> lightObject = vulkanInterface->GetRenderObject(lightObjectHandle);
-                lightObject->GetComponent<MeshRenderer>()->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
-            }
-
-        }
-
-        if (windowManager->KeyPressed(GLFW_KEY_R) && vulkanInterface->GetObjectCount() < maxObjects - 10)
+        if (windowManager->KeyPressed(GLFW_KEY_R) && vulkanInterface->GetObjectCount() < maxObjects)
         {
             float positionRange = 100.0f;
 

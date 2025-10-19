@@ -57,9 +57,9 @@ public:
 
 	std::vector<std::shared_ptr<ObjectComponent>> GetAllComponents() { return m_components; }
 
-	VulkanCommonFunctions::InstanceInfo GetInstanceInfo();
+    VulkanCommonFunctions::InstanceInfo GetInstanceInfo();
 
 private:
 	std::vector<std::shared_ptr<ObjectComponent>> m_components;
-	std::shared_ptr<WindowManager> m_windowManager;
+	std::shared_ptr<WindowManager> m_windowManager = nullptr;
 };

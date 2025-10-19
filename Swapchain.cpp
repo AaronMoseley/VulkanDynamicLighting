@@ -75,7 +75,7 @@ SwapChain::SwapChain(SwapChain::SwapChainCreateInfo initializationInfo)
 
     for (size_t i = 0; i < m_swapChainImages.size(); i++)
     {
-        m_swapChainImages[i] = new GraphicsImage(swapChainImageCreateInfo, rawSwapChainImages[i]);
+        m_swapChainImages[i] = std::make_shared<GraphicsImage>(swapChainImageCreateInfo, rawSwapChainImages[i]);
         m_swapChainImages[i]->CreateImageView(VK_IMAGE_ASPECT_COLOR_BIT);
     }
 }

@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <stdexcept>
+#include <memory>
 
 #include "VulkanCommonFunctions.h"
 
@@ -23,7 +24,7 @@ public:
 
 	VkBuffer GetVkBuffer() { return m_buffer; }
 
-	void CopyBuffer(GraphicsBuffer* destintationBuffer, VkDeviceSize copySize);
+	void CopyBuffer(std::shared_ptr<GraphicsBuffer> destintationBuffer, VkDeviceSize copySize);
 	void LoadData(void* data, size_t memorySize);
 	void DestroyBuffer();
 

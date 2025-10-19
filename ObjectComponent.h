@@ -16,13 +16,7 @@ public:
 	void* GetOwner() { return m_owner; }
 	void SetOwner(void* owner) { m_owner = owner; }
 
-	std::shared_ptr<WindowManager> GetWindowManager() {
-		if (m_windowManager == nullptr)
-		{
-			int temp = 0;
-		}
-		return m_windowManager;
-	}
+	std::shared_ptr<WindowManager> GetWindowManager() { return m_windowManager; }
 	void SetWindowManager(std::shared_ptr<WindowManager> windowManager) { m_windowManager = windowManager; }
 
 private:

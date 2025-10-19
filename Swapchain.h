@@ -7,6 +7,7 @@
 #include <vector>
 #include <array>
 #include <algorithm>
+#include <memory>
 
 class SwapChain {
 public:
@@ -14,7 +15,7 @@ public:
 		VkPhysicalDevice physicalDevice;
 		VkDevice device;
 		VkSurfaceKHR surface;
-		WindowManager* windowManager;
+		std::shared_ptr<WindowManager> windowManager;
 		VmaAllocator allocator;
 		VkCommandPool commandPool;
 		VkQueue graphicsQueue;
@@ -39,7 +40,7 @@ public:
 
 	static SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 
-	void CreateFrameBuffers(GraphicsImage* depthImage, VkRenderPass renderPass);
+	void CreateFrameBuffers(std::shared_ptr<GraphicsImage> depthImage, VkRenderPass renderPass);
 	void ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
 	void DestroySwapChain();
@@ -58,5 +59,5 @@ private:
 	VkCommandPool m_commandPool;
 	VkQueue m_graphicsQueue;
 
-	WindowManager* m_windowManager;
+	std::shared_ptr<WindowManager> m_windowManager;
 };

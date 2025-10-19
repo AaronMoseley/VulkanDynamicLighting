@@ -15,7 +15,7 @@ namespace VulkanCommonFunctions {
     struct GlobalInfo {
         glm::mat4 view;
         glm::mat4 proj;
-        glm::vec3 cameraPosition;
+        glm::vec4 cameraPosition;
         uint32_t lightCount;
     };
 

@@ -42,7 +42,7 @@ cbuffer GlobalInfo : register(b0)
 {
     float4x4 view;
     float4x4 projection;
-    float3 cameraPosition;
+    float4 cameraPosition;
     uint lightCount;
 }
 
@@ -91,6 +91,11 @@ VSOutput VSMain(VSInputVertex vertexInput)
 
 float4 PSMain(VSOutput input) : SV_TARGET
 {   
+    if (lightCount > 10000)
+    {
+        return float4(1.0, 0.0, 1.0, 1.0); // Magenta error color
+    }
+    
     float4 texColor = float4(1.0, 1.0, 1.0, 1.0);
     
     if (input.textured == 1)
@@ -120,7 +125,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
         float3 diffuse = lights[i].lightDiffuse.xyz * (diff * objectDiffuse);
 
         // specular
-        float3 viewDir = normalize(cameraPosition - input.worldPosition);
+        float3 viewDir = normalize(cameraPosition.xyz - input.worldPosition);
         float3 reflectDir = reflect(-lightDir, norm);
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), input.shininess);
         float3 specular = lights[i].lightSpecular.xyz * (spec * input.specular);
@@ -134,6 +139,8 @@ float4 PSMain(VSOutput input) : SV_TARGET
         currentResult = currentResult * (1.0 - lerpT);
 
         result += currentResult;
+        
+        //return float4(result, 1.0);
     }
     
     return float4(result, 1.0);

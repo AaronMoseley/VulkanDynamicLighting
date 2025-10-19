@@ -15,11 +15,11 @@
 class VulkanLightingDemo {
 public:
     void run() {
-        windowManager = new WindowManager(800, 600, "Vulkan Demo");
-        camera = new Camera(glm::vec3(0.0f, 0.0f, 5.0f));
+        windowManager = std::make_shared<WindowManager>(800, 600, "Vulkan Demo");
+        camera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 5.0f));
 
         //init vulkan
-        vulkanInterface = new VulkanInterface(windowManager, camera);
+        vulkanInterface = std::make_unique<VulkanInterface>(windowManager, camera);
 
         CreateObjects();
         mainLoop();
@@ -31,9 +31,9 @@ private:
     const uint32_t WIDTH = 800;
     const uint32_t HEIGHT = 600;
 
-    WindowManager* windowManager;
-    VulkanInterface* vulkanInterface;
-    Camera* camera;
+    std::shared_ptr<WindowManager> windowManager;
+    std::unique_ptr<VulkanInterface> vulkanInterface;
+    std::shared_ptr<Camera> camera;
     
     VulkanInterface::ObjectHandle lightObjectHandle;
     std::set<VulkanInterface::ObjectHandle> objectHandles;
@@ -65,14 +65,15 @@ private:
     {
         std::srand(std::time(0));
 
-        RenderObject* lightCube = new RenderObject(
+        std::shared_ptr<RenderObject> lightCube = std::make_shared<RenderObject>(
+            windowManager,
             glm::vec3(lightOrbitRadius),
             glm::vec3(0.0f),
             glm::vec3(0.25f)
         );
 
         lightCube->AddComponent<Cube>();
-		MeshRenderer* lightMesh = lightCube->GetComponent<MeshRenderer>();
+        std::shared_ptr<MeshRenderer> lightMesh = lightCube->GetComponent<MeshRenderer>();
 		lightMesh->SetLit(false);
 		lightMesh->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
 		lightCube->AddComponent<LightSource>();
@@ -85,7 +86,8 @@ private:
 
         for (int i = 0; i < objectPositions.size(); i++)
         {
-            RenderObject* newObject = new RenderObject(
+            std::shared_ptr<RenderObject> newObject = std::make_shared<RenderObject>(
+                windowManager,
                 objectPositions[i],
                 glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
                 glm::vec3(0.5f, 0.5f, 0.5f)
@@ -99,7 +101,7 @@ private:
 				newObject->AddComponent<Tetrahedron>();
             }
 
-			MeshRenderer* currentMesh = newObject->GetComponent<MeshRenderer>();
+            std::shared_ptr<MeshRenderer> currentMesh = newObject->GetComponent<MeshRenderer>();
 
 			currentMesh->SetColor(color);
 
@@ -137,7 +139,7 @@ private:
     {
         float currentFrameTime = glfwGetTime();
 
-        RenderObject* lightObject = vulkanInterface->GetRenderObject(lightObjectHandle);
+        std::shared_ptr<RenderObject> lightObject = vulkanInterface->GetRenderObject(lightObjectHandle);
         if (lightObject != nullptr)
         {
             lightObject->GetComponent<Transform>()->SetPosition(glm::vec3(lightOrbitRadius * cos(currentFrameTime), lightOrbitRadius * sin(currentFrameTime), lightOrbitRadius * cos(currentFrameTime)));
@@ -145,7 +147,7 @@ private:
 
         for (auto it = objectHandles.begin(); it != objectHandles.end(); it++)
         {
-            RenderObject* currentObject = vulkanInterface->GetRenderObject(*it);
+            std::shared_ptr<RenderObject> currentObject = vulkanInterface->GetRenderObject(*it);
 
             if (currentObject == nullptr)
             {
@@ -179,7 +181,7 @@ private:
 
             if (!partyMode)
             {
-                RenderObject* lightObject = vulkanInterface->GetRenderObject(lightObjectHandle);
+                std::shared_ptr<RenderObject> lightObject = vulkanInterface->GetRenderObject(lightObjectHandle);
                 lightObject->GetComponent<MeshRenderer>()->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
             }
 
@@ -189,7 +191,8 @@ private:
         {
             float positionRange = 100.0f;
 
-            RenderObject* newObject = new RenderObject(
+            std::shared_ptr<RenderObject> newObject = std::make_shared<RenderObject>(
+                windowManager,
                 glm::vec3(((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange),
                 glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
                 glm::vec3(0.5f, 0.5f, 0.5f)
@@ -203,7 +206,7 @@ private:
 				newObject->AddComponent<Tetrahedron>();
             }
 
-			MeshRenderer* currentMesh = newObject->GetComponent<MeshRenderer>();
+			std::shared_ptr<MeshRenderer> currentMesh = newObject->GetComponent<MeshRenderer>();
 
             currentMesh->SetColor(glm::vec3(0.9f));
 
@@ -223,7 +226,7 @@ private:
 
             if ((double)rand() / (RAND_MAX) >= 0.99f)
             {
-                LightSource* newLightSource = newObject->AddComponent<LightSource>();
+                std::shared_ptr<LightSource> newLightSource = newObject->AddComponent<LightSource>();
 
 				glm::vec3 lightColor = glm::vec3(((double)rand() / (RAND_MAX)), ((double)rand() / (RAND_MAX)), ((double)rand() / (RAND_MAX)));
 

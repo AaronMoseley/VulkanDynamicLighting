@@ -32,16 +32,16 @@ class VulkanInterface {
 public:
     using ObjectHandle = size_t;
 
-    VulkanInterface(WindowManager* windowManager, Camera* camera);
+    VulkanInterface(std::shared_ptr<WindowManager> windowManager, std::shared_ptr<Camera> camera);
 
     void DrawFrame();
 
-    ObjectHandle AddObject(RenderObject* newObject);
+    ObjectHandle AddObject(std::shared_ptr<RenderObject> newObject);
     bool RemoveObject(ObjectHandle objectToRemove);
 
     bool HasRenderedFirstFrame() { return renderedFirstFrame; };
     size_t GetObjectCount() { return objects.size(); };
-    RenderObject* GetRenderObject(ObjectHandle handle);
+    std::shared_ptr<RenderObject> GetRenderObject(ObjectHandle handle);
 
     void Cleanup();
 
@@ -100,7 +100,7 @@ private:
     static const int MAX_FRAMES_IN_FLIGHT = 3;
     static const size_t MAX_OBJECTS = 10000;
 
-    std::map<ObjectHandle, RenderObject*> objects;
+    std::map<ObjectHandle, std::shared_ptr<RenderObject>> objects;
     std::map<std::string, std::set<ObjectHandle>> meshNameToObjectMap;
 
     VkInstance instance;
@@ -141,16 +141,16 @@ private:
     VkDescriptorPool descriptorPool;
     std::vector<VkDescriptorSet> descriptorSets;
 
-    GraphicsImage* depthImage;
+    std::shared_ptr<GraphicsImage> depthImage;
 
     bool framebufferResized = false;
 
-    std::array<std::map<std::string, GraphicsBuffer*>, MAX_FRAMES_IN_FLIGHT> instanceBuffers;
+    std::array<std::map<std::string, std::shared_ptr<GraphicsBuffer>>, MAX_FRAMES_IN_FLIGHT> instanceBuffers;
 
     VmaAllocator allocator;
 
-    WindowManager* m_windowManager;
-    Camera* m_camera;
+    std::shared_ptr<WindowManager> m_windowManager;
+    std::shared_ptr<Camera> m_camera;
 
     ObjectHandle m_currentObjectHandle = 0;
 

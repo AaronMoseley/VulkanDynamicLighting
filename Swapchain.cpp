@@ -164,7 +164,7 @@ VkPresentModeKHR SwapChain::ChooseSwapPresentMode(const std::vector<VkPresentMod
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-void SwapChain::CreateFrameBuffers(GraphicsImage* depthImage, VkRenderPass renderPass)
+void SwapChain::CreateFrameBuffers(std::shared_ptr<GraphicsImage> depthImage, VkRenderPass renderPass)
 {
     m_swapChainFramebuffers.resize(m_swapChainImages.size());
 

@@ -1,26 +1,33 @@
 #include "RenderObject.h"
+#include "Transform.h"
 
-RenderObject::RenderObject()
+RenderObject::RenderObject(std::shared_ptr<WindowManager> windowManager)
 {
-	Transform* transform = AddComponent<Transform>();
+	m_windowManager = windowManager;
+
+	std::shared_ptr<Transform> transform = AddComponent<Transform>();
 
 	transform->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
 	transform->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 	transform->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 }
 
-RenderObject::RenderObject(glm::vec3 position)
+RenderObject::RenderObject(std::shared_ptr<WindowManager> windowManager, glm::vec3 position)
 {
-	Transform* transform = AddComponent<Transform>();
+	m_windowManager = windowManager;
+
+	std::shared_ptr<Transform> transform = AddComponent<Transform>();
 
 	transform->SetPosition(position);
 	transform->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
 	transform->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 }
 
-RenderObject::RenderObject(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
+RenderObject::RenderObject(std::shared_ptr<WindowManager> windowManager, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
 {
-	Transform* transform = AddComponent<Transform>();
+	m_windowManager = windowManager;
+
+	std::shared_ptr<Transform> transform = AddComponent<Transform>();
 
 	transform->SetPosition(position);
 	transform->SetRotation(rotation);
@@ -29,16 +36,16 @@ RenderObject::RenderObject(glm::vec3 position, glm::vec3 rotation, glm::vec3 sca
 
 VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()
 {
-	VulkanCommonFunctions::InstanceInfo result {};
+	VulkanCommonFunctions::InstanceInfo result{};
 
-	Transform* transform = GetComponent<Transform>();
+	std::shared_ptr<Transform> transform = GetComponent<Transform>();
 
 	if (transform == nullptr)
 	{
 		return result;
 	}
 
-	MeshRenderer* meshRenderer = GetComponent<MeshRenderer>();
+	std::shared_ptr <MeshRenderer> meshRenderer = GetComponent<MeshRenderer>();
 
 	if (meshRenderer == nullptr)
 	{

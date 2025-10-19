@@ -1339,45 +1339,29 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage) {
 
     globalInfo.cameraPosition = m_camera->Position;
 
-    globalInfo.lightCount = 2;
+    std::vector<VulkanCommonFunctions::LightInfo> lightInfos;
 
-    glm::vec3 whiteLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-
-    glm::vec3 partyLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    partyLightColor.x = (sin(glfwGetTime() * 2.0f) + 1.0f) / 2.0f;
-    partyLightColor.y = (sin(glfwGetTime() * 0.7f) + 1.0f) / 2.0f;
-    partyLightColor.z = (sin(glfwGetTime() * 1.3f) + 1.0f) / 2.0f;
-
-    glm::vec3 mainLightColor = whiteLightColor;
-    if (partyMode)
+    for (auto it = objects.begin(); it != objects.end(); it++)
     {
-        objects[lightObjectHandle]->GetComponent<MeshRenderer>()->SetColor(partyLightColor);
-        mainLightColor = partyLightColor;
+		LightSource* light = it->second->GetComponent<LightSource>();
+
+        if (light == nullptr)
+        {
+            continue;
+        }
+
+        if (lightInfos.size() >= maxLightCount)
+        {
+			std::cout << "Warning: Maximum light count exceeded, additional lights will be ignored in rendering." << std::endl;
+            break;
+        }
+
+		lightInfos.push_back(it->second->GetComponent<LightSource>()->GetLightInfo());
     }
 
-    glm::vec3 mainDiffuseColor = mainLightColor * 0.5f;
-    glm::vec3 mainAmbientColor = mainDiffuseColor * 0.2f;
+    globalInfo.lightCount = lightInfos.size();
 
-    glm::vec3 whiteDiffuseColor = whiteLightColor * 0.5f;
-    glm::vec3 whiteAmbientColor = whiteDiffuseColor * 0.2f;
-
-    std::array<VulkanCommonFunctions::LightInfo, 2> lightInfos;
-
-    lightInfos[0].lightColor = glm::vec4(mainLightColor, 1.0);
-    lightInfos[0].lightAmbient = glm::vec4(mainAmbientColor, 1.0);
-    lightInfos[0].lightDiffuse = glm::vec4(mainDiffuseColor, 1.0);
-    lightInfos[0].lightSpecular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    lightInfos[0].lightPosition = glm::vec4(objects[lightObjectHandle]->GetComponent<Transform>()->GetPosition(), 1.0);
-    lightInfos[0].maxLightDistance = 25.0f;
-
-    lightInfos[1].lightColor = glm::vec4(whiteLightColor, 1.0);
-    lightInfos[1].lightAmbient = glm::vec4(whiteAmbientColor, 1.0);
-    lightInfos[1].lightDiffuse = glm::vec4(whiteDiffuseColor, 1.0);
-    lightInfos[1].lightSpecular = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    lightInfos[1].lightPosition = glm::vec4(m_camera->Position, 1.0);
-    lightInfos[1].maxLightDistance = 10.0f;
-
-	lightInfoBuffers[currentImage]->LoadData(lightInfos.data(), sizeof(lightInfos));
+	lightInfoBuffers[currentImage]->LoadData(lightInfos.data(), lightInfos.size() * sizeof(VulkanCommonFunctions::LightInfo));
 	uniformBuffers[currentImage]->LoadData(&globalInfo, sizeof(globalInfo));
 }
 

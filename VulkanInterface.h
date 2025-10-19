@@ -18,6 +18,7 @@
 #include "TextureImage.h"
 #include "Swapchain.h"
 #include "Factory.h"
+#include "LightSource.h"
 
 #include <map>
 #include <vector>
@@ -133,7 +134,7 @@ private:
     std::array<std::string, 2> textureFiles = { "textures/SandTexture.png", "textures/OtherTexture.png" };
     std::vector<TextureImage*> textureImages;
 
-    size_t maxLightCount = 50;
+    size_t maxLightCount = 200;
 
     uint32_t currentFrame = 0;
 
@@ -141,8 +142,6 @@ private:
     std::vector<VkDescriptorSet> descriptorSets;
 
     GraphicsImage* depthImage;
-
-    ObjectHandle lightObjectHandle = 1;
 
     bool framebufferResized = false;
 
@@ -154,9 +153,6 @@ private:
     Camera* m_camera;
 
     ObjectHandle m_currentObjectHandle = 0;
-
-    bool partyMode = false;
-    float lightOrbitRadius = 10.0f;
 
 	const std::string customMeshName = "CustomMesh";
 

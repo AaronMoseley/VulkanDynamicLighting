@@ -75,6 +75,7 @@ private:
 		MeshRenderer* lightMesh = lightCube->GetComponent<MeshRenderer>();
 		lightMesh->SetLit(false);
 		lightMesh->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
+		lightCube->AddComponent<LightSource>();
 
         lightObjectHandle = vulkanInterface->AddObject(lightCube);
         objectHandles.insert(lightObjectHandle);
@@ -90,7 +91,7 @@ private:
                 glm::vec3(0.5f, 0.5f, 0.5f)
             );
 
-            if ((double)rand() / (RAND_MAX) >= 0.0f)
+            if ((double)rand() / (RAND_MAX) >= 0.5f)
             {
 				newObject->AddComponent<Cube>();
             }
@@ -194,7 +195,7 @@ private:
                 glm::vec3(0.5f, 0.5f, 0.5f)
             );
 
-            if ((double)rand() / (RAND_MAX) >= 0.0f)
+            if ((double)rand() / (RAND_MAX) >= 0.5f)
             {
 				newObject->AddComponent<Cube>();
             }
@@ -218,6 +219,17 @@ private:
             }
             else {
                 currentMesh->SetTextured(false);
+            }
+
+            if ((double)rand() / (RAND_MAX) >= 0.99f)
+            {
+                LightSource* newLightSource = newObject->AddComponent<LightSource>();
+
+				glm::vec3 lightColor = glm::vec3(((double)rand() / (RAND_MAX)), ((double)rand() / (RAND_MAX)), ((double)rand() / (RAND_MAX)));
+
+				newLightSource->SetColor(lightColor);
+				newObject->GetComponent<MeshRenderer>()->SetColor(lightColor);
+				newObject->GetComponent<MeshRenderer>()->SetLit(false);
             }
 
             VulkanInterface::ObjectHandle newObjectHandle = vulkanInterface->AddObject(newObject);

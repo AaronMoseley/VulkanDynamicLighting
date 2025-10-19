@@ -158,6 +158,7 @@
     <ClInclude Include="Factory.h" />
     <ClInclude Include="GraphicsBuffer.h" />
     <ClInclude Include="GraphicsImage.h" />
+    <ClInclude Include="LightSource.h" />
     <ClInclude Include="MeshRenderer.h" />
     <ClInclude Include="ObjectComponent.h" />
     <ClInclude Include="RenderObject.h" />

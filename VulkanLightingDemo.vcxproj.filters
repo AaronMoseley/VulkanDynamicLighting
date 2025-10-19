@@ -116,6 +116,9 @@
     <ClInclude Include="MeshRenderer.h">
       <Filter>Source Files\Components</Filter>
     </ClInclude>
+    <ClInclude Include="LightSource.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\HLSL\ObjectShaders.hlsl">

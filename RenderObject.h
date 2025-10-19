@@ -32,6 +32,8 @@ public:
 		T* newComponent = new T();
 		m_components.push_back(newComponent);
 
+		newComponent->SetOwner(static_cast<void*>(this));
+
 		return newComponent;
 	}
 

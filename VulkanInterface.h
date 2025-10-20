@@ -92,10 +92,6 @@ private:
     void CleanupSwapChain();
 
     static const int MAX_FRAMES_IN_FLIGHT = 3;
-    static const size_t MAX_OBJECTS = 10000;
-
-    //std::map<ObjectHandle, std::shared_ptr<RenderObject>> objects;
-    //std::map<std::string, std::set<ObjectHandle>> meshNameToObjectMap;
 
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;

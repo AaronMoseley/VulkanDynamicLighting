@@ -1154,7 +1154,7 @@ void VulkanInterface::CreateInstanceBuffers()
     {
         for (size_t i = 0; i < objectClassNames.size(); i++)
         {
-            std::shared_ptr<GraphicsBuffer> instanceBuffer = CreateInstanceBuffer(MAX_OBJECTS);
+            std::shared_ptr<GraphicsBuffer> instanceBuffer = CreateInstanceBuffer(VulkanCommonFunctions::MAX_OBJECTS);
 			instanceBuffers[frameIndex][objectClassNames[i]] = instanceBuffer;
         }
     }

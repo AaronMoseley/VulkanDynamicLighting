@@ -14,6 +14,7 @@
 namespace VulkanCommonFunctions {
     using ObjectHandle = size_t;
     static const VulkanCommonFunctions::ObjectHandle INVALID_OBJECT_HANDLE = 0;
+    static const size_t MAX_OBJECTS = 10000;
     
     struct GlobalInfo {
         glm::mat4 view;

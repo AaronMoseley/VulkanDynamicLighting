@@ -62,6 +62,11 @@ void Scene::MainLoop()
 
 VulkanCommonFunctions::ObjectHandle Scene::AddObject(std::shared_ptr <RenderObject> newObject)
 {
+    if (m_objects.size() >= VulkanCommonFunctions::MAX_OBJECTS)
+    {
+		return VulkanCommonFunctions::INVALID_OBJECT_HANDLE;
+    }
+
     m_currentObjectHandle++;
 
     m_objects[m_currentObjectHandle] = newObject;

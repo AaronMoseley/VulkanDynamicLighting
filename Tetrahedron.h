@@ -14,6 +14,10 @@ public:
 	std::vector<VulkanCommonFunctions::Vertex> GetVertices() override { return tetrahedronVertices; };
 	std::vector<uint16_t> GetIndices() override { return tetrahedronIndices; };
 
+private:
+    using MeshRenderer::SetIndices;
+    using MeshRenderer::SetVertices;
+
     std::vector<VulkanCommonFunctions::Vertex> tetrahedronVertices = {
         //front
         {{-sqrt(2.0f / 9.0f), -sqrt(2.0f / 3.0f), -1.0f / 3.0f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}},

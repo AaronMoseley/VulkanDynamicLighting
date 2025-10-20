@@ -139,8 +139,6 @@ float4 PSMain(VSOutput input) : SV_TARGET
         currentResult = currentResult * (1.0 - lerpT);
 
         result += currentResult;
-        
-        //return float4(result, 1.0);
     }
     
     return float4(result, 1.0);

@@ -8,17 +8,6 @@ VulkanInterface::VulkanInterface(std::shared_ptr<WindowManager> windowManager)
 
 void VulkanInterface::InitializeVulkan()
 {
-    Factory objectClasses = FACTORY(MeshRenderer);
-
-    std::vector<std::string> objectClassNames = objectClasses.GetRegisteredClasses();
-
-    for (size_t i = 0; i < objectClassNames.size(); i++)
-    {
-        meshNameToObjectMap[objectClassNames[i]] = {};
-    }
-
-    meshNameToObjectMap[customMeshName] = {};
-
     CreateInstance();
     SetupDebugMessenger();
     CreateSurface();
@@ -54,70 +43,6 @@ void VulkanInterface::CreateTextureSampler()
     {
 		textureImages[i]->CreateTextureSampler(properties.limits.maxSamplerAnisotropy);
     }
-}
-
-VulkanInterface::ObjectHandle VulkanInterface::AddObject(std::shared_ptr <RenderObject> newObject)
-{
-    m_currentObjectHandle++;
-
-    objects[m_currentObjectHandle] = newObject;
-
-	std::shared_ptr<MeshRenderer> meshComponent = newObject->GetComponent<MeshRenderer>();
-
-    if (meshComponent == nullptr)
-    {
-		return m_currentObjectHandle;
-    }
-	
-    std::string objectName = meshComponent->GetMeshName();
-    meshNameToObjectMap[objectName].insert(m_currentObjectHandle);
-
-    return m_currentObjectHandle;
-}
-
-bool VulkanInterface::RemoveObject(ObjectHandle objectToRemove)
-{
-    std::shared_ptr<RenderObject> currentObject = GetRenderObject(objectToRemove);
-
-    if (currentObject == nullptr)
-    {
-        return false;
-    }
-
-    bool removalSuccessful = true;
-
-    removalSuccessful = objects.erase(objectToRemove);
-
-    std::shared_ptr<MeshRenderer> meshComponent = currentObject->GetComponent<MeshRenderer>();
-
-    if (meshComponent == nullptr)
-    {
-        return removalSuccessful;
-    }
-
-    std::string objectName = meshComponent->GetMeshName();
-
-    if (!meshNameToObjectMap.contains(objectName))
-        return false;
-
-    removalSuccessful = removalSuccessful && meshNameToObjectMap[objectName].erase(objectToRemove);
-
-    return removalSuccessful;
-}
-
-std::shared_ptr<RenderObject> VulkanInterface::GetRenderObject(VulkanInterface::ObjectHandle handle)
-{
-    if (handle == INVALID_OBJECT_HANDLE)
-    {
-        return nullptr;
-    }
-
-    if (!objects.contains(handle))
-    {
-        return nullptr;
-    }
-
-    return objects[handle];
 }
 
 void VulkanInterface::CreateTextureImageView() {
@@ -471,8 +396,8 @@ void VulkanInterface::BeginDrawFrameCommandBuffer(VkCommandBuffer commandBuffer,
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
 }
 
-void VulkanInterface::DrawObjectCommandBuffer(VkCommandBuffer commandBuffer, std::string objectName) {
-    if (meshNameToObjectMap[objectName].size() <= 0)
+void VulkanInterface::DrawInstancedObjectCommandBuffer(VkCommandBuffer commandBuffer, std::string objectName, size_t objectCount) {
+    if (objectCount <= 0)
         return;
     
     VkBuffer objectVertexBuffer[] = { vertexBuffers[objectName]->GetVkBuffer(), instanceBuffers[currentFrame][objectName]->GetVkBuffer()};
@@ -483,11 +408,40 @@ void VulkanInterface::DrawObjectCommandBuffer(VkCommandBuffer commandBuffer, std
     {
         vkCmdBindIndexBuffer(commandBuffer, indexBuffers[objectName]->GetVkBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-        vkCmdDrawIndexed(commandBuffer, indexBufferSizes[objectName], meshNameToObjectMap[objectName].size(), 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, indexBufferSizes[objectName], objectCount, 0, 0, 0);
         //vkCmdDrawIndexed(commandBuffer, indexBufferSizes[objectName], meshNameToObjectMap[objectName].size(), 0, 0, 0);
     }
     else {
-        vkCmdDraw(commandBuffer, vertexBufferSizes[objectName], meshNameToObjectMap[objectName].size(), 0, 0);
+        vkCmdDraw(commandBuffer, vertexBufferSizes[objectName], objectCount, 0, 0);
+    }
+}
+
+void VulkanInterface::DrawSingleObjectCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> renderObject) {
+	std::shared_ptr<MeshRenderer> meshComponent = renderObject->GetComponent<MeshRenderer>();
+
+    if (meshComponent == nullptr)
+    {
+        return;
+    }
+
+    if (meshComponent->GetMeshName() != MeshRenderer::kCustomMeshName)
+    {
+        return;
+    }
+
+    VkBuffer objectVertexBuffer[] = { meshComponent->GetVertexBuffer()->GetVkBuffer(), renderObject->GetInstanceBuffer()->GetVkBuffer()};
+    VkDeviceSize offsets[] = { 0, 0 };
+    vkCmdBindVertexBuffers(commandBuffer, 0, 2, objectVertexBuffer, offsets);
+
+    if (meshComponent->IsIndexed() > 0)
+    {
+        vkCmdBindIndexBuffer(commandBuffer, meshComponent->GetIndexBuffer()->GetVkBuffer(), 0, VK_INDEX_TYPE_UINT16);
+
+        vkCmdDrawIndexed(commandBuffer, meshComponent->GetIndexBufferSize(), 1, 0, 0, 0);
+        //vkCmdDrawIndexed(commandBuffer, indexBufferSizes[objectName], meshNameToObjectMap[objectName].size(), 0, 0, 0);
+    }
+    else {
+        vkCmdDraw(commandBuffer, meshComponent->GetVertexBufferSize(), 1, 0, 0);
     }
 }
 
@@ -1019,22 +973,24 @@ void VulkanInterface::CreateSurface() {
 
 void VulkanInterface::CreateVertexBuffers() {
     Factory objectClasses = FACTORY(MeshRenderer);
+    std::vector<std::string> objectClassNames = objectClasses.GetRegisteredClasses();
 
-    for (auto it = meshNameToObjectMap.begin(); it != meshNameToObjectMap.end(); it++)
+    for (size_t i = 0; i < objectClassNames.size(); i++)
     {
-        MeshRenderer* classInstance = objectClasses.create(it->first);
+        std::shared_ptr<MeshRenderer> classInstance = std::shared_ptr<MeshRenderer>(objectClasses.create(objectClassNames[i]));
 
         if (classInstance == nullptr)
         {
             continue;
         }
 
-        CreateVertexBuffer(it->first, classInstance);
-        vertexBufferSizes[it->first] = static_cast<uint16_t>(classInstance->GetVertices().size());
+        std::shared_ptr<GraphicsBuffer> vertexBuffer =  CreateVertexBuffer(classInstance);
+		vertexBuffers[objectClassNames[i]] = vertexBuffer;
+        vertexBufferSizes[objectClassNames[i]] = static_cast<uint16_t>(classInstance->GetVertices().size());
     }
 }
 
-void VulkanInterface::CreateVertexBuffer(std::string name, MeshRenderer* meshInfo) {
+std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateVertexBuffer(std::shared_ptr<MeshRenderer> meshInfo) {
     VkDeviceSize bufferSize = sizeof(meshInfo->GetVertices()[0]) * meshInfo->GetVertices().size();
 
     GraphicsBuffer::BufferCreateInfo stagingBufferCreateInfo = {};
@@ -1063,14 +1019,16 @@ void VulkanInterface::CreateVertexBuffer(std::string name, MeshRenderer* meshInf
     stagingBuffer->CopyBuffer(vertexBuffer, bufferSize);
     stagingBuffer->DestroyBuffer();
 
-    vertexBuffers[name] = vertexBuffer;
+    return vertexBuffer;
 }
 
 void VulkanInterface::CreateIndexBuffers() {
     Factory objectClasses = FACTORY(MeshRenderer);
-    for (auto it = meshNameToObjectMap.begin(); it != meshNameToObjectMap.end(); it++)
+    std::vector<std::string> objectClassNames = objectClasses.GetRegisteredClasses();
+
+    for (size_t i = 0; i < objectClassNames.size(); i++)
     {
-        MeshRenderer* classInstance = objectClasses.create(it->first);
+        std::shared_ptr<MeshRenderer> classInstance = std::shared_ptr<MeshRenderer>(objectClasses.create(objectClassNames[i]));
 
         if (classInstance == nullptr)
         {
@@ -1078,14 +1036,17 @@ void VulkanInterface::CreateIndexBuffers() {
         }
 
         if (!classInstance->IsIndexed())
+        {
             return;
+        }
 
-        CreateIndexBuffer(it->first, classInstance);
-        indexBufferSizes[it->first] = static_cast<uint16_t>(classInstance->GetIndices().size());
+        std::shared_ptr<GraphicsBuffer> indexBuffer = CreateIndexBuffer(classInstance);
+        indexBuffers[objectClassNames[i]] = indexBuffer;
+        indexBufferSizes[objectClassNames[i]] = static_cast<uint16_t>(classInstance->GetIndices().size());
     }
 }
 
-void VulkanInterface::CreateIndexBuffer(std::string name, MeshRenderer* meshInfo) {
+std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateIndexBuffer(std::shared_ptr<MeshRenderer>  meshInfo) {
     VkDeviceSize bufferSize = sizeof(meshInfo->GetIndices()[0]) * meshInfo->GetIndices().size();
 
     GraphicsBuffer::BufferCreateInfo stagingBufferCreateInfo = {};
@@ -1115,7 +1076,7 @@ void VulkanInterface::CreateIndexBuffer(std::string name, MeshRenderer* meshInfo
 
 	stagingBuffer->DestroyBuffer();
 
-    indexBuffers[name] = indexBuffer;
+	return indexBuffer;
 }
 
 uint32_t VulkanInterface::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
@@ -1187,39 +1148,46 @@ void VulkanInterface::CreateInstanceBuffers()
 {
     Factory objectClasses = FACTORY(MeshRenderer);
 
+	std::vector<std::string> objectClassNames = objectClasses.GetRegisteredClasses();
+
     for (uint32_t frameIndex = 0; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex++)
     {
-        for (auto it = meshNameToObjectMap.begin(); it != meshNameToObjectMap.end(); it++)
+        for (size_t i = 0; i < objectClassNames.size(); i++)
         {
-            VkDeviceSize bufferSize = sizeof(VulkanCommonFunctions::InstanceInfo) * MAX_OBJECTS;
-
-			GraphicsBuffer::BufferCreateInfo instanceBufferCreateInfo = {};
-			instanceBufferCreateInfo.size = bufferSize;
-			instanceBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-			instanceBufferCreateInfo.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-			instanceBufferCreateInfo.allocator = allocator;
-			instanceBufferCreateInfo.commandPool = commandPool;
-			instanceBufferCreateInfo.graphicsQueue = graphicsQueue;
-			instanceBufferCreateInfo.device = device;
-
-            std::shared_ptr<GraphicsBuffer> instanceBuffer = std::make_shared<GraphicsBuffer>(instanceBufferCreateInfo);
-			instanceBuffers[frameIndex][it->first] = instanceBuffer;
+            std::shared_ptr<GraphicsBuffer> instanceBuffer = CreateInstanceBuffer(MAX_OBJECTS);
+			instanceBuffers[frameIndex][objectClassNames[i]] = instanceBuffer;
         }
     }
 }
 
-void VulkanInterface::CreateInstanceBuffer(std::string objectName)
+std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateInstanceBuffer(size_t maxObjects)
+{
+    VkDeviceSize bufferSize = sizeof(VulkanCommonFunctions::InstanceInfo) * maxObjects;
+
+    GraphicsBuffer::BufferCreateInfo instanceBufferCreateInfo = {};
+    instanceBufferCreateInfo.size = bufferSize;
+    instanceBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    instanceBufferCreateInfo.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    instanceBufferCreateInfo.allocator = allocator;
+    instanceBufferCreateInfo.commandPool = commandPool;
+    instanceBufferCreateInfo.graphicsQueue = graphicsQueue;
+    instanceBufferCreateInfo.device = device;
+
+    std::shared_ptr<GraphicsBuffer> instanceBuffer = std::make_shared<GraphicsBuffer>(instanceBufferCreateInfo);
+    return instanceBuffer;
+}
+
+void VulkanInterface::UpdateInstanceBuffer(std::string objectName, std::set<VulkanCommonFunctions::ObjectHandle> objectHandles, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects)
 {
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
     std::vector<VulkanCommonFunctions::InstanceInfo> objectInfo;
-    std::set<ObjectHandle> objectHandles = meshNameToObjectMap[objectName];
 
     for (auto it = objectHandles.begin(); it != objectHandles.end(); it++)
     {
-        ObjectHandle currentHandle = *it;
+        VulkanCommonFunctions::ObjectHandle currentHandle = *it;
 
-        if (currentHandle == INVALID_OBJECT_HANDLE || !objects.contains(currentHandle))
+        if (currentHandle == VulkanCommonFunctions::INVALID_OBJECT_HANDLE || !objects.contains(currentHandle))
         {
             continue;
         }
@@ -1235,25 +1203,15 @@ void VulkanInterface::CreateInstanceBuffer(std::string objectName)
         objectInfo.push_back(info);
     }
 
-    VkDeviceSize bufferSize = meshNameToObjectMap[objectName].size() * sizeof(VulkanCommonFunctions::InstanceInfo);
+    VkDeviceSize bufferSize = objectHandles.size() * sizeof(VulkanCommonFunctions::InstanceInfo);
 
 	instanceBuffers[currentFrame][objectName]->LoadData(objectInfo.data(), (size_t)bufferSize);
 }
 
-void VulkanInterface::DrawFrame(float deltaTime) {
-    for (auto it = objects.begin(); it != objects.end(); it++)
+void VulkanInterface::DrawFrame(float deltaTime, std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> objectHandles, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects) {
+    for (auto it = objectHandles.begin(); it != objectHandles.end(); it++)
     {
-        std::vector<std::shared_ptr<ObjectComponent>> components = it->second->GetAllComponents();
-
-        for (size_t i = 0; i < components.size(); i++)
-        {
-            components[i]->Update(deltaTime);
-        }
-    }
-
-    for (auto it = meshNameToObjectMap.begin(); it != meshNameToObjectMap.end(); it++)
-    {
-        CreateInstanceBuffer(it->first);
+        UpdateInstanceBuffer(it->first, it->second, objects);
     }
 
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
@@ -1271,15 +1229,25 @@ void VulkanInterface::DrawFrame(float deltaTime) {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    UpdateUniformBuffer(currentFrame);
+    UpdateUniformBuffer(currentFrame, objects);
 
     vkResetCommandBuffer(frameCommandBuffers[currentFrame], 0);
 
     BeginDrawFrameCommandBuffer(frameCommandBuffers[currentFrame], imageIndex);
 
-    for (auto it = meshNameToObjectMap.begin(); it != meshNameToObjectMap.end(); it++)
+    for (auto it = objectHandles.begin(); it != objectHandles.end(); it++)
     {
-        DrawObjectCommandBuffer(frameCommandBuffers[currentFrame], it->first);
+        if (it->first == MeshRenderer::kCustomMeshName)
+        {
+            for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++)
+            {
+				VulkanCommonFunctions::ObjectHandle currentHandle = *it2;
+				DrawSingleObjectCommandBuffer(frameCommandBuffers[currentFrame], objects[currentHandle]);
+            }
+        }
+        else {
+            DrawInstancedObjectCommandBuffer(frameCommandBuffers[currentFrame], it->first, it->second.size());
+        }
     }
 
     EndDrawFrameCommandBuffer(frameCommandBuffers[currentFrame]);
@@ -1333,10 +1301,7 @@ void VulkanInterface::DrawFrame(float deltaTime) {
     renderedFirstFrame = true;
 }
 
-void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage) {
-    if (objects.size() == 0)
-        return;
-    
+void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects) {
     VulkanCommonFunctions::GlobalInfo globalInfo;
     float aspectRatio = swapChain->GetSwapChainExtent().width / (float)swapChain->GetSwapChainExtent().height;
 
@@ -1359,19 +1324,8 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage) {
         globalInfo.proj[1][1] *= -1;
 		globalInfo.cameraPosition = glm::vec4(it->second->GetComponent<Transform>()->GetPosition(), 10.0f);
 		cameraFound = true;
-
-        //globalInfo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 6.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        //globalInfo.view = glm::perspective(45.0f, aspectRatio, 0.1f, 10000.0f);
-		//globalInfo.proj[1][1] *= -1;
-		//globalInfo.cameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);
-        //cameraFound = true;
         break;
     }
-
-    /*globalInfo.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 6.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    globalInfo.view = glm::perspective(20.0f, aspectRatio, 0.1f, 10000.0f);
-    globalInfo.proj[1][1] *= -1;
-    globalInfo.cameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);*/
 
     if (!cameraFound)
     {

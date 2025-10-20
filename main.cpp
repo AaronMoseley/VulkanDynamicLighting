@@ -10,22 +10,21 @@
 #include "Tetrahedron.h"
 #include "Camera.h"
 #include "WindowManager.h"
-#include "VulkanInterface.h"
-#include "Factory.h"
 #include "FirstPersonController.h"
+#include "Scene.h"
 
 class VulkanLightingDemo {
 public:
     void run() {
         windowManager = std::make_shared<WindowManager>(800, 600, "Vulkan Demo");
 
-        //init vulkan
-        vulkanInterface = std::make_shared<VulkanInterface>(windowManager);
+		sceneManager = std::make_shared<Scene>(windowManager);
+
+        auto frameCallback = std::bind(&VulkanLightingDemo::processInput, this, std::placeholders::_1);
+        sceneManager->RegisterUpdateCallback(frameCallback);
 
         CreateObjects();
-        mainLoop();
-
-        vulkanInterface->Cleanup();
+		sceneManager->MainLoop();
     }
 
 private:
@@ -33,11 +32,11 @@ private:
     const uint32_t HEIGHT = 600;
 
     std::shared_ptr<WindowManager> windowManager;
-    std::shared_ptr<VulkanInterface> vulkanInterface;
+	std::shared_ptr<Scene> sceneManager;
     
-    VulkanInterface::ObjectHandle lightObjectHandle;
-    std::set<VulkanInterface::ObjectHandle> objectHandles;
-	VulkanInterface::ObjectHandle cameraObjectHandle;
+    VulkanCommonFunctions::ObjectHandle lightObjectHandle;
+    std::set<VulkanCommonFunctions::ObjectHandle> objectHandles;
+    VulkanCommonFunctions::ObjectHandle cameraObjectHandle;
 
     size_t maxObjects = 10000;
 
@@ -67,12 +66,12 @@ private:
         std::shared_ptr<RenderObject> cameraObject = std::make_shared<RenderObject>(
             windowManager,
             glm::vec3(0.0f, 0.0f, 5.0f),
-            glm::vec3(0.0f, 0.0f, 0.0f),
+            glm::vec3(0.0f, -90.0f, 0.0f),
             glm::vec3(1.0f)
 		);
 		cameraObject->AddComponent<Camera>();
         cameraObject->AddComponent<FirstPersonController>();
-		cameraObjectHandle = vulkanInterface->AddObject(cameraObject);
+		cameraObjectHandle = sceneManager->AddObject(cameraObject);
 
         std::shared_ptr<RenderObject> lightCube = std::make_shared<RenderObject>(
             windowManager,
@@ -87,7 +86,7 @@ private:
 		lightMesh->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
 		lightCube->AddComponent<LightSource>();
 
-        lightObjectHandle = vulkanInterface->AddObject(lightCube);
+        lightObjectHandle = sceneManager->AddObject(lightCube);
         objectHandles.insert(lightObjectHandle);
 
         glm::vec3 color = glm::vec3(0.6588f, 0.2235f, 0.0392f);
@@ -114,11 +113,11 @@ private:
 
 			currentMesh->SetColor(color);
 
-            if (vulkanInterface->GetObjectCount() % 3 == 0)
+            if (sceneManager->GetObjectCount() % 3 == 0)
             {
                 currentMesh->SetTexture(0);
             }
-            else if (vulkanInterface->GetObjectCount() % 3 == 1)
+            else if (sceneManager->GetObjectCount() % 3 == 1)
             {
                 currentMesh->SetTexture(1);
             }
@@ -126,29 +125,16 @@ private:
                 currentMesh->SetTextured(false);
             }
 
-            VulkanInterface::ObjectHandle newObjectHandle = vulkanInterface->AddObject(newObject);
+            VulkanCommonFunctions::ObjectHandle newObjectHandle = sceneManager->AddObject(newObject);
             objectHandles.insert(newObjectHandle);
         }
     }
 
-    void mainLoop() {
-        while (!glfwWindowShouldClose(windowManager->GetWindow())) {
-            float currentFrameTime = glfwGetTime();
-            deltaTime = currentFrameTime - lastFrame;
-            lastFrame = currentFrameTime;
-
-            glfwPollEvents();
-            processInput(windowManager->GetWindow());
-            vulkanInterface->DrawFrame(deltaTime);
-            windowManager->NewFrame();
-        }
-    }
-
-    void processInput(GLFWwindow* window)
+    void processInput(float deltaTime)
     {
         float currentFrameTime = glfwGetTime();
 
-        std::shared_ptr<RenderObject> lightObject = vulkanInterface->GetRenderObject(lightObjectHandle);
+        std::shared_ptr<RenderObject> lightObject = sceneManager->GetRenderObject(lightObjectHandle);
         if (lightObject != nullptr)
         {
             lightObject->GetComponent<Transform>()->SetPosition(glm::vec3(lightOrbitRadius * cos(currentFrameTime), lightOrbitRadius * sin(currentFrameTime), lightOrbitRadius * cos(currentFrameTime)));
@@ -156,7 +142,7 @@ private:
 
         for (auto it = objectHandles.begin(); it != objectHandles.end(); it++)
         {
-            std::shared_ptr<RenderObject> currentObject = vulkanInterface->GetRenderObject(*it);
+            std::shared_ptr<RenderObject> currentObject = sceneManager->GetRenderObject(*it);
 
             if (currentObject == nullptr)
             {
@@ -166,10 +152,7 @@ private:
             currentObject->GetComponent<Transform>()->Rotate(glm::vec3(16.0f * deltaTime));
         }
 
-        if (windowManager->KeyPressed(GLFW_KEY_ESCAPE))
-            glfwSetWindowShouldClose(window, true);
-
-        if (windowManager->KeyPressed(GLFW_KEY_R) && vulkanInterface->GetObjectCount() < maxObjects)
+        if (windowManager->KeyPressed(GLFW_KEY_R) && sceneManager->GetObjectCount() < maxObjects)
         {
             float positionRange = 100.0f;
 
@@ -192,12 +175,12 @@ private:
 
             currentMesh->SetColor(glm::vec3(0.9f));
 
-            if (vulkanInterface->GetObjectCount() % 3 == 0)
+            if (sceneManager->GetObjectCount() % 3 == 0)
             {
                 currentMesh->SetTextured(true);
                 currentMesh->SetTexture(0);
             }
-            else if (vulkanInterface->GetObjectCount() % 3 == 1)
+            else if (sceneManager->GetObjectCount() % 3 == 1)
             {
                 currentMesh->SetTextured(true);
                 currentMesh->SetTexture(1);
@@ -217,14 +200,14 @@ private:
 				newObject->GetComponent<MeshRenderer>()->SetLit(false);
             }
 
-            VulkanInterface::ObjectHandle newObjectHandle = vulkanInterface->AddObject(newObject);
+            VulkanCommonFunctions::ObjectHandle newObjectHandle = sceneManager->AddObject(newObject);
             objectHandles.insert(newObjectHandle);
         }
 
-        if (windowManager->KeyPressed(GLFW_KEY_E) && vulkanInterface->GetObjectCount() > 1)
+        if (windowManager->KeyPressed(GLFW_KEY_E) && sceneManager->GetObjectCount() > 1)
         {
-            VulkanInterface::ObjectHandle removeObjectHandle = *objectHandles.rbegin();
-            bool correctlyRemoved = vulkanInterface->RemoveObject(removeObjectHandle);
+            VulkanCommonFunctions::ObjectHandle removeObjectHandle = *objectHandles.rbegin();
+            bool correctlyRemoved = sceneManager->RemoveObject(removeObjectHandle);
             objectHandles.erase(removeObjectHandle);
 
             if (!correctlyRemoved)

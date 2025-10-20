@@ -14,6 +14,10 @@ public:
     std::vector<VulkanCommonFunctions::Vertex> GetVertices() override { return cubeVertices; };
 	std::vector<uint16_t> GetIndices() override { return cubeIndices; };
 
+private:
+    using MeshRenderer::SetIndices;
+	using MeshRenderer::SetVertices;
+
     std::vector<VulkanCommonFunctions::Vertex> cubeVertices = {
         //top
         {{-0.5f, 0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},

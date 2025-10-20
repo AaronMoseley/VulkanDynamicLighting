@@ -5,9 +5,10 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include "VulkanCommonFunctions.h"
-#include "ObjectComponent.h"
 #include "Factory.h"
 #include "MeshRenderer.h"
+#include "ObjectComponent.h"
+#include "GraphicsBuffer.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,6 +21,7 @@
 #include <memory>
 
 class Transform;
+class Scene;
 
 class RenderObject {
 public:
@@ -35,6 +37,8 @@ public:
 
 		newComponent->SetOwner(static_cast<void*>(this));
 		newComponent->SetWindowManager(m_windowManager);
+
+		newComponent->Start();
 
 		return newComponent;
 	}
@@ -58,8 +62,12 @@ public:
 	std::vector<std::shared_ptr<ObjectComponent>> GetAllComponents() { return m_components; }
 
     VulkanCommonFunctions::InstanceInfo GetInstanceInfo();
+	std::shared_ptr<GraphicsBuffer> GetInstanceBuffer();
+	void SetInstanceBuffer(std::shared_ptr<GraphicsBuffer> instanceBuffer) { m_instanceBuffer = instanceBuffer; }
 
 private:
 	std::vector<std::shared_ptr<ObjectComponent>> m_components;
 	std::shared_ptr<WindowManager> m_windowManager = nullptr;
+	std::shared_ptr<Scene> m_sceneManager = nullptr;
+	std::shared_ptr<GraphicsBuffer> m_instanceBuffer = nullptr;
 };

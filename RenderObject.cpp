@@ -1,5 +1,6 @@
 #include "RenderObject.h"
 #include "Transform.h"
+#include "Scene.h"
 
 RenderObject::RenderObject(std::shared_ptr<WindowManager> windowManager)
 {
@@ -79,4 +80,14 @@ VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()
 	result.textureIndex = meshRenderer->GetTextureIndex();
 
 	return result;
+}
+
+std::shared_ptr<GraphicsBuffer> RenderObject::GetInstanceBuffer()
+{
+	VulkanCommonFunctions::InstanceInfo info = GetInstanceInfo();
+	std::array<VulkanCommonFunctions::InstanceInfo, 1> infoArray = { info };
+
+	m_instanceBuffer->LoadData(infoArray.data(), sizeof(VulkanCommonFunctions::InstanceInfo));
+
+	return m_instanceBuffer;
 }

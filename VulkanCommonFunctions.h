@@ -12,6 +12,9 @@
 #include <array>
 
 namespace VulkanCommonFunctions {
+    using ObjectHandle = size_t;
+    static const VulkanCommonFunctions::ObjectHandle INVALID_OBJECT_HANDLE = 0;
+    
     struct GlobalInfo {
         glm::mat4 view;
         glm::mat4 proj;

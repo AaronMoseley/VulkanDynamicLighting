@@ -30,22 +30,17 @@
 
 class VulkanInterface {
 public:
-    using ObjectHandle = size_t;
-
     VulkanInterface(std::shared_ptr<WindowManager> windowManager);
 
-    void DrawFrame(float deltaTime);
-
-    ObjectHandle AddObject(std::shared_ptr <RenderObject> newObject);
-    bool RemoveObject(ObjectHandle objectToRemove);
+    void DrawFrame(float deltaTime, std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> objectHandles, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects);
 
     bool HasRenderedFirstFrame() { return renderedFirstFrame; };
-    size_t GetObjectCount() { return objects.size(); };
-    std::shared_ptr<RenderObject> GetRenderObject(ObjectHandle handle);
 
     void Cleanup();
 
-    static const ObjectHandle INVALID_OBJECT_HANDLE = 0;
+    std::shared_ptr<GraphicsBuffer> CreateVertexBuffer(std::shared_ptr<MeshRenderer> object);
+    std::shared_ptr<GraphicsBuffer> CreateIndexBuffer(std::shared_ptr<MeshRenderer>  object);
+	std::shared_ptr<GraphicsBuffer> CreateInstanceBuffer(size_t maxObjects);
 
 private:
 	void InitializeVulkan();
@@ -78,7 +73,8 @@ private:
     VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
     void RecreateSwapChain();
     void BeginDrawFrameCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
-    void DrawObjectCommandBuffer(VkCommandBuffer commandBuffer, std::string objectName);
+    void DrawInstancedObjectCommandBuffer(VkCommandBuffer commandBuffer, std::string objectName, size_t objectCount);
+    void DrawSingleObjectCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject);
     void EndDrawFrameCommandBuffer(VkCommandBuffer commandBuffer);
     VkShaderModule CreateShaderModule(const std::vector<char>& code);
     void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
@@ -87,21 +83,19 @@ private:
     std::vector<const char*> GetRequiredExtensions();
     bool IsDeviceSuitable(VkPhysicalDevice device);
     bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
-    void CreateVertexBuffer(std::string name, MeshRenderer* object);
-    void CreateIndexBuffer(std::string name, MeshRenderer* object);
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     std::vector<char> ReadFile(const std::string& filename);
     VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
     void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
-    void CreateInstanceBuffer(std::string objectName);
-    void UpdateUniformBuffer(uint32_t currentImage);
+    void UpdateInstanceBuffer(std::string objectName, std::set<VulkanCommonFunctions::ObjectHandle> objectHandles, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects);
+    void UpdateUniformBuffer(uint32_t currentImage, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects);
     void CleanupSwapChain();
 
     static const int MAX_FRAMES_IN_FLIGHT = 3;
     static const size_t MAX_OBJECTS = 10000;
 
-    std::map<ObjectHandle, std::shared_ptr<RenderObject>> objects;
-    std::map<std::string, std::set<ObjectHandle>> meshNameToObjectMap;
+    //std::map<ObjectHandle, std::shared_ptr<RenderObject>> objects;
+    //std::map<std::string, std::set<ObjectHandle>> meshNameToObjectMap;
 
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;
@@ -150,8 +144,6 @@ private:
     VmaAllocator allocator;
 
     std::shared_ptr<WindowManager> m_windowManager;
-
-    ObjectHandle m_currentObjectHandle = 0;
 
 	const std::string customMeshName = "CustomMesh";
 

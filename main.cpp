@@ -34,9 +34,9 @@ private:
     std::shared_ptr<WindowManager> windowManager;
 	std::shared_ptr<Scene> sceneManager;
     
-    VulkanCommonFunctions::ObjectHandle lightObjectHandle;
+    VulkanCommonFunctions::ObjectHandle lightObjectHandle = 0;
     std::set<VulkanCommonFunctions::ObjectHandle> objectHandles;
-    VulkanCommonFunctions::ObjectHandle cameraObjectHandle;
+    VulkanCommonFunctions::ObjectHandle cameraObjectHandle = 0;
 
     size_t maxObjects = 10000;
 
@@ -189,7 +189,7 @@ private:
                 currentMesh->SetTextured(false);
             }
 
-            if ((double)rand() / (RAND_MAX) >= 0.99f)
+            if ((double)rand() / (RAND_MAX) >= 0.95f)
             {
                 std::shared_ptr<LightSource> newLightSource = newObject->AddComponent<LightSource>();
 

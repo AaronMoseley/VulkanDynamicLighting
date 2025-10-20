@@ -16,11 +16,11 @@ public:
 	MeshRenderer(std::vector<VulkanCommonFunctions::Vertex> vertices, std::string name) { m_vertices = vertices; m_meshName = name; }
 	MeshRenderer(std::vector<VulkanCommonFunctions::Vertex> vertices, std::vector<uint16_t> indices, std::string name) { m_vertices = vertices; m_indices = indices; m_useIndices = true; m_meshName = name; }
 
-	virtual std::vector<VulkanCommonFunctions::Vertex> GetVertices() { return m_vertices; }
+	virtual std::vector<VulkanCommonFunctions::Vertex>& GetVertices() { return m_vertices; }
 	void SetVertices(std::vector<VulkanCommonFunctions::Vertex> vertices);
 	size_t GetVertexBufferSize() { return m_vertexBufferSize; }
 
-	virtual std::vector<uint16_t> GetIndices() { return m_indices; }
+	virtual std::vector<uint16_t>& GetIndices() { return m_indices; }
 	void SetIndices(std::vector<uint16_t> indices);
 	size_t GetIndexBufferSize() { return m_indexBufferSize; }
 

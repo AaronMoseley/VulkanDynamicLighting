@@ -7,6 +7,12 @@ void FirstPersonController::Update(float deltaTime)
     glm::vec3 offset = glm::vec3(0.0f);
 
     float velocity = m_movementSpeed * deltaTime;
+
+    if (GetWindowManager()->KeyPressed(GLFW_KEY_LEFT_SHIFT))
+    {
+        velocity *= 4.0f;
+    }
+
     if (GetWindowManager()->KeyPressed(GLFW_KEY_W))
     {
         offset += transform->Forward() * velocity;

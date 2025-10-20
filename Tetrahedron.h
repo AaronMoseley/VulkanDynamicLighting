@@ -11,8 +11,8 @@ public:
 
     }
 
-	std::vector<VulkanCommonFunctions::Vertex> GetVertices() override { return tetrahedronVertices; };
-	std::vector<uint16_t> GetIndices() override { return tetrahedronIndices; };
+	std::vector<VulkanCommonFunctions::Vertex>& GetVertices() override { return tetrahedronVertices; };
+	std::vector<uint16_t>& GetIndices() override { return tetrahedronIndices; };
 
 private:
     using MeshRenderer::SetIndices;

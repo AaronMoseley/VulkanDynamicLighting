@@ -991,7 +991,7 @@ void VulkanInterface::CreateVertexBuffers() {
 }
 
 std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateVertexBuffer(std::shared_ptr<MeshRenderer> meshInfo) {
-    VkDeviceSize bufferSize = sizeof(meshInfo->GetVertices()[0]) * meshInfo->GetVertices().size();
+    VkDeviceSize bufferSize = sizeof(VulkanCommonFunctions::Vertex) * meshInfo->GetVertices().size();
 
     GraphicsBuffer::BufferCreateInfo stagingBufferCreateInfo = {};
 	stagingBufferCreateInfo.size = bufferSize;
@@ -1002,8 +1002,10 @@ std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateVertexBuffer(std::shared_
 	stagingBufferCreateInfo.graphicsQueue = graphicsQueue;
     stagingBufferCreateInfo.device = device;
 
+	std::vector< VulkanCommonFunctions::Vertex>& vertices = meshInfo->GetVertices();
+
 	GraphicsBuffer* stagingBuffer = new GraphicsBuffer(stagingBufferCreateInfo);
-    stagingBuffer->LoadData(meshInfo->GetVertices().data(), (size_t)bufferSize);
+    stagingBuffer->LoadData(vertices.data(), (size_t)bufferSize);
 
     GraphicsBuffer::BufferCreateInfo vertexBufferCreateInfo = {};
     vertexBufferCreateInfo.size = bufferSize;
@@ -1047,7 +1049,7 @@ void VulkanInterface::CreateIndexBuffers() {
 }
 
 std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateIndexBuffer(std::shared_ptr<MeshRenderer>  meshInfo) {
-    VkDeviceSize bufferSize = sizeof(meshInfo->GetIndices()[0]) * meshInfo->GetIndices().size();
+    VkDeviceSize bufferSize = sizeof(uint16_t) * meshInfo->GetIndices().size();
 
     GraphicsBuffer::BufferCreateInfo stagingBufferCreateInfo = {};
     stagingBufferCreateInfo.size = bufferSize;
@@ -1058,8 +1060,10 @@ std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateIndexBuffer(std::shared_p
     stagingBufferCreateInfo.graphicsQueue = graphicsQueue;
     stagingBufferCreateInfo.device = device;
 
+	std::vector<uint16_t>& indices = meshInfo->GetIndices();
+
     GraphicsBuffer* stagingBuffer = new GraphicsBuffer(stagingBufferCreateInfo);
-    stagingBuffer->LoadData(meshInfo->GetIndices().data(), (size_t)bufferSize);
+    stagingBuffer->LoadData(indices.data(), (size_t)bufferSize);
 
     GraphicsBuffer::BufferCreateInfo indexBufferCreateInfo = {};
     indexBufferCreateInfo.size = bufferSize;

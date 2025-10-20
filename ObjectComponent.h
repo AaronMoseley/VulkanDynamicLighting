@@ -22,6 +22,6 @@ public:
 	void SetWindowManager(std::shared_ptr<WindowManager> windowManager) { m_windowManager = windowManager; }
 
 private:
-	RenderObject* m_owner;
+	RenderObject* m_owner = nullptr;
 	std::shared_ptr<WindowManager> m_windowManager = nullptr;
 };

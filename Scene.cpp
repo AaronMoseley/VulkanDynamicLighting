@@ -68,6 +68,8 @@ VulkanCommonFunctions::ObjectHandle Scene::AddObject(std::shared_ptr <RenderObje
 
     std::shared_ptr<MeshRenderer> meshComponent = newObject->GetComponent<MeshRenderer>();
 
+	newObject->SetSceneManager(this);
+
     if (meshComponent == nullptr)
     {
         return m_currentObjectHandle;
@@ -87,6 +89,8 @@ bool Scene::RemoveObject(VulkanCommonFunctions::ObjectHandle objectToRemove)
     {
         return false;
     }
+
+    currentObject->SetSceneManager(nullptr);
 
     bool removalSuccessful = true;
 

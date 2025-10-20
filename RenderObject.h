@@ -9,6 +9,7 @@
 #include "MeshRenderer.h"
 #include "ObjectComponent.h"
 #include "GraphicsBuffer.h"
+#include "Transform.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,7 +21,6 @@
 #include <map>
 #include <memory>
 
-class Transform;
 class Scene;
 
 class RenderObject {
@@ -35,7 +35,8 @@ public:
 		std::shared_ptr<T> newComponent = std::make_shared<T>();
 		m_components.push_back(newComponent);
 
-		newComponent->SetOwner(static_cast<void*>(this));
+		newComponent->SetOwner(this);
+
 		newComponent->SetWindowManager(m_windowManager);
 
 		newComponent->Start();
@@ -65,9 +66,13 @@ public:
 	std::shared_ptr<GraphicsBuffer> GetInstanceBuffer();
 	void SetInstanceBuffer(std::shared_ptr<GraphicsBuffer> instanceBuffer) { m_instanceBuffer = instanceBuffer; }
 
+	void SetSceneManager(Scene* sceneManager) { m_sceneManager = sceneManager; }
+	Scene* GetSceneManager() { return m_sceneManager; }
+
 private:
 	std::vector<std::shared_ptr<ObjectComponent>> m_components;
 	std::shared_ptr<WindowManager> m_windowManager = nullptr;
-	std::shared_ptr<Scene> m_sceneManager = nullptr;
 	std::shared_ptr<GraphicsBuffer> m_instanceBuffer = nullptr;
+	
+	Scene* m_sceneManager = nullptr;
 };

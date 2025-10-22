@@ -3,6 +3,8 @@
 #ifndef VULKAN_COMMON_FUNCTIONS
 #define VULKAN_COMMON_FUNCTIONS
 
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+
 #include "vk_mem_alloc.h"
 
 #include "glm/glm.hpp"
@@ -16,14 +18,14 @@ namespace VulkanCommonFunctions {
     static const VulkanCommonFunctions::ObjectHandle INVALID_OBJECT_HANDLE = 0;
     static const size_t MAX_OBJECTS = 10000;
     
-    struct GlobalInfo {
+    struct alignas(16) GlobalInfo {
         glm::mat4 view;
         glm::mat4 proj;
-        glm::vec4 cameraPosition;
-        uint32_t lightCount;
+        alignas(16) glm::vec3 cameraPosition;
+        alignas(4) uint32_t lightCount;
     };
 
-    struct LightInfo {
+    struct alignas(16) LightInfo {
         glm::vec4 lightPosition;
         glm::vec4 lightColor;
 
@@ -31,27 +33,27 @@ namespace VulkanCommonFunctions {
         glm::vec4 lightDiffuse;
         glm::vec4 lightSpecular;
 
-        float maxLightDistance;
+        alignas(4) float maxLightDistance;
     };
 
     struct InstanceInfo {
         glm::mat4 modelMatrix;
         glm::mat4 modelMatrixInverse;
 
-        glm::vec3 ambient;
-        glm::vec3 diffuse;
-        glm::vec3 specular;
-        float shininess;
-        uint32_t lit;
+        alignas(16) glm::vec3 ambient;
+        alignas(16) glm::vec3 diffuse;
+        alignas(16) glm::vec3 specular;
+        alignas(4) float shininess;
+        alignas(4) uint32_t lit;
 
-        uint32_t textured;
-        uint32_t textureIndex;
+        alignas(4) uint32_t textured;
+        alignas(4) uint32_t textureIndex;
     };
 
     struct Vertex {
-        glm::vec3 pos;
-        glm::vec3 normal;
-        glm::vec2 texCoord;
+        alignas(16) glm::vec3 pos;
+        alignas(16) glm::vec3 normal;
+        alignas(8) glm::vec2 texCoord;
 
         static std::array<VkVertexInputBindingDescription, 2> GetBindingDescriptions() {
             std::array<VkVertexInputBindingDescription, 2> result;

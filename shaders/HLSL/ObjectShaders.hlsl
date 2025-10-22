@@ -42,7 +42,7 @@ cbuffer GlobalInfo : register(b0)
 {
     float4x4 view;
     float4x4 projection;
-    float4 cameraPosition;
+    float3 cameraPosition;
     uint lightCount;
 }
 

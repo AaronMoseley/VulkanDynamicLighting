@@ -194,6 +194,7 @@ private:
                 std::shared_ptr<LightSource> newLightSource = newObject->AddComponent<LightSource>();
 
 				glm::vec3 lightColor = glm::vec3(((double)rand() / (RAND_MAX)), ((double)rand() / (RAND_MAX)), ((double)rand() / (RAND_MAX)));
+				//glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
 				newLightSource->SetColor(lightColor);
 				newObject->GetComponent<MeshRenderer>()->SetColor(lightColor);

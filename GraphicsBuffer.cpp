@@ -21,7 +21,8 @@ GraphicsBuffer::GraphicsBuffer(BufferCreateInfo createInfo)
 
 	m_maxSize = createInfo.size;
 
-    m_mappedData = malloc(m_maxSize);
+    //m_mappedData = malloc(m_maxSize);
+	m_mappedData = static_cast<void*>(std::make_unique<char[]>(m_maxSize).get());
 
     vmaCreateBuffer(m_allocator, &bufferInfo, &allocInfo, &m_buffer, &m_allocation, nullptr);
 

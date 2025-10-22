@@ -41,6 +41,8 @@ public:
 	}
 
 private:
+	using ObjectComponent::SetEnabled;
+
 	glm::vec4 m_position = glm::vec4(0.0f);
 	glm::vec4 m_rotation = glm::vec4(0.0f);
 	glm::vec4 m_scale = glm::vec4(1.0f);

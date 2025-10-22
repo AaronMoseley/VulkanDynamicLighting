@@ -1203,8 +1203,16 @@ void VulkanInterface::UpdateInstanceBuffer(std::string objectName, std::set<Vulk
         if (meshRenderer == nullptr)
             continue;
 
+        if (!meshRenderer->IsEnabled())
+            continue;
+
         VulkanCommonFunctions::InstanceInfo info = object->GetInstanceInfo();
         objectInfo.push_back(info);
+    }
+
+    if (objectInfo.size() == 0)
+    {
+        return;
     }
 
     VkDeviceSize bufferSize = objectHandles.size() * sizeof(VulkanCommonFunctions::InstanceInfo);
@@ -1326,7 +1334,7 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage, std::map<Vulkan
 		globalInfo.view = camera->GetViewMatrix();
 		globalInfo.proj = glm::perspective(glm::radians(camera->GetFOV()), aspectRatio, camera->GetNearPlane(), camera->GetFarPlane());
         globalInfo.proj[1][1] *= -1;
-		globalInfo.cameraPosition = glm::vec4(it->second->GetComponent<Transform>()->GetPosition(), 10.0f);
+		globalInfo.cameraPosition = it->second->GetComponent<Transform>()->GetPosition();
 		cameraFound = true;
         break;
     }
@@ -1351,6 +1359,11 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage, std::map<Vulkan
         {
 			std::cout << "Warning: Maximum light count exceeded, additional lights will be ignored in rendering." << std::endl;
             break;
+        }
+
+        if (!light->IsEnabled())
+        {
+            continue;
         }
 
 		lightInfos.push_back(it->second->GetComponent<LightSource>()->GetLightInfo());

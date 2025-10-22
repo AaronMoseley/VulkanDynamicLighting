@@ -22,6 +22,17 @@ void Scene::MainLoop()
 
             for (size_t i = 0; i < components.size(); i++)
             {
+                if (!components[i]->IsEnabled())
+                {
+                    continue;
+                }
+
+                if (!components[i]->HasStarted())
+                {
+					components[i]->Start();
+					components[i]->SetStarted(true);
+                }
+
 				components[i]->Update(m_deltaTime);
             }
 

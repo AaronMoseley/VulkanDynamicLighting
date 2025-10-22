@@ -30,6 +30,6 @@ public:
 private:
 	RenderObject* m_owner = nullptr;
 	std::shared_ptr<WindowManager> m_windowManager = nullptr;
-	alignas(16) bool m_enabled = true;
-	alignas(16) bool m_started = false;
+	alignas(8) bool m_enabled = true;
+	alignas(8) bool m_started = false;
 };

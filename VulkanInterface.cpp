@@ -737,7 +737,7 @@ void VulkanInterface::CreateSwapChain() {
 	swapChainCreateInfo.surface = surface;
 	swapChainCreateInfo.windowManager = m_windowManager;
     
-    swapChain = new SwapChain(swapChainCreateInfo);
+    swapChain = std::make_shared<SwapChain>(swapChainCreateInfo);
 }
 
 void VulkanInterface::CreateInstance() {
@@ -1004,7 +1004,7 @@ std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateVertexBuffer(std::shared_
 
 	std::vector< VulkanCommonFunctions::Vertex>& vertices = meshInfo->GetVertices();
 
-	GraphicsBuffer* stagingBuffer = new GraphicsBuffer(stagingBufferCreateInfo);
+	std::shared_ptr<GraphicsBuffer> stagingBuffer = std::make_shared<GraphicsBuffer>(stagingBufferCreateInfo);
     stagingBuffer->LoadData(vertices.data(), (size_t)bufferSize);
 
     GraphicsBuffer::BufferCreateInfo vertexBufferCreateInfo = {};
@@ -1062,7 +1062,7 @@ std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateIndexBuffer(std::shared_p
 
 	std::vector<uint16_t>& indices = meshInfo->GetIndices();
 
-    GraphicsBuffer* stagingBuffer = new GraphicsBuffer(stagingBufferCreateInfo);
+    std::shared_ptr<GraphicsBuffer> stagingBuffer = std::make_shared<GraphicsBuffer>(stagingBufferCreateInfo);
     stagingBuffer->LoadData(indices.data(), (size_t)bufferSize);
 
     GraphicsBuffer::BufferCreateInfo indexBufferCreateInfo = {};

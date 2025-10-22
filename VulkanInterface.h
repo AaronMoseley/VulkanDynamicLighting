@@ -100,7 +100,7 @@ private:
     VkQueue graphicsQueue;
     VkSurfaceKHR surface;
     VkQueue presentQueue;
-    SwapChain* swapChain;
+    std::shared_ptr<SwapChain> swapChain;
     VkRenderPass renderPass;
     VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;

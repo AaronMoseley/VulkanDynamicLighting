@@ -10,7 +10,7 @@
 
 template<class B>
 class Factory {
-  std::map<std::string, std::function<B*()>> s_creators;
+  std::map<std::string, std::function<std::shared_ptr<B>()>> s_creators;
 
 public:
   static Factory<B>& getInstance() {
@@ -20,10 +20,10 @@ public:
 
   template<class T>
   void registerClass(const std::string& name) {
-    s_creators.insert({name, []() -> B* { return new T(); }});
+    s_creators.insert({name, []() -> std::shared_ptr<B> { return std::make_shared<T>(); }});
   }
 
-  B* create(const std::string& name) {
+  std::shared_ptr<B> create(const std::string& name) {
     const auto it = s_creators.find(name);
     if (it == s_creators.end()) return nullptr; // not a derived class
     return (it->second)();

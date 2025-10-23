@@ -158,7 +158,6 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="FirstPersonController.h" />
     <ClInclude Include="Cube.h" />
-    <ClInclude Include="Factory.h" />
     <ClInclude Include="GraphicsBuffer.h" />
     <ClInclude Include="GraphicsImage.h" />
     <ClInclude Include="LightSource.h" />

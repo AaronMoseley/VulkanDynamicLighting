@@ -3,8 +3,6 @@
 #include "ObjectComponent.h"
 #include <glm/glm.hpp>
 
-#include "Factory.h"
-
 class Transform : public ObjectComponent {
 public:
 	Transform() {};

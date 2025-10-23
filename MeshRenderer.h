@@ -34,9 +34,13 @@ public:
 	void SetLit(bool lit) { m_lit = lit; }
 
 	bool GetTextured() { return m_textured; }
-	uint32_t GetTextureIndex() { return m_textureIndex; }
+	std::string GetTexturePath() { return m_texturePath; }
 
-	void SetTexture(uint32_t textureIndex) { m_textureIndex = textureIndex; m_textured = true; };
+	void SetTexture(std::string texturePath) {
+		m_texturePath = texturePath;
+		m_textured = true;
+		m_textureDataDirty = true;
+	};
 	void SetTextured(bool textured) { m_textured = textured; }
 
 	void SetVertexBuffer(std::shared_ptr<GraphicsBuffer> vertexBuffer) { m_vertexBuffer = vertexBuffer; }
@@ -47,8 +51,11 @@ public:
 
 	std::string GetMeshName() { return m_meshName; }
 
-	void SetDirtyData(bool dirty) { m_dataDirty = dirty; }
-	bool IsDataDirty() { return m_dataDirty; }
+	void SetDirtyData(bool dirty) { m_meshDataDirty = dirty; }
+	bool IsMeshDataDirty() { return m_meshDataDirty; }
+
+	void SetTextureDataDirty(bool dirty) { m_textureDataDirty = dirty; }
+	bool IsTextureDataDirty() { return m_textureDataDirty; }
 
 protected:
 	std::string m_meshName = kCustomMeshName;
@@ -66,8 +73,9 @@ protected:
 	bool m_useIndices = false;
 	bool m_lit = true;
 
-	bool m_dataDirty = false;
+	bool m_meshDataDirty = false;
+	bool m_textureDataDirty = false;
 
 	bool m_textured = false;
-	uint32_t m_textureIndex = 0;
+	std::string m_texturePath = "";
 };

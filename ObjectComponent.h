@@ -6,6 +6,7 @@
 #include <memory>
 
 class RenderObject;
+class Scene;
 
 class ObjectComponent {
 public:
@@ -17,6 +18,7 @@ public:
 
 	RenderObject* GetOwner() { return m_owner; }
 	void SetOwner(RenderObject* owner) { m_owner = owner; }
+	Scene* GetScene();
 
 	std::shared_ptr<WindowManager> GetWindowManager() { return m_windowManager; }
 	void SetWindowManager(std::shared_ptr<WindowManager> windowManager) { m_windowManager = windowManager; }

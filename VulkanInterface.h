@@ -17,7 +17,6 @@
 #include "GraphicsImage.h"
 #include "TextureImage.h"
 #include "Swapchain.h"
-#include "Factory.h"
 #include "LightSource.h"
 
 #include <map>
@@ -40,7 +39,11 @@ public:
 
     std::shared_ptr<GraphicsBuffer> CreateVertexBuffer(std::shared_ptr<MeshRenderer> object);
     std::shared_ptr<GraphicsBuffer> CreateIndexBuffer(std::shared_ptr<MeshRenderer>  object);
+    void CreateInstanceBuffer(std::shared_ptr<MeshRenderer> object);
 	std::shared_ptr<GraphicsBuffer> CreateInstanceBuffer(size_t maxObjects);
+    void UpdateObjectBuffers(std::shared_ptr<MeshRenderer> objectMesh);
+    bool HasTexture(std::string textureFilePath) { return std::find(textureFilePaths.begin(), textureFilePaths.end(), textureFilePath) != textureFilePaths.end(); };
+    void UpdateTextureResources(std::string newTextureFilePath, bool alreadyInitialized=true);
 
 private:
 	void InitializeVulkan();
@@ -57,12 +60,9 @@ private:
     void CreateGraphicsPipeline();
     void CreateCommandPool();
     void CreateDepthResources();
-    void CreateTextureImage();
-    void CreateTextureImageView();
-    void CreateTextureSampler();
-    void CreateVertexBuffers();
-    void CreateIndexBuffers();
-    void CreateInstanceBuffers();
+    void CreateTextureImage(std::string textureFilePath);
+    void CreateTextureImageView(std::string textureFilePath);
+    void CreateTextureSampler(std::string textureFilePath);
     void CreateUniformBuffers();
     void CreateDescriptorPool();
     void CreateDescriptorSets();
@@ -102,9 +102,9 @@ private:
     VkQueue presentQueue;
     std::shared_ptr<SwapChain> swapChain;
     VkRenderPass renderPass;
-    VkDescriptorSetLayout descriptorSetLayout;
-    VkPipelineLayout pipelineLayout;
-    VkPipeline graphicsPipeline;
+    VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+    VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
+    VkPipeline graphicsPipeline = VK_NULL_HANDLE;
     VkCommandPool commandPool;
     std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> imageAvailableSemaphores;
     std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> renderFinishedSemaphores;
@@ -121,14 +121,17 @@ private:
 	std::vector< std::shared_ptr<GraphicsBuffer>> uniformBuffers;
 	std::vector< std::shared_ptr<GraphicsBuffer>> lightInfoBuffers;
 
-    std::array<std::string, 2> textureFiles = { "textures/SandTexture.png", "textures/OtherTexture.png" };
-    std::vector< std::shared_ptr<TextureImage>> textureImages;
+    std::vector<std::string> textureFilePaths;
+    std::map<std::string, size_t> texturePathToIndex;
+    std::map<std::string, std::shared_ptr<TextureImage>> textureImages;
+
+	std::string kDefaultTexturePath = "textures\\DefaultTexture.png";
 
     size_t maxLightCount = 200;
 
     uint32_t currentFrame = 0;
 
-    VkDescriptorPool descriptorPool;
+    VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
     std::vector<VkDescriptorSet> descriptorSets;
 
     std::shared_ptr<GraphicsImage> depthImage;

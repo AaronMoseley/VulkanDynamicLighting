@@ -21,6 +21,8 @@ public:
 	void FinalizeMesh(std::shared_ptr<RenderObject> updatedObject);
 	void GenerateInstanceBuffer(std::shared_ptr<RenderObject> updatedObject);
 
+	void UpdateTexture(std::string newTexturePath);
+
 	std::shared_ptr<RenderObject> GetRenderObject(VulkanCommonFunctions::ObjectHandle handle);
 
 	size_t GetObjectCount() { return m_objects.size(); };

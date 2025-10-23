@@ -5,7 +5,6 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include "VulkanCommonFunctions.h"
-#include "Factory.h"
 #include "MeshRenderer.h"
 #include "ObjectComponent.h"
 #include "GraphicsBuffer.h"

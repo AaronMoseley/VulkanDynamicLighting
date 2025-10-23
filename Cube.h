@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Factory.h"
 #include "MeshRenderer.h"
 #include "VulkanCommonFunctions.h"
 
@@ -75,5 +74,3 @@ private:
         20, 23, 21,  23, 22, 21
     };
 };
-
-REGISTER(MeshRenderer, Cube);

@@ -101,7 +101,7 @@ private:
                 glm::vec3(0.5f, 0.5f, 0.5f)
             );
 
-            if ((double)rand() / (RAND_MAX) >= 0.5f)
+            if ((double)rand() / (RAND_MAX) >= 0.0f)
             {
 				newObject->AddComponent<Cube>();
             }
@@ -115,11 +115,11 @@ private:
 
             if (sceneManager->GetObjectCount() % 3 == 0)
             {
-                currentMesh->SetTexture(0);
+                currentMesh->SetTexture("C:\\Users\\Aaron\\Documents\\GitHub\\VulkanDynamicLighting\\textures\\SandTexture.png");
             }
             else if (sceneManager->GetObjectCount() % 3 == 1)
             {
-                currentMesh->SetTexture(1);
+                currentMesh->SetTexture("C:\\Users\\Aaron\\Documents\\GitHub\\VulkanDynamicLighting\\textures\\OtherTexture.png");
             }
             else {
                 currentMesh->SetTextured(false);
@@ -177,13 +177,11 @@ private:
 
             if (sceneManager->GetObjectCount() % 3 == 0)
             {
-                currentMesh->SetTextured(true);
-                currentMesh->SetTexture(0);
+                currentMesh->SetTexture("C:\\Users\\Aaron\\Documents\\GitHub\\VulkanDynamicLighting\\textures\\SandTexture.png");
             }
             else if (sceneManager->GetObjectCount() % 3 == 1)
             {
-                currentMesh->SetTextured(true);
-                currentMesh->SetTexture(1);
+                currentMesh->SetTexture("C:\\Users\\Aaron\\Documents\\GitHub\\VulkanDynamicLighting\\textures\\OtherTexture.png");
             }
             else {
                 currentMesh->SetTextured(false);

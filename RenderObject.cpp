@@ -77,7 +77,6 @@ VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()
 	result.lit = (meshRenderer->GetLit()) ? 1 : 0;
 
 	result.textured = (meshRenderer->GetTextured()) ? 1 : 0;
-	result.textureIndex = meshRenderer->GetTextureIndex();
 
 	return result;
 }

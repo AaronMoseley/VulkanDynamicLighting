@@ -47,11 +47,17 @@ void Scene::MainLoop()
                 continue;
             }
 
-            if (meshComponent->IsDataDirty())
+            if (meshComponent->IsMeshDataDirty())
             {
                 FinalizeMesh(it->second);
                 meshComponent->SetDirtyData(false);
 			}
+
+            if (meshComponent->IsTextureDataDirty())
+            {
+                UpdateTexture(meshComponent->GetTexturePath());
+				meshComponent->SetTextureDataDirty(false);
+            }
         }
 
         for (size_t i = 0; i < updateCallbacks.size(); i++)
@@ -81,18 +87,24 @@ VulkanCommonFunctions::ObjectHandle Scene::AddObject(std::shared_ptr <RenderObje
     m_currentObjectHandle++;
 
     m_objects[m_currentObjectHandle] = newObject;
+    newObject->SetSceneManager(this);
 
     std::shared_ptr<MeshRenderer> meshComponent = newObject->GetComponent<MeshRenderer>();
-
-	newObject->SetSceneManager(this);
 
     if (meshComponent == nullptr)
     {
         return m_currentObjectHandle;
     }
 
+	m_vulkanInterface->UpdateObjectBuffers(meshComponent);
+
     std::string objectName = meshComponent->GetMeshName();
     m_meshNameToObjectMap[objectName].insert(m_currentObjectHandle);
+
+    if (meshComponent->GetTextured())
+    {
+        UpdateTexture(meshComponent->GetTexturePath());
+    }
 
     return m_currentObjectHandle;
 }
@@ -187,4 +199,14 @@ void Scene::GenerateInstanceBuffer(std::shared_ptr<RenderObject> newObject)
 
 	std::shared_ptr<GraphicsBuffer> instanceBuffer = m_vulkanInterface->CreateInstanceBuffer(1);
     newObject->SetInstanceBuffer(instanceBuffer);
+}
+
+void Scene::UpdateTexture(std::string newTexturePath)
+{
+    if (m_vulkanInterface->HasTexture(newTexturePath))
+    {
+        return;
+    }
+
+    m_vulkanInterface->UpdateTextureResources(newTexturePath);
 }

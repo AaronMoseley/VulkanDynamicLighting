@@ -16,17 +16,12 @@ void VulkanInterface::InitializeVulkan()
     CreateVMAAllocator();
     CreateSwapChain();
     CreateRenderPass();
+    CreateCommandPool();
+	UpdateTextureResources(kDefaultTexturePath, false);
     CreateDescriptorSetLayout();
     CreateGraphicsPipeline();
-    CreateCommandPool();
     CreateDepthResources();
-    CreateTextureImage();
-    CreateTextureImageView();
-    CreateTextureSampler();
 	swapChain->CreateFrameBuffers(depthImage, renderPass);
-    CreateVertexBuffers();
-    CreateIndexBuffers();
-    CreateInstanceBuffers();
     CreateUniformBuffers();
     CreateDescriptorPool();
     CreateDescriptorSets();
@@ -34,22 +29,16 @@ void VulkanInterface::InitializeVulkan()
     CreateSyncObjects();
 }
 
-void VulkanInterface::CreateTextureSampler()
+void VulkanInterface::CreateTextureSampler(std::string textureFilePath)
 {
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(physicalDevice, &properties);
 
-    for (size_t i = 0; i < textureFiles.size(); i++)
-    {
-		textureImages[i]->CreateTextureSampler(properties.limits.maxSamplerAnisotropy);
-    }
+	textureImages[textureFilePath]->CreateTextureSampler(properties.limits.maxSamplerAnisotropy);
 }
 
-void VulkanInterface::CreateTextureImageView() {
-    for (size_t i = 0; i < textureFiles.size(); i++)
-    {
-		textureImages[i]->CreateImageView(VK_IMAGE_ASPECT_COLOR_BIT);
-    }
+void VulkanInterface::CreateTextureImageView(std::string textureFilePath) {
+	textureImages[textureFilePath]->CreateImageView(VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void VulkanInterface::CreateDepthResources() {
@@ -96,50 +85,65 @@ VkFormat VulkanInterface::FindSupportedFormat(const std::vector<VkFormat>& candi
     throw std::runtime_error("failed to find supported format!");
 }
 
-void VulkanInterface::CreateTextureImage() {
-    for (size_t i = 0; i < textureFiles.size(); i++)
+void VulkanInterface::CreateTextureImage(std::string textureFilePath) {
+    int texWidth, texHeight, texChannels;
+    stbi_uc* pixels = stbi_load(textureFilePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+    if (!pixels) {
+        throw std::runtime_error("failed to load texture image!");
+    }
+
+    GraphicsBuffer::BufferCreateInfo stagingBufferCreateInfo{};
+	stagingBufferCreateInfo.allocator = allocator;
+	stagingBufferCreateInfo.size = imageSize;
+	stagingBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+	stagingBufferCreateInfo.properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+	stagingBufferCreateInfo.device = device;
+	stagingBufferCreateInfo.commandPool = commandPool;
+	stagingBufferCreateInfo.graphicsQueue = graphicsQueue;
+	GraphicsBuffer stagingBuffer(stagingBufferCreateInfo);
+
+	stagingBuffer.LoadData(pixels, static_cast<size_t>(imageSize));
+
+    stbi_image_free(pixels);
+
+	GraphicsImage::GraphicsImageCreateInfo textureImageCreateInfo{};
+	textureImageCreateInfo.imageSize = { static_cast<size_t>(texWidth), static_cast<size_t>(texHeight) };
+	textureImageCreateInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+	textureImageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	textureImageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	textureImageCreateInfo.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+	textureImageCreateInfo.allocator = allocator;
+	textureImageCreateInfo.device = device;
+	textureImageCreateInfo.commandPool = commandPool;
+	textureImageCreateInfo.graphicsQueue = graphicsQueue;
+
+	std::shared_ptr<TextureImage> currentImage = std::make_shared<TextureImage>(textureImageCreateInfo);
+	textureImages[textureFilePath] = currentImage;
+
+	currentImage->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	currentImage->CopyFromBuffer(&stagingBuffer);
+	currentImage->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	stagingBuffer.DestroyBuffer();
+}
+
+void VulkanInterface::UpdateTextureResources(std::string textureFilePath, bool alreadyInitialized)
+{
+	textureFilePaths.push_back(textureFilePath);
+	texturePathToIndex[textureFilePath] = textureFilePaths.size() - 1;
+	CreateTextureImage(textureFilePath);
+
+    CreateTextureSampler(textureFilePath);
+	CreateTextureImageView(textureFilePath);
+
+    if (alreadyInitialized)
     {
-        int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load(textureFiles[i].c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-        VkDeviceSize imageSize = texWidth * texHeight * 4;
-
-        if (!pixels) {
-            throw std::runtime_error("failed to load texture image!");
-        }
-
-        GraphicsBuffer::BufferCreateInfo stagingBufferCreateInfo{};
-		stagingBufferCreateInfo.allocator = allocator;
-		stagingBufferCreateInfo.size = imageSize;
-		stagingBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-		stagingBufferCreateInfo.properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-		stagingBufferCreateInfo.device = device;
-		stagingBufferCreateInfo.commandPool = commandPool;
-		stagingBufferCreateInfo.graphicsQueue = graphicsQueue;
-		GraphicsBuffer stagingBuffer(stagingBufferCreateInfo);
-
-		stagingBuffer.LoadData(pixels, static_cast<size_t>(imageSize));
-
-        stbi_image_free(pixels);
-
-		GraphicsImage::GraphicsImageCreateInfo textureImageCreateInfo{};
-		textureImageCreateInfo.imageSize = { static_cast<size_t>(texWidth), static_cast<size_t>(texHeight) };
-		textureImageCreateInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-		textureImageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-		textureImageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-		textureImageCreateInfo.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-		textureImageCreateInfo.allocator = allocator;
-		textureImageCreateInfo.device = device;
-		textureImageCreateInfo.commandPool = commandPool;
-		textureImageCreateInfo.graphicsQueue = graphicsQueue;
-
-		std::shared_ptr<TextureImage> currentImage = std::make_shared<TextureImage>(textureImageCreateInfo);
-		textureImages.push_back(currentImage);
-
-		currentImage->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-		currentImage->CopyFromBuffer(&stagingBuffer);
-		currentImage->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-		stagingBuffer.DestroyBuffer();
+        CreateDescriptorPool();
+        CreateDescriptorSetLayout();
+        CreateDescriptorSets();
+        CreateGraphicsPipeline();
     }
 }
 
@@ -169,12 +173,12 @@ void VulkanInterface::CreateDescriptorSets() {
 
         std::vector<VkDescriptorImageInfo> imageInfos;
 
-        for (size_t i = 0; i < textureFiles.size(); i++)
+        for (auto it = textureFilePaths.begin(); it != textureFilePaths.end(); it++)
         {
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = textureImages[i]->GetImageView();
-            imageInfo.sampler = textureImages[i]->GetTextureSampler();
+            imageInfo.imageView = textureImages[*it]->GetImageView();
+            imageInfo.sampler = textureImages[*it]->GetTextureSampler();
 
             imageInfos.push_back(imageInfo);
         }
@@ -210,13 +214,18 @@ void VulkanInterface::CreateDescriptorSets() {
 }
 
 void VulkanInterface::CreateDescriptorPool() {
+    if (descriptorPool != VK_NULL_HANDLE)
+    {
+		vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+    }
+    
     std::array<VkDescriptorPoolSize, 3> poolSizes{};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[2].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT) * textureFiles.size();
+    poolSizes[2].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT) * textureFilePaths.size();
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -266,6 +275,11 @@ void VulkanInterface::CreateUniformBuffers() {
 }
 
 void VulkanInterface::CreateDescriptorSetLayout() {
+    if (descriptorSetLayout != VK_NULL_HANDLE)
+    {
+		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+    }
+    
     VkDescriptorSetLayoutBinding globalInfoLayoutBinding{};
     globalInfoLayoutBinding.binding = 0;
     globalInfoLayoutBinding.descriptorCount = 1;
@@ -282,7 +296,7 @@ void VulkanInterface::CreateDescriptorSetLayout() {
 
     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
     samplerLayoutBinding.binding = 2;
-    samplerLayoutBinding.descriptorCount = textureFiles.size();
+    samplerLayoutBinding.descriptorCount = textureFilePaths.size();
     samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     samplerLayoutBinding.pImmutableSamplers = nullptr;
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -433,7 +447,7 @@ void VulkanInterface::DrawSingleObjectCommandBuffer(VkCommandBuffer commandBuffe
     VkDeviceSize offsets[] = { 0, 0 };
     vkCmdBindVertexBuffers(commandBuffer, 0, 2, objectVertexBuffer, offsets);
 
-    if (meshComponent->IsIndexed() > 0)
+    if (meshComponent->IsIndexed())
     {
         vkCmdBindIndexBuffer(commandBuffer, meshComponent->GetIndexBuffer()->GetVkBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
@@ -541,6 +555,16 @@ void VulkanInterface::CreateRenderPass() {
 }
 
 void VulkanInterface::CreateGraphicsPipeline() {
+    if (graphicsPipeline != VK_NULL_HANDLE)
+    {
+		vkDestroyPipeline(device, graphicsPipeline, nullptr);
+    }
+
+    if (pipelineLayout != VK_NULL_HANDLE)
+    {
+		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    }
+    
     auto vertShaderCode = ReadFile("shaders/HLSL/VertexShader.spv");
     auto fragShaderCode = ReadFile("shaders/HLSL/PixelShader.spv");
 
@@ -971,25 +995,6 @@ void VulkanInterface::CreateSurface() {
     }
 }
 
-void VulkanInterface::CreateVertexBuffers() {
-    Factory objectClasses = FACTORY(MeshRenderer);
-    std::vector<std::string> objectClassNames = objectClasses.GetRegisteredClasses();
-
-    for (size_t i = 0; i < objectClassNames.size(); i++)
-    {
-        std::shared_ptr<MeshRenderer> classInstance = std::shared_ptr<MeshRenderer>(objectClasses.create(objectClassNames[i]));
-
-        if (classInstance == nullptr)
-        {
-            continue;
-        }
-
-        std::shared_ptr<GraphicsBuffer> vertexBuffer =  CreateVertexBuffer(classInstance);
-		vertexBuffers[objectClassNames[i]] = vertexBuffer;
-        vertexBufferSizes[objectClassNames[i]] = static_cast<uint16_t>(classInstance->GetVertices().size());
-    }
-}
-
 std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateVertexBuffer(std::shared_ptr<MeshRenderer> meshInfo) {
     VkDeviceSize bufferSize = sizeof(VulkanCommonFunctions::Vertex) * meshInfo->GetVertices().size();
 
@@ -1024,28 +1029,27 @@ std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateVertexBuffer(std::shared_
     return vertexBuffer;
 }
 
-void VulkanInterface::CreateIndexBuffers() {
-    Factory objectClasses = FACTORY(MeshRenderer);
-    std::vector<std::string> objectClassNames = objectClasses.GetRegisteredClasses();
-
-    for (size_t i = 0; i < objectClassNames.size(); i++)
+void VulkanInterface::UpdateObjectBuffers(std::shared_ptr<MeshRenderer> objectMesh)
+{
+    if (objectMesh->GetMeshName() == MeshRenderer::kCustomMeshName)
     {
-        std::shared_ptr<MeshRenderer> classInstance = std::shared_ptr<MeshRenderer>(objectClasses.create(objectClassNames[i]));
-
-        if (classInstance == nullptr)
-        {
-            continue;
-        }
-
-        if (!classInstance->IsIndexed())
-        {
-            return;
-        }
-
-        std::shared_ptr<GraphicsBuffer> indexBuffer = CreateIndexBuffer(classInstance);
-        indexBuffers[objectClassNames[i]] = indexBuffer;
-        indexBufferSizes[objectClassNames[i]] = static_cast<uint16_t>(classInstance->GetIndices().size());
+        return;
     }
+
+    if (vertexBuffers.contains(objectMesh->GetMeshName()) || (objectMesh->IsIndexed() && indexBuffers.contains(objectMesh->GetMeshName())))
+    {
+        return;
+    }
+
+    std::shared_ptr<GraphicsBuffer> indexBuffer = CreateIndexBuffer(objectMesh);
+    indexBuffers[objectMesh->GetMeshName()] = indexBuffer;
+    indexBufferSizes[objectMesh->GetMeshName()] = static_cast<uint16_t>(objectMesh->GetIndices().size());
+
+    std::shared_ptr<GraphicsBuffer> vertexBuffer = CreateVertexBuffer(objectMesh);
+    vertexBuffers[objectMesh->GetMeshName()] = vertexBuffer;
+    vertexBufferSizes[objectMesh->GetMeshName()] = static_cast<uint16_t>(objectMesh->GetVertices().size());
+
+    CreateInstanceBuffer(objectMesh);
 }
 
 std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateIndexBuffer(std::shared_ptr<MeshRenderer>  meshInfo) {
@@ -1148,19 +1152,17 @@ void VulkanInterface::CreateVMAAllocator()
     vmaCreateAllocator(&allocatorCreateInfo, &allocator);
 }
 
-void VulkanInterface::CreateInstanceBuffers()
+void VulkanInterface::CreateInstanceBuffer(std::shared_ptr<MeshRenderer> object)
 {
-    Factory objectClasses = FACTORY(MeshRenderer);
-
-	std::vector<std::string> objectClassNames = objectClasses.GetRegisteredClasses();
+    if (object->GetMeshName() == MeshRenderer::kCustomMeshName)
+    {
+        return;
+    }
 
     for (uint32_t frameIndex = 0; frameIndex < MAX_FRAMES_IN_FLIGHT; frameIndex++)
     {
-        for (size_t i = 0; i < objectClassNames.size(); i++)
-        {
-            std::shared_ptr<GraphicsBuffer> instanceBuffer = CreateInstanceBuffer(VulkanCommonFunctions::MAX_OBJECTS);
-			instanceBuffers[frameIndex][objectClassNames[i]] = instanceBuffer;
-        }
+        std::shared_ptr<GraphicsBuffer> instanceBuffer = CreateInstanceBuffer(VulkanCommonFunctions::MAX_OBJECTS);
+		instanceBuffers[frameIndex][object->GetMeshName()] = instanceBuffer;
     }
 }
 
@@ -1207,12 +1209,21 @@ void VulkanInterface::UpdateInstanceBuffer(std::string objectName, std::set<Vulk
             continue;
 
         VulkanCommonFunctions::InstanceInfo info = object->GetInstanceInfo();
+
+        auto iterator = std::find(textureFilePaths.begin(), textureFilePaths.end(), meshRenderer->GetTexturePath());
+
+        info.textureIndex = std::distance(textureFilePaths.begin(), iterator);
+        if (info.textureIndex > textureFilePaths.size())
+        {
+            info.textureIndex = 0;
+        }
+
         objectInfo.push_back(info);
     }
 
     if (objectInfo.size() == 0)
     {
-        return;
+        return; 
     }
 
     VkDeviceSize bufferSize = objectHandles.size() * sizeof(VulkanCommonFunctions::InstanceInfo);
@@ -1395,9 +1406,9 @@ void VulkanInterface::Cleanup() {
 		lightInfoBuffers[i]->DestroyBuffer();
     }
 
-    for (size_t i = 0; i < textureFiles.size(); i++)
+    for (auto it = textureFilePaths.begin(); it != textureFilePaths.end(); it++)
     {
-		textureImages[i]->DestroyTextureImage();
+		textureImages[*it]->DestroyTextureImage();
     }
 
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);

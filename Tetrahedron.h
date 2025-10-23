@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Factory.h"
 #include "MeshRenderer.h"
 #include "VulkanCommonFunctions.h"
 
@@ -54,5 +53,3 @@ private:
         9, 10, 11
     };
 };
-
-REGISTER(MeshRenderer, Tetrahedron);

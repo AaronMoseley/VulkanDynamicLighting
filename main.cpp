@@ -114,6 +114,7 @@ private:
             if ((double)rand() / (RAND_MAX) >= 0.5f)
             {
                 currentMesh->SetIsBillboarded(true);
+                newObject->GetComponent<Transform>()->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
             }
 
 			currentMesh->SetColor(color);
@@ -181,6 +182,7 @@ private:
             if ((double)rand() / (RAND_MAX) >= 0.5f)
             {
                 currentMesh->SetIsBillboarded(true);
+				newObject->GetComponent<Transform>()->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
             }
 
             currentMesh->SetColor(glm::vec3(0.9f));

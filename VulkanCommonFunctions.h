@@ -40,6 +40,8 @@ namespace VulkanCommonFunctions {
         glm::mat4 modelMatrix;
         glm::mat4 modelMatrixInverse;
 
+        alignas(16) glm::vec3 scale;
+
         alignas(16) glm::vec3 ambient;
         alignas(16) glm::vec3 diffuse;
         alignas(16) glm::vec3 specular;
@@ -71,8 +73,8 @@ namespace VulkanCommonFunctions {
             return result;
         }
 
-        static std::array<VkVertexInputAttributeDescription, 19> GetAttributeDescriptions() {
-            std::array<VkVertexInputAttributeDescription, 19> attributeDescriptions{};
+        static std::array<VkVertexInputAttributeDescription, 20> GetAttributeDescriptions() {
+            std::array<VkVertexInputAttributeDescription, 20> attributeDescriptions{};
 
             attributeDescriptions[0].binding = 0;
             attributeDescriptions[0].location = 0;
@@ -103,7 +105,12 @@ namespace VulkanCommonFunctions {
                 attributeDescriptions[i].offset = sizeof(glm::mat4) + sizeof(glm::vec4) * (i - 7);
             }
 
-            for (uint32_t i = 11; i < 14; i++)
+            attributeDescriptions[11].binding = 1;
+            attributeDescriptions[11].location = 11;
+            attributeDescriptions[11].format = VK_FORMAT_R32G32B32_SFLOAT;
+            attributeDescriptions[11].offset = offsetof(InstanceInfo, scale);
+
+            for (uint32_t i = 12; i < 15; i++)
             {
                 attributeDescriptions[i].binding = 1;
                 attributeDescriptions[i].location = i;
@@ -111,30 +118,30 @@ namespace VulkanCommonFunctions {
                 attributeDescriptions[i].offset = (2 * sizeof(glm::mat4)) + (sizeof(glm::vec3) * (i - 11));
             }
 
-            attributeDescriptions[14].binding = 1;
-            attributeDescriptions[14].location = 14;
-            attributeDescriptions[14].format = VK_FORMAT_R32_SFLOAT;
-            attributeDescriptions[14].offset = offsetof(InstanceInfo, shininess);
-
             attributeDescriptions[15].binding = 1;
             attributeDescriptions[15].location = 15;
-            attributeDescriptions[15].format = VK_FORMAT_R32_UINT;
-            attributeDescriptions[15].offset = offsetof(InstanceInfo, lit);
+            attributeDescriptions[15].format = VK_FORMAT_R32_SFLOAT;
+            attributeDescriptions[15].offset = offsetof(InstanceInfo, shininess);
 
             attributeDescriptions[16].binding = 1;
             attributeDescriptions[16].location = 16;
             attributeDescriptions[16].format = VK_FORMAT_R32_UINT;
-            attributeDescriptions[16].offset = offsetof(InstanceInfo, textured);
+            attributeDescriptions[16].offset = offsetof(InstanceInfo, lit);
 
             attributeDescriptions[17].binding = 1;
             attributeDescriptions[17].location = 17;
             attributeDescriptions[17].format = VK_FORMAT_R32_UINT;
-            attributeDescriptions[17].offset = offsetof(InstanceInfo, textureIndex);
+            attributeDescriptions[17].offset = offsetof(InstanceInfo, textured);
 
             attributeDescriptions[18].binding = 1;
             attributeDescriptions[18].location = 18;
             attributeDescriptions[18].format = VK_FORMAT_R32_UINT;
-            attributeDescriptions[18].offset = offsetof(InstanceInfo, isBillboarded);
+            attributeDescriptions[18].offset = offsetof(InstanceInfo, textureIndex);
+
+            attributeDescriptions[19].binding = 1;
+            attributeDescriptions[19].location = 19;
+            attributeDescriptions[19].format = VK_FORMAT_R32_UINT;
+            attributeDescriptions[19].offset = offsetof(InstanceInfo, isBillboarded);
 
             return attributeDescriptions;
         }

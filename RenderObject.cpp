@@ -70,6 +70,8 @@ VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()
 
 	result.modelMatrixInverse = glm::inverse(result.modelMatrix);
 
+	result.scale = transform->GetScale();
+
 	result.ambient = meshRenderer->GetColor();
 	result.diffuse = meshRenderer->GetColor();
 	result.specular = glm::vec3(0.5f, 0.5f, 0.5f);

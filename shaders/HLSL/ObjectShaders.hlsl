@@ -9,17 +9,19 @@ struct VSInputVertex
     [[vk::location(3)]] float4x4 model : TEXCOORD1; //4 locations for 4 * float4
     [[vk::location(7)]] float4x4 modelMatrixInverted : TEXCOORD2; //4 locations for 4 * float4
     
-    [[vk::location(11)]] float3 ambient : COLOR3;
-    [[vk::location(12)]] float3 diffuse : COLOR4;
-    [[vk::location(13)]] float3 specular : COLOR5;
+    [[vk::location(11)]] float3 scale : TEXCOORD8;
     
-    [[vk::location(14)]] float shininess : COLOR6;
-    [[vk::location(15)]] uint lit : COLOR7;
+    [[vk::location(12)]] float3 ambient : COLOR3;
+    [[vk::location(13)]] float3 diffuse : COLOR4;
+    [[vk::location(14)]] float3 specular : COLOR5;
     
-    [[vk::location(16)]] uint textured : TEXTCOORD8;
-    [[vk::location(17)]] uint textureIndex : TEXCOORD9;
+    [[vk::location(15)]] float shininess : COLOR6;
+    [[vk::location(16)]] uint lit : COLOR7;
     
-    [[vk::location(18)]] uint billboarded : TEXCOORD10;
+    [[vk::location(17)]] uint textured : TEXTCOORD9;
+    [[vk::location(18)]] uint textureIndex : TEXCOORD10;
+    
+    [[vk::location(19)]] uint billboarded : TEXCOORD11;
 };
 
 //Vertex shader output to fragment shader input
@@ -83,7 +85,7 @@ VSOutput VSMain(VSInputVertex vertexInput)
     
     if (vertexInput.billboarded > 0)
     {
-        viewPos += float4(vertexInput.position.xy, 0.0, 0.0);
+        viewPos += float4(vertexInput.position.xy * vertexInput.scale.xy, 0.0, 0.0);
     }
     
     float4 clipPos = mul(projection, viewPos);

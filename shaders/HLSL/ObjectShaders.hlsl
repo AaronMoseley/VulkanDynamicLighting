@@ -69,25 +69,24 @@ VSOutput VSMain(VSInputVertex vertexInput)
 {
     VSOutput output;
     
-    float4 worldPos = mul(vertexInput.model, float4(vertexInput.position, 1.0));
+    float4 worldPos;
+    if (vertexInput.billboarded > 0)
+    {
+        worldPos = mul(vertexInput.model, float4(0.0, 0.0, 0.0, 1.0));
+    }
+    else
+    {
+        worldPos = mul(vertexInput.model, float4(vertexInput.position, 1.0));
+    }
     
-    float4x4 modelView = mul(view, vertexInput.model);
+    float4 viewPos = mul(view, worldPos);
     
     if (vertexInput.billboarded > 0)
     {
-        modelView._11 = 1.0;
-        modelView._12 = 0.0;
-        modelView._13 = 0.0;
-        modelView._21 = 0.0;
-        modelView._22 = 1.0;
-        modelView._23 = 0.0;
-        modelView._31 = 0.0;
-        modelView._32 = 0.0;
-        modelView._33 = 1.0;
+        viewPos += float4(vertexInput.position.xy, 0.0, 0.0);
     }
     
-    float4x4 mvp = mul(projection, modelView);
-    float4 clipPos = mul(mvp, float4(vertexInput.position, 1.0));
+    float4 clipPos = mul(projection, viewPos);
     
     output.position = clipPos;
     output.worldPosition = worldPos.xyz;

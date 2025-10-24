@@ -101,7 +101,7 @@ private:
                 glm::vec3(0.5f, 0.5f, 0.5f)
             );
 
-            if ((double)rand() / (RAND_MAX) >= 0.0f)
+            if ((double)rand() / (RAND_MAX) >= 0.5f)
             {
 				newObject->AddComponent<Cube>();
             }
@@ -110,6 +110,11 @@ private:
             }
 
 			std::shared_ptr<MeshRenderer> currentMesh = newObject->GetComponent<MeshRenderer>();
+
+            if ((double)rand() / (RAND_MAX) >= 0.5f)
+            {
+                currentMesh->SetIsBillboarded(true);
+            }
 
 			currentMesh->SetColor(color);
 
@@ -172,6 +177,11 @@ private:
             }
 
 			std::shared_ptr<MeshRenderer> currentMesh = newObject->GetComponent<MeshRenderer>();
+
+            if ((double)rand() / (RAND_MAX) >= 0.5f)
+            {
+                currentMesh->SetIsBillboarded(true);
+            }
 
             currentMesh->SetColor(glm::vec3(0.9f));
 

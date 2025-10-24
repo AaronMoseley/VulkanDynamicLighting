@@ -18,6 +18,8 @@ struct VSInputVertex
     
     [[vk::location(16)]] uint textured : TEXTCOORD8;
     [[vk::location(17)]] uint textureIndex : TEXCOORD9;
+    
+    [[vk::location(18)]] uint billboarded : TEXCOORD10;
 };
 
 //Vertex shader output to fragment shader input
@@ -68,8 +70,24 @@ VSOutput VSMain(VSInputVertex vertexInput)
     VSOutput output;
     
     float4 worldPos = mul(vertexInput.model, float4(vertexInput.position, 1.0));
-    float4 viewPos = mul(view, worldPos);
-    float4 clipPos = mul(projection, viewPos);
+    
+    float4x4 modelView = mul(view, vertexInput.model);
+    
+    if (vertexInput.billboarded > 0)
+    {
+        modelView._11 = 1.0;
+        modelView._12 = 0.0;
+        modelView._13 = 0.0;
+        modelView._21 = 0.0;
+        modelView._22 = 1.0;
+        modelView._23 = 0.0;
+        modelView._31 = 0.0;
+        modelView._32 = 0.0;
+        modelView._33 = 1.0;
+    }
+    
+    float4x4 mvp = mul(projection, modelView);
+    float4 clipPos = mul(mvp, float4(vertexInput.position, 1.0));
     
     output.position = clipPos;
     output.worldPosition = worldPos.xyz;

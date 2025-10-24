@@ -57,6 +57,9 @@ public:
 	void SetTextureDataDirty(bool dirty) { m_textureDataDirty = dirty; }
 	bool IsTextureDataDirty() { return m_textureDataDirty; }
 
+	void SetIsBillboarded(bool isBillboarded) { m_isBillboarded = isBillboarded; }
+	bool IsBillboarded() { return m_isBillboarded; }
+
 protected:
 	std::string m_meshName = kCustomMeshName;
 
@@ -78,4 +81,6 @@ protected:
 
 	bool m_textured = false;
 	std::string m_texturePath = "";
+
+	bool m_isBillboarded = false;
 };

@@ -48,6 +48,8 @@ namespace VulkanCommonFunctions {
 
         alignas(4) uint32_t textured;
         alignas(4) uint32_t textureIndex;
+
+        alignas(4) uint32_t isBillboarded;
     };
 
     struct Vertex {
@@ -69,8 +71,8 @@ namespace VulkanCommonFunctions {
             return result;
         }
 
-        static std::array<VkVertexInputAttributeDescription, 18> GetAttributeDescriptions() {
-            std::array<VkVertexInputAttributeDescription, 18> attributeDescriptions{};
+        static std::array<VkVertexInputAttributeDescription, 19> GetAttributeDescriptions() {
+            std::array<VkVertexInputAttributeDescription, 19> attributeDescriptions{};
 
             attributeDescriptions[0].binding = 0;
             attributeDescriptions[0].location = 0;
@@ -128,6 +130,11 @@ namespace VulkanCommonFunctions {
             attributeDescriptions[17].location = 17;
             attributeDescriptions[17].format = VK_FORMAT_R32_UINT;
             attributeDescriptions[17].offset = offsetof(InstanceInfo, textureIndex);
+
+            attributeDescriptions[18].binding = 1;
+            attributeDescriptions[18].location = 18;
+            attributeDescriptions[18].format = VK_FORMAT_R32_UINT;
+            attributeDescriptions[18].offset = offsetof(InstanceInfo, isBillboarded);
 
             return attributeDescriptions;
         }

@@ -121,11 +121,11 @@ private:
 
             if (sceneManager->GetObjectCount() % 3 == 0)
             {
-                currentMesh->SetTexture("C:\\Users\\Aaron\\Documents\\GitHub\\VulkanDynamicLighting\\textures\\SandTexture.png");
+                currentMesh->SetTexture("textures\\SandTexture.png");
             }
             else if (sceneManager->GetObjectCount() % 3 == 1)
             {
-                currentMesh->SetTexture("C:\\Users\\Aaron\\Documents\\GitHub\\VulkanDynamicLighting\\textures\\OtherTexture.png");
+                currentMesh->SetTexture("textures\\OtherTexture.png");
             }
             else {
                 currentMesh->SetTextured(false);
@@ -189,11 +189,11 @@ private:
 
             if (sceneManager->GetObjectCount() % 3 == 0)
             {
-                currentMesh->SetTexture("C:\\Users\\Aaron\\Documents\\GitHub\\VulkanDynamicLighting\\textures\\SandTexture.png");
+                currentMesh->SetTexture("textures\\SandTexture.png");
             }
             else if (sceneManager->GetObjectCount() % 3 == 1)
             {
-                currentMesh->SetTexture("C:\\Users\\Aaron\\Documents\\GitHub\\VulkanDynamicLighting\\textures\\OtherTexture.png");
+                currentMesh->SetTexture("textures\\OtherTexture.png");
             }
             else {
                 currentMesh->SetTextured(false);

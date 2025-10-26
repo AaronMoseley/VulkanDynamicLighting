@@ -16,8 +16,8 @@ public:
 	virtual void Start() {};
 	virtual void Update(float deltaTime) {};
 
-	RenderObject* GetOwner() { return m_owner; }
-	void SetOwner(RenderObject* owner) { m_owner = owner; }
+	std::shared_ptr<RenderObject> GetOwner() { return m_owner; }
+	void SetOwner(std::shared_ptr<RenderObject> owner) { m_owner = std::shared_ptr<RenderObject>(owner); }
 	Scene* GetScene();
 
 	std::shared_ptr<WindowManager> GetWindowManager() { return m_windowManager; }
@@ -30,8 +30,8 @@ public:
 	void SetStarted(bool started) { m_started = started; }
 
 private:
-	RenderObject* m_owner = nullptr;
+	std::shared_ptr<RenderObject> m_owner = nullptr;
 	std::shared_ptr<WindowManager> m_windowManager = nullptr;
-	alignas(8) bool m_enabled = true;
-	alignas(8) bool m_started = false;
+	bool m_enabled = true;
+	bool m_started = false;
 };

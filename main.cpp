@@ -5,6 +5,9 @@
 #include <set>
 #include <memory>
 
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+
 #include "RenderObject.h"
 #include "Cube.h"
 #include "Tetrahedron.h"
@@ -63,25 +66,23 @@ private:
     {
         std::srand(std::time(0));
 
-        std::shared_ptr<RenderObject> cameraObject = std::make_shared<RenderObject>(
-            windowManager,
-            glm::vec3(0.0f, 0.0f, 5.0f),
-            glm::vec3(0.0f, -90.0f, 0.0f),
-            glm::vec3(1.0f)
-		);
+        std::shared_ptr<RenderObject> cameraObject = std::make_shared<RenderObject>(windowManager);
+
+		std::shared_ptr<Transform> cameraTransform = cameraObject->AddComponent<Transform>();
+		cameraTransform->SetPosition(glm::vec3(0.0f, 0.0f, 5.0f));
+		cameraTransform->SetRotation(glm::vec3(0.0f, -90.0f, 0.0f));
+		cameraTransform->SetScale(glm::vec3(1.0f));
 		cameraObject->AddComponent<Camera>();
         cameraObject->AddComponent<FirstPersonController>();
 		cameraObjectHandle = sceneManager->AddObject(cameraObject);
 
-        std::shared_ptr<RenderObject> lightCube = std::make_shared<RenderObject>(
-            windowManager,
-            glm::vec3(lightOrbitRadius),
-            glm::vec3(0.0f),
-            glm::vec3(0.25f)
-        );
+        std::shared_ptr<RenderObject> lightCube = std::make_shared<RenderObject>(windowManager);
 
-        lightCube->AddComponent<Cube>();
-		std::shared_ptr<MeshRenderer> lightMesh = lightCube->GetComponent<MeshRenderer>();
+		std::shared_ptr<Transform> lightTransform = lightCube->AddComponent<Transform>();
+		lightTransform->SetPosition(glm::vec3(lightOrbitRadius, lightOrbitRadius, lightOrbitRadius));
+		lightTransform->SetRotation(glm::vec3(0.0f));
+		lightTransform->SetScale(glm::vec3(0.25f));
+        std::shared_ptr<Cube> lightMesh = lightCube->AddComponent<Cube>();
 		lightMesh->SetLit(false);
 		lightMesh->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
 		lightCube->AddComponent<LightSource>();
@@ -94,12 +95,12 @@ private:
 
         for (int i = 0; i < objectPositions.size(); i++)
         {
-            std::shared_ptr<RenderObject> newObject = std::make_shared<RenderObject>(
-                windowManager,
-                objectPositions[i],
-                glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
-                glm::vec3(0.5f, 0.5f, 0.5f)
-            );
+            std::shared_ptr<RenderObject> newObject = std::make_shared<RenderObject>(windowManager);
+
+			std::shared_ptr<Transform> newObjectTransform = newObject->AddComponent<Transform>();
+            newObjectTransform->SetPosition(objectPositions[i]);
+            newObjectTransform->SetRotation(glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f));
+            newObjectTransform->SetScale(glm::vec3(0.5f));
 
             if ((double)rand() / (RAND_MAX) >= 0.5f)
             {
@@ -162,12 +163,12 @@ private:
         {
             float positionRange = 100.0f;
 
-            std::shared_ptr<RenderObject> newObject = std::make_shared<RenderObject>(
-                windowManager,
-                glm::vec3(((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange),
-                glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f),
-                glm::vec3(0.5f, 0.5f, 0.5f)
-            );
+            std::shared_ptr<RenderObject> newObject = std::make_shared<RenderObject>(windowManager);
+
+            std::shared_ptr<Transform> newObjectTransform = newObject->AddComponent<Transform>();
+            newObjectTransform->SetPosition(glm::vec3(((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange));
+            newObjectTransform->SetRotation(glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f));
+            newObjectTransform->SetScale(glm::vec3(0.5f));
 
             if ((double)rand() / (RAND_MAX) >= 0.5f)
             {

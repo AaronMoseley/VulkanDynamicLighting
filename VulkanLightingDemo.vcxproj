@@ -127,6 +127,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)..\ThirdPartyLibraries\stb-master;$(SolutionDir)..\ThirdPartyLibraries\include;$(SolutionDir)..\VulkanSDK\1.4.309.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

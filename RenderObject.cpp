@@ -5,34 +5,6 @@
 RenderObject::RenderObject(std::shared_ptr<WindowManager> windowManager)
 {
 	m_windowManager = windowManager;
-
-	std::shared_ptr<Transform> transform = AddComponent<Transform>();
-
-	transform->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-	transform->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-	transform->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
-}
-
-RenderObject::RenderObject(std::shared_ptr<WindowManager> windowManager, glm::vec3 position)
-{
-	m_windowManager = windowManager;
-
-	std::shared_ptr<Transform> transform = AddComponent<Transform>();
-
-	transform->SetPosition(position);
-	transform->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
-	transform->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
-}
-
-RenderObject::RenderObject(std::shared_ptr<WindowManager> windowManager, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
-{
-	m_windowManager = windowManager;
-
-	std::shared_ptr<Transform> transform = AddComponent<Transform>();
-
-	transform->SetPosition(position);
-	transform->SetRotation(rotation);
-	transform->SetScale(scale);
 }
 
 VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()

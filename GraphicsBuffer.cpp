@@ -12,7 +12,7 @@ GraphicsBuffer::GraphicsBuffer(BufferCreateInfo createInfo)
 
     VmaAllocationCreateInfo allocInfo = {};
     allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
-    allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
+    allocInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
 	m_device = createInfo.device;
 	m_commandPool = createInfo.commandPool;
@@ -21,12 +21,11 @@ GraphicsBuffer::GraphicsBuffer(BufferCreateInfo createInfo)
 
 	m_maxSize = createInfo.size;
 
-    //m_mappedData = malloc(m_maxSize);
-	m_mappedData = static_cast<void*>(std::make_unique<char[]>(m_maxSize).get());
+    VmaAllocationInfo allocationResult;
 
-    vmaCreateBuffer(m_allocator, &bufferInfo, &allocInfo, &m_buffer, &m_allocation, nullptr);
+    vmaCreateBuffer(m_allocator, &bufferInfo, &allocInfo, &m_buffer, &m_allocation, &allocationResult);
 
-    vmaMapMemory(m_allocator, m_allocation, &m_mappedData);
+	m_mappedData = allocationResult.pMappedData;
 }
 
 void GraphicsBuffer::CopyBuffer(std::shared_ptr<GraphicsBuffer> destintationBuffer, VkDeviceSize copySize)
@@ -60,6 +59,5 @@ void GraphicsBuffer::LoadData(void* data, size_t memorySize)
 
 void GraphicsBuffer::DestroyBuffer()
 {
-    vmaUnmapMemory(m_allocator, m_allocation);
     vmaDestroyBuffer(m_allocator, m_buffer, m_allocation);
 }

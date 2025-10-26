@@ -102,9 +102,9 @@ void VulkanInterface::CreateTextureImage(std::string textureFilePath) {
 	stagingBufferCreateInfo.device = device;
 	stagingBufferCreateInfo.commandPool = commandPool;
 	stagingBufferCreateInfo.graphicsQueue = graphicsQueue;
-	GraphicsBuffer stagingBuffer(stagingBufferCreateInfo);
+	std::unique_ptr<GraphicsBuffer> stagingBuffer = std::make_unique<GraphicsBuffer>(stagingBufferCreateInfo);
 
-	stagingBuffer.LoadData(pixels, static_cast<size_t>(imageSize));
+	stagingBuffer->LoadData(pixels, static_cast<size_t>(imageSize));
 
     stbi_image_free(pixels);
 
@@ -123,10 +123,10 @@ void VulkanInterface::CreateTextureImage(std::string textureFilePath) {
 	textureImages[textureFilePath] = currentImage;
 
 	currentImage->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-	currentImage->CopyFromBuffer(&stagingBuffer);
+	currentImage->CopyFromBuffer(stagingBuffer.get());
 	currentImage->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-	stagingBuffer.DestroyBuffer();
+	stagingBuffer->DestroyBuffer();
 }
 
 void VulkanInterface::UpdateTextureResources(std::string textureFilePath, bool alreadyInitialized)
@@ -1007,10 +1007,10 @@ std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateVertexBuffer(std::shared_
 	stagingBufferCreateInfo.graphicsQueue = graphicsQueue;
     stagingBufferCreateInfo.device = device;
 
-	std::vector< VulkanCommonFunctions::Vertex>& vertices = meshInfo->GetVertices();
+	const std::vector< VulkanCommonFunctions::Vertex>& vertices = meshInfo->GetVertices();
 
 	std::shared_ptr<GraphicsBuffer> stagingBuffer = std::make_shared<GraphicsBuffer>(stagingBufferCreateInfo);
-    stagingBuffer->LoadData(vertices.data(), (size_t)bufferSize);
+    stagingBuffer->LoadData((void*)vertices.data(), (size_t)bufferSize);
 
     GraphicsBuffer::BufferCreateInfo vertexBufferCreateInfo = {};
     vertexBufferCreateInfo.size = bufferSize;
@@ -1064,10 +1064,10 @@ std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateIndexBuffer(std::shared_p
     stagingBufferCreateInfo.graphicsQueue = graphicsQueue;
     stagingBufferCreateInfo.device = device;
 
-	std::vector<uint16_t>& indices = meshInfo->GetIndices();
+	const std::vector<uint16_t>& indices = meshInfo->GetIndices();
 
     std::shared_ptr<GraphicsBuffer> stagingBuffer = std::make_shared<GraphicsBuffer>(stagingBufferCreateInfo);
-    stagingBuffer->LoadData(indices.data(), (size_t)bufferSize);
+    stagingBuffer->LoadData((void*)indices.data(), (size_t)bufferSize);
 
     GraphicsBuffer::BufferCreateInfo indexBufferCreateInfo = {};
     indexBufferCreateInfo.size = bufferSize;

@@ -30,16 +30,16 @@ public:
 
 private:
 	VkBuffer m_buffer = VK_NULL_HANDLE;
-	VmaAllocation m_allocation = nullptr;
+	VmaAllocation m_allocation = VK_NULL_HANDLE;
 
-	VkMemoryPropertyFlags m_properties;
+	VkMemoryPropertyFlags m_properties = 0;
 
-	VmaAllocator m_allocator;
+	VmaAllocator m_allocator = VK_NULL_HANDLE;
 
-	VkDevice m_device;
-	VkCommandPool m_commandPool;
-	VkQueue m_graphicsQueue;
-	void* m_mappedData;
+	VkDevice m_device = VK_NULL_HANDLE;
+	VkCommandPool m_commandPool = VK_NULL_HANDLE;
+	VkQueue m_graphicsQueue = VK_NULL_HANDLE;
+	void* m_mappedData = nullptr;
 
-	size_t m_maxSize;
+	size_t m_maxSize = 0;
 };

@@ -22,11 +22,9 @@
 
 class Scene;
 
-class RenderObject {
+class RenderObject : public std::enable_shared_from_this<RenderObject> {
 public:
 	RenderObject(std::shared_ptr<WindowManager> windowManager);
-	RenderObject(std::shared_ptr<WindowManager> windowManager, glm::vec3 position);
-	RenderObject(std::shared_ptr<WindowManager> windowManager, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 
 	template <typename T>
 	std::shared_ptr<T> AddComponent()
@@ -34,7 +32,7 @@ public:
 		std::shared_ptr<T> newComponent = std::make_shared<T>();
 		m_components.push_back(newComponent);
 
-		newComponent->SetOwner(this);
+		newComponent->SetOwner(shared_from_this());
 
 		newComponent->SetWindowManager(m_windowManager);
 
@@ -68,10 +66,14 @@ public:
 	void SetSceneManager(Scene* sceneManager) { m_sceneManager = sceneManager; }
 	Scene* GetSceneManager() { return m_sceneManager; }
 
+	bool IsInitialized() { return m_initialized; }
+
 private:
 	std::vector<std::shared_ptr<ObjectComponent>> m_components;
 	std::shared_ptr<WindowManager> m_windowManager = nullptr;
 	std::shared_ptr<GraphicsBuffer> m_instanceBuffer = nullptr;
 	
 	Scene* m_sceneManager = nullptr;
+
+	bool m_initialized = false;
 };

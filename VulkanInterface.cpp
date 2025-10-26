@@ -91,7 +91,7 @@ void VulkanInterface::CreateTextureImage(std::string textureFilePath) {
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     if (!pixels) {
-        throw std::runtime_error("failed to load texture image!");
+        throw std::runtime_error("failed to load texture image: " + textureFilePath);
     }
 
     GraphicsBuffer::BufferCreateInfo stagingBufferCreateInfo{};

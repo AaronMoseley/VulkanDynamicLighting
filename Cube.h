@@ -7,9 +7,9 @@ class Cube : public MeshRenderer {
 public:
     Cube() : MeshRenderer()
 	{
+        m_meshName = "Cube";
         SetVertices(cubeVertices);
 		SetIndices(cubeIndices);
-        m_meshName = "Cube";
 	}
 
     const std::vector<VulkanCommonFunctions::Vertex>& GetVertices() override { return cubeVertices; };

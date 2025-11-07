@@ -7,9 +7,9 @@ class Tetrahedron : public MeshRenderer {
 public:
     Tetrahedron() : MeshRenderer()
     {
+        m_meshName = "Tetrahedron";
 		SetVertices(tetrahedronVertices);
         SetIndices(tetrahedronIndices);
-		m_meshName = "Tetrahedron";
     }
 
 	const std::vector<VulkanCommonFunctions::Vertex>& GetVertices() override { return tetrahedronVertices; };

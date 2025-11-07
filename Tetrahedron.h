@@ -8,8 +8,6 @@ public:
     Tetrahedron() : MeshRenderer()
     {
         m_meshName = "Tetrahedron";
-		SetVertices(tetrahedronVertices);
-        SetIndices(tetrahedronIndices);
     }
 
 	const std::vector<VulkanCommonFunctions::Vertex>& GetVertices() override { return tetrahedronVertices; };

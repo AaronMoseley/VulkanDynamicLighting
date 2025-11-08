@@ -162,6 +162,15 @@ private:
             lightObject->GetComponent<Transform>()->SetPosition(glm::vec3(lightOrbitRadius * cos(currentFrameTime), lightOrbitRadius * sin(currentFrameTime), lightOrbitRadius * cos(currentFrameTime)));
         }
 
+        if (windowManager->KeyPressedThisFrame(GLFW_KEY_T))
+        {
+            std::vector<uint16_t> triangleIndices = {
+            0, 1, 2
+            };
+
+            lightObject->GetComponent<MeshRenderer>()->SetIndices(triangleIndices);
+        }
+
         for (auto it = objectHandles.begin(); it != objectHandles.end(); it++)
         {
             std::shared_ptr<RenderObject> currentObject = sceneManager->GetRenderObject(*it);

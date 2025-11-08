@@ -190,6 +190,18 @@ void Scene::FinalizeMesh(std::shared_ptr<RenderObject> updatedObject)
         return;
     }
 
+	std::shared_ptr<GraphicsBuffer> oldVertexBuffer = meshComponent->GetVertexBuffer();
+    if (oldVertexBuffer != nullptr)
+	{
+		m_buffersToDestroy.push_back(oldVertexBuffer);
+	}
+
+	std::shared_ptr<GraphicsBuffer> oldIndexBuffer = meshComponent->GetIndexBuffer();
+	if (oldIndexBuffer != nullptr)
+	{
+		m_buffersToDestroy.push_back(oldIndexBuffer);
+	}
+
     std::shared_ptr<GraphicsBuffer> vertexBuffer = m_vulkanInterface->CreateVertexBuffer(meshComponent);
     std::shared_ptr<GraphicsBuffer> indexBuffer = m_vulkanInterface->CreateIndexBuffer(meshComponent);
 

@@ -60,9 +60,9 @@ void Scene::MainLoop()
             }
         }
 
-        for (size_t i = 0; i < updateCallbacks.size(); i++)
+        for (size_t i = 0; i < m_updateCallbacks.size(); i++)
         {
-			updateCallbacks[i](m_deltaTime);
+			m_updateCallbacks[i](m_deltaTime);
         }
 
         m_vulkanInterface->DrawFrame(m_deltaTime, m_meshNameToObjectMap, m_objects);
@@ -74,7 +74,7 @@ void Scene::MainLoop()
         }
     }
 
-    m_vulkanInterface->Cleanup();
+    m_vulkanInterface->Cleanup(m_objects, m_buffersToDestroy);
 }
 
 VulkanCommonFunctions::ObjectHandle Scene::AddObject(std::shared_ptr <RenderObject> newObject)
@@ -124,12 +124,30 @@ bool Scene::RemoveObject(VulkanCommonFunctions::ObjectHandle objectToRemove)
 
     removalSuccessful = m_objects.erase(objectToRemove);
 
+	std::shared_ptr<GraphicsBuffer> instanceBuffer = currentObject->GetInstanceBuffer();
+    if (instanceBuffer != nullptr)
+    {
+		m_buffersToDestroy.push_back(instanceBuffer);
+    }
+
     std::shared_ptr<MeshRenderer> meshComponent = currentObject->GetComponent<MeshRenderer>();
 
     if (meshComponent == nullptr)
     {
         return removalSuccessful;
     }
+
+	std::shared_ptr<GraphicsBuffer> vertexBuffer = meshComponent->GetVertexBuffer();
+    if (vertexBuffer != nullptr)
+    {
+		m_buffersToDestroy.push_back(vertexBuffer);
+    }
+
+	std::shared_ptr<GraphicsBuffer> indexBuffer = meshComponent->GetIndexBuffer();
+    if (indexBuffer != nullptr)
+	{
+        m_buffersToDestroy.push_back(indexBuffer);
+	}
 
     std::string objectName = meshComponent->GetMeshName();
 

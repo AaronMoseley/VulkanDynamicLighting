@@ -35,7 +35,7 @@ public:
 
     bool HasRenderedFirstFrame() { return renderedFirstFrame; };
 
-    void Cleanup();
+    void Cleanup(std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects, std::vector<std::shared_ptr<GraphicsBuffer>> buffersToDestroy);
 
     std::shared_ptr<GraphicsBuffer> CreateVertexBuffer(std::shared_ptr<MeshRenderer> object);
     std::shared_ptr<GraphicsBuffer> CreateIndexBuffer(std::shared_ptr<MeshRenderer>  object);

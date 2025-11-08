@@ -1234,7 +1234,10 @@ void VulkanInterface::UpdateInstanceBuffer(std::string objectName, std::set<Vulk
 void VulkanInterface::DrawFrame(float deltaTime, std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> objectHandles, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects) {
     for (auto it = objectHandles.begin(); it != objectHandles.end(); it++)
     {
-        UpdateInstanceBuffer(it->first, it->second, objects);
+        if (it->first != MeshRenderer::kCustomMeshName)
+        {
+            UpdateInstanceBuffer(it->first, it->second, objects);
+        }
     }
 
     vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
@@ -1392,7 +1395,7 @@ void VulkanInterface::CleanupSwapChain() {
     swapChain->DestroySwapChain();
 }
 
-void VulkanInterface::Cleanup() {
+void VulkanInterface::Cleanup(std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects, std::vector<std::shared_ptr<GraphicsBuffer>> buffersToDestroy) {
     vkDeviceWaitIdle(device);
 
     CleanupSwapChain();
@@ -1430,6 +1433,40 @@ void VulkanInterface::Cleanup() {
         for (auto it = instanceBuffers[frameIndex].begin(); it != instanceBuffers[frameIndex].end(); it++)
         {
             it->second->DestroyBuffer();
+        }
+    }
+
+    for (auto it = objects.begin(); it != objects.end(); it++)
+    {
+        std::shared_ptr<GraphicsBuffer> instanceBuffer = it->second->GetInstanceBuffer();
+
+        if (instanceBuffer != nullptr)
+        {
+            instanceBuffer->DestroyBuffer();
+        }
+
+		std::shared_ptr<MeshRenderer> meshComponent = it->second->GetComponent<MeshRenderer>();
+        if (meshComponent != nullptr)
+        {
+			std::shared_ptr<GraphicsBuffer> vertexBuffer = meshComponent->GetVertexBuffer();
+            if (vertexBuffer != nullptr)
+            {
+                vertexBuffer->DestroyBuffer();
+			}
+
+            std::shared_ptr<GraphicsBuffer> indexBuffer = meshComponent->GetIndexBuffer();
+            if (indexBuffer != nullptr)
+            {
+                indexBuffer->DestroyBuffer();
+			}
+        }
+    }
+
+    for (size_t i = 0; i < buffersToDestroy.size(); i++)
+    {
+        if (buffersToDestroy[i] != nullptr)
+        {
+            buffersToDestroy[i]->DestroyBuffer();
         }
     }
 

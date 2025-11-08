@@ -22,6 +22,7 @@ void MeshRenderer::SetIndices(std::vector<uint16_t> indices)
 
 	m_indexBufferSize = indices.size();
 	m_indices = indices;
+	m_useIndices = true;
 
 	SetDirtyData(true);
 }

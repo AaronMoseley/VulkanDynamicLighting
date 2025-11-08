@@ -28,7 +28,7 @@ public:
 	size_t GetObjectCount() { return m_objects.size(); };
 
 	void RegisterUpdateCallback(std::function<void(float)> callback) {
-		updateCallbacks.push_back(callback);
+		m_updateCallbacks.push_back(callback);
 	}
 
 private:
@@ -39,7 +39,9 @@ private:
 
 	VulkanCommonFunctions::ObjectHandle m_currentObjectHandle = 0;
 
-	std::vector<std::function<void(float)>> updateCallbacks;
+	std::vector<std::function<void(float)>> m_updateCallbacks;
+
+	std::vector<std::shared_ptr<GraphicsBuffer>> m_buffersToDestroy;
 
 	float m_deltaTime = 0.0f;	// Time between current frame and last frame
 	float m_lastFrame = 0.0f; // Time of last frame

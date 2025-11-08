@@ -60,6 +60,11 @@ VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()
 
 std::shared_ptr<GraphicsBuffer> RenderObject::GetInstanceBuffer()
 {
+	if (m_instanceBuffer == nullptr)
+	{
+		return nullptr;
+	}
+
 	VulkanCommonFunctions::InstanceInfo info = GetInstanceInfo();
 	std::array<VulkanCommonFunctions::InstanceInfo, 1> infoArray = { info };
 

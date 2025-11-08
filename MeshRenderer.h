@@ -12,7 +12,7 @@ class MeshRenderer : public ObjectComponent {
 public:
 	inline const static std::string kCustomMeshName = "CustomMesh";
 
-	MeshRenderer() {};
+	MeshRenderer() { m_meshName = kCustomMeshName; };
 	MeshRenderer(std::vector<VulkanCommonFunctions::Vertex> vertices, std::string name) { m_vertices = vertices; m_meshName = name; }
 	MeshRenderer(std::vector<VulkanCommonFunctions::Vertex> vertices, std::vector<uint16_t> indices, std::string name) { m_vertices = vertices; m_indices = indices; m_useIndices = true; m_meshName = name; }
 
@@ -61,8 +61,6 @@ public:
 	bool IsBillboarded() { return m_isBillboarded; }
 
 protected:
-	std::string m_meshName = kCustomMeshName;
-
 	glm::vec3 m_color = glm::vec3(1.0f);
 	std::vector<VulkanCommonFunctions::Vertex> m_vertices;
 	std::vector<uint16_t> m_indices;
@@ -83,4 +81,6 @@ protected:
 	std::string m_texturePath = "";
 
 	bool m_isBillboarded = false;
+
+	std::string m_meshName = "";
 };

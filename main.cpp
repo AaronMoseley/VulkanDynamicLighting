@@ -62,6 +62,18 @@ private:
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
 
+    std::vector<VulkanCommonFunctions::Vertex> squareVertices = {
+        //positions          //normals           //texture coords
+        {{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, //top left
+        {{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}}, //top right
+        {{ 0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}}, //bottom right
+        {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}  //bottom left
+	};
+
+    std::vector<uint16_t> squareIndices = {
+        0, 1, 2, 2, 3, 0
+	};
+
     void CreateObjects()
     {
         std::srand(std::time(0));
@@ -82,7 +94,10 @@ private:
 		lightTransform->SetPosition(glm::vec3(lightOrbitRadius, lightOrbitRadius, lightOrbitRadius));
 		lightTransform->SetRotation(glm::vec3(0.0f));
 		lightTransform->SetScale(glm::vec3(0.25f));
-        std::shared_ptr<Cube> lightMesh = lightCube->AddComponent<Cube>();
+        //std::shared_ptr<Cube> lightMesh = lightCube->AddComponent<Cube>();
+		std::shared_ptr<MeshRenderer> lightMesh = lightCube->AddComponent<MeshRenderer>();
+        lightMesh->SetVertices(squareVertices);
+		lightMesh->SetIndices(squareIndices);
 		lightMesh->SetLit(false);
 		lightMesh->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
 		lightCube->AddComponent<LightSource>();

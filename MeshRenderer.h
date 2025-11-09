@@ -82,5 +82,5 @@ protected:
 	bool m_isBillboarded = false;
 
 	std::string m_meshName = "";
-	glm::vec3 m_color = glm::vec3(1.0f);
+	alignas(16) glm::vec3 m_color = glm::vec3(1.0f);
 };

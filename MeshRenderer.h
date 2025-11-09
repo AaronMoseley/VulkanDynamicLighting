@@ -61,7 +61,6 @@ public:
 	bool IsBillboarded() { return m_isBillboarded; }
 
 protected:
-	glm::vec3 m_color = glm::vec3(1.0f);
 	std::vector<VulkanCommonFunctions::Vertex> m_vertices;
 	std::vector<uint16_t> m_indices;
 
@@ -83,4 +82,5 @@ protected:
 	bool m_isBillboarded = false;
 
 	std::string m_meshName = "";
+	glm::vec3 m_color = glm::vec3(1.0f);
 };

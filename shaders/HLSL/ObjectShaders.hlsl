@@ -160,5 +160,6 @@ float4 PSMain(VSOutput input) : SV_TARGET
         result += currentResult;
     }
     
+    //reduce alpha for transparency
     return float4(result, 1.0);
 }

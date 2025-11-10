@@ -36,7 +36,6 @@ VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()
 	result.modelMatrix = glm::rotate(result.modelMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 	result.modelMatrix = glm::rotate(result.modelMatrix, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
-
 	//need to transpose the matrix because hlsl expects column major matrices
 	result.modelMatrix = glm::transpose(result.modelMatrix);
 
@@ -47,7 +46,9 @@ VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()
 	result.ambient = meshRenderer->GetColor();
 	result.diffuse = meshRenderer->GetColor();
 	result.specular = glm::vec3(0.5f, 0.5f, 0.5f);
-	result.shininess = 32.0f;
+	result.shininess = std::pow(2.0f, meshRenderer->GetShininess());
+
+	result.opacity = meshRenderer->GetOpacity();
 
 	result.lit = (meshRenderer->GetLit()) ? 1 : 0;
 

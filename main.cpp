@@ -127,6 +127,8 @@ private:
 
 			std::shared_ptr<MeshRenderer> currentMesh = newObject->GetComponent<MeshRenderer>();
 
+            currentMesh->SetOpacity(((double)rand() / (RAND_MAX)));
+
             if ((double)rand() / (RAND_MAX) >= 0.5f)
             {
                 currentMesh->SetIsBillboarded(true);
@@ -203,6 +205,8 @@ private:
             }
 
 			std::shared_ptr<MeshRenderer> currentMesh = newObject->GetComponent<MeshRenderer>();
+
+            currentMesh->SetOpacity(((double)rand() / (RAND_MAX)));
 
             if ((double)rand() / (RAND_MAX) >= 0.5f)
             {

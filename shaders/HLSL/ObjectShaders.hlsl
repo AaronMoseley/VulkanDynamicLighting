@@ -15,13 +15,14 @@ struct VSInputVertex
     [[vk::location(13)]] float3 diffuse : COLOR4;
     [[vk::location(14)]] float3 specular : COLOR5;
     
-    [[vk::location(15)]] float shininess : COLOR6;
-    [[vk::location(16)]] uint lit : COLOR7;
+    [[vk::location(15)]] float opacity : COLOR6;
+    [[vk::location(16)]] float shininess : COLOR7;
+    [[vk::location(17)]] uint lit : COLOR8;
     
-    [[vk::location(17)]] uint textured : TEXTCOORD9;
-    [[vk::location(18)]] uint textureIndex : TEXCOORD10;
+    [[vk::location(18)]] uint textured : TEXTCOORD9;
+    [[vk::location(19)]] uint textureIndex : TEXCOORD10;
     
-    [[vk::location(19)]] uint billboarded : TEXCOORD11;
+    [[vk::location(20)]] uint billboarded : TEXCOORD11;
 };
 
 //Vertex shader output to fragment shader input
@@ -35,10 +36,11 @@ struct VSOutput
     [[vk::location(4)]] float3 ambient : COLOR3;
     [[vk::location(5)]] float3 diffuse : COLOR4;
     [[vk::location(6)]] float3 specular : COLOR5;
-    [[vk::location(7)]] float shininess : COLOR6;
-    [[vk::location(8)]] uint lit : COLOR7;
-    [[vk::location(9)]] uint textured : TEXTCOORD8;
-    [[vk::location(10)]] uint textureIndex : TEXCOORD9;
+    [[vk::location(7)]] float opacity : COLOR6;
+    [[vk::location(8)]] float shininess : COLOR7;
+    [[vk::location(9)]] uint lit : COLOR8;
+    [[vk::location(10)]] uint textured : TEXTCOORD9;
+    [[vk::location(11)]] uint textureIndex : TEXCOORD10;
 };
 
 // Uniform buffer (constant buffer)
@@ -99,6 +101,7 @@ VSOutput VSMain(VSInputVertex vertexInput)
     output.ambient = vertexInput.ambient;
     output.diffuse = vertexInput.diffuse;
     output.specular = vertexInput.specular;
+    output.opacity = vertexInput.opacity;
     output.shininess = vertexInput.shininess;
     output.lit = vertexInput.lit;
     output.texCoord = vertexInput.texCoord;
@@ -110,11 +113,6 @@ VSOutput VSMain(VSInputVertex vertexInput)
 
 float4 PSMain(VSOutput input) : SV_TARGET
 {   
-    if (lightCount > 10000)
-    {
-        return float4(1.0, 0.0, 1.0, 1.0); // Magenta error color
-    }
-    
     float4 texColor = float4(1.0, 1.0, 1.0, 1.0);
     
     if (input.textured == 1)
@@ -124,7 +122,7 @@ float4 PSMain(VSOutput input) : SV_TARGET
     
     if (input.lit == 0)
     {
-        return float4(input.diffuse, 1.0) * texColor;
+        return float4(input.diffuse, input.opacity) * texColor;
     }
     
     float3 objectDiffuse = texColor.xyz * input.diffuse;
@@ -160,6 +158,5 @@ float4 PSMain(VSOutput input) : SV_TARGET
         result += currentResult;
     }
     
-    //reduce alpha for transparency
-    return float4(result, 1.0);
+    return float4(result, input.opacity);
 }

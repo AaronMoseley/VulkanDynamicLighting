@@ -51,6 +51,12 @@ public:
 
 	std::string GetMeshName() { return m_meshName; }
 
+	void SetOpacity(float opacity) { m_opacity = opacity; }
+	float GetOpacity() { return m_opacity; }
+
+	void SetShininess(float shininess) { m_shininess = shininess; }
+	float GetShininess() { return m_shininess; }
+
 	void SetDirtyData(bool dirty) { m_meshDataDirty = dirty; }
 	bool IsMeshDataDirty() { return m_meshDataDirty; }
 
@@ -69,6 +75,9 @@ protected:
 
 	size_t m_indexBufferSize = 0;
 	size_t m_vertexBufferSize = 0;
+	
+	float m_opacity = 1.0f;
+	float m_shininess = 4.0f;
 
 	bool m_useIndices = false;
 	bool m_lit = true;

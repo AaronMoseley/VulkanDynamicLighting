@@ -45,6 +45,7 @@ namespace VulkanCommonFunctions {
         alignas(16) glm::vec3 ambient;
         alignas(16) glm::vec3 diffuse;
         alignas(16) glm::vec3 specular;
+        alignas(4) float opacity;
         alignas(4) float shininess;
         alignas(4) uint32_t lit;
 
@@ -73,8 +74,8 @@ namespace VulkanCommonFunctions {
             return result;
         }
 
-        static std::array<VkVertexInputAttributeDescription, 20> GetAttributeDescriptions() {
-            std::array<VkVertexInputAttributeDescription, 20> attributeDescriptions{};
+        static std::array<VkVertexInputAttributeDescription, 21> GetAttributeDescriptions() {
+            std::array<VkVertexInputAttributeDescription, 21> attributeDescriptions{};
 
             attributeDescriptions[0].binding = 0;
             attributeDescriptions[0].location = 0;
@@ -121,27 +122,32 @@ namespace VulkanCommonFunctions {
             attributeDescriptions[15].binding = 1;
             attributeDescriptions[15].location = 15;
             attributeDescriptions[15].format = VK_FORMAT_R32_SFLOAT;
-            attributeDescriptions[15].offset = offsetof(InstanceInfo, shininess);
+            attributeDescriptions[15].offset = offsetof(InstanceInfo, opacity);
 
             attributeDescriptions[16].binding = 1;
             attributeDescriptions[16].location = 16;
-            attributeDescriptions[16].format = VK_FORMAT_R32_UINT;
-            attributeDescriptions[16].offset = offsetof(InstanceInfo, lit);
+            attributeDescriptions[16].format = VK_FORMAT_R32_SFLOAT;
+            attributeDescriptions[16].offset = offsetof(InstanceInfo, shininess);
 
             attributeDescriptions[17].binding = 1;
             attributeDescriptions[17].location = 17;
             attributeDescriptions[17].format = VK_FORMAT_R32_UINT;
-            attributeDescriptions[17].offset = offsetof(InstanceInfo, textured);
+            attributeDescriptions[17].offset = offsetof(InstanceInfo, lit);
 
             attributeDescriptions[18].binding = 1;
             attributeDescriptions[18].location = 18;
             attributeDescriptions[18].format = VK_FORMAT_R32_UINT;
-            attributeDescriptions[18].offset = offsetof(InstanceInfo, textureIndex);
+            attributeDescriptions[18].offset = offsetof(InstanceInfo, textured);
 
             attributeDescriptions[19].binding = 1;
             attributeDescriptions[19].location = 19;
             attributeDescriptions[19].format = VK_FORMAT_R32_UINT;
-            attributeDescriptions[19].offset = offsetof(InstanceInfo, isBillboarded);
+            attributeDescriptions[19].offset = offsetof(InstanceInfo, textureIndex);
+
+            attributeDescriptions[20].binding = 1;
+            attributeDescriptions[20].location = 20;
+            attributeDescriptions[20].format = VK_FORMAT_R32_UINT;
+            attributeDescriptions[20].offset = offsetof(InstanceInfo, isBillboarded);
 
             return attributeDescriptions;
         }

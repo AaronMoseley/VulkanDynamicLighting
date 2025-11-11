@@ -1,31 +1,36 @@
 #include "VulkanInterface.h"
+#include "VulkanWindow.h"
+#include "WindowManager.h"
 
 VulkanInterface::VulkanInterface(std::shared_ptr<WindowManager> windowManager)
 {
     m_windowManager = windowManager;
-    InitializeVulkan();
 }
 
 void VulkanInterface::InitializeVulkan()
 {
-    CreateInstance();
-    SetupDebugMessenger();
-    CreateSurface();
-    PickPhysicalDevice();
-    CreateLogicalDevice();
+    m_vulkanWindow = m_windowManager->GetVulkanWindow();
+
+    instance = m_vulkanWindow->vulkanInstance()->vkInstance();
+    physicalDevice = m_vulkanWindow->physicalDevice();
+    device = m_vulkanWindow->device();
+    commandPool = m_vulkanWindow->graphicsCommandPool();
+    graphicsQueue = m_vulkanWindow->graphicsQueue();
+    surface = m_vulkanWindow->vulkanInstance()->surfaceForWindow(m_vulkanWindow.get());
+    //CreateInstance();
+    //SetupDebugMessenger();
+    //CreateSurface();
+    //PickPhysicalDevice();
+    //CreateLogicalDevice();
     CreateVMAAllocator();
-    CreateSwapChain();
-    CreateRenderPass();
-    CreateCommandPool();
+    //CreateSwapChain();
+    //CreateCommandPool();
 	UpdateTextureResources(kDefaultTexturePath, false);
     CreateDescriptorSetLayout();
     CreateGraphicsPipeline();
-    CreateDepthResources();
-	swapChain->CreateFrameBuffers(depthImage, renderPass);
     CreateUniformBuffers();
     CreateDescriptorPool();
     CreateDescriptorSets();
-    CreateCommandBuffers();
     CreateSyncObjects();
 }
 
@@ -45,7 +50,7 @@ void VulkanInterface::CreateDepthResources() {
     VkFormat depthFormat = FindDepthFormat();
 
 	GraphicsImage::GraphicsImageCreateInfo depthImageCreateInfo{};
-	depthImageCreateInfo.imageSize = { swapChain->GetSwapChainExtent().width, swapChain->GetSwapChainExtent().height};
+	depthImageCreateInfo.imageSize = { m_vulkanWindow->swapChainImageSize().width(), m_vulkanWindow->swapChainImageSize().height()};
 	depthImageCreateInfo.format = depthFormat;
 	depthImageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	depthImageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -312,24 +317,6 @@ void VulkanInterface::CreateDescriptorSetLayout() {
     }
 }
 
-void VulkanInterface::RecreateSwapChain() {
-    int width = 0, height = 0;
-    glfwGetFramebufferSize(m_windowManager->GetWindow(), &width, &height);
-    while (width == 0 || height == 0) {
-        glfwGetFramebufferSize(m_windowManager->GetWindow(), &width, &height);
-        glfwWaitEvents();
-    }
-
-    vkDeviceWaitIdle(device);
-
-	swapChain->DestroySwapChain();
-
-    CreateSwapChain();
-    CreateDepthResources();
-
-	swapChain->CreateFrameBuffers(depthImage, renderPass);
-}
-
 void VulkanInterface::CreateSyncObjects() {
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -376,15 +363,16 @@ void VulkanInterface::BeginDrawFrameCommandBuffer(VkCommandBuffer commandBuffer,
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = renderPass;
-    renderPassInfo.framebuffer = swapChain->GetFrameBuffer(imageIndex);
+    //renderPassInfo.renderPass = renderPass;
+    renderPassInfo.renderPass = m_vulkanWindow->defaultRenderPass();
+    renderPassInfo.framebuffer = m_vulkanWindow->currentFramebuffer();
     renderPassInfo.renderArea.offset = { 0, 0 };
-    renderPassInfo.renderArea.extent = swapChain->GetSwapChainExtent();
+    renderPassInfo.renderArea.extent = { (uint)m_vulkanWindow->swapChainImageSize().width(), (uint)m_vulkanWindow->swapChainImageSize().height()};
 
     std::array<VkClearValue, 2> clearValues{};
 
     //clearValues[0].color = { {0.345098039f, 0.52156862f, 0.6862745098039216f, 1.0f} };
-    clearValues[0].color = { {0.01f, 0.01f, 0.01f, 1.0f} };
+    clearValues[0].color = { {0.51f, 0.51f, 0.51f, 1.0f} };
     clearValues[1].depthStencil = { 1.0f, 0 };
 
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -396,15 +384,15 @@ void VulkanInterface::BeginDrawFrameCommandBuffer(VkCommandBuffer commandBuffer,
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = (float)swapChain->GetSwapChainExtent().width;
-    viewport.height = (float)swapChain->GetSwapChainExtent().height;
+    viewport.width = (float)m_vulkanWindow->swapChainImageSize().width();
+    viewport.height = (float)m_vulkanWindow->swapChainImageSize().height();
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
     VkRect2D scissor{};
     scissor.offset = { 0, 0 };
-    scissor.extent = swapChain->GetSwapChainExtent();
+    scissor.extent = { (uint)m_vulkanWindow->swapChainImageSize().width(), (uint)m_vulkanWindow->swapChainImageSize().height() };
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
@@ -468,21 +456,6 @@ void VulkanInterface::EndDrawFrameCommandBuffer(VkCommandBuffer commandBuffer)
     }
 }
 
-void VulkanInterface::CreateCommandBuffers() {
-    VkCommandBufferAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.commandPool = commandPool;
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandBufferCount = 1;
-
-    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        if (vkAllocateCommandBuffers(device, &allocInfo, &frameCommandBuffers[i]) != VK_SUCCESS) {
-            throw std::runtime_error("failed to allocate command buffers!");
-        }
-    }
-}
-
 void VulkanInterface::CreateCommandPool() {
     VulkanCommonFunctions::QueueFamilyIndices queueFamilyIndices = VulkanCommonFunctions::FindQueueFamilies(physicalDevice, surface);
 
@@ -493,64 +466,6 @@ void VulkanInterface::CreateCommandPool() {
 
     if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
         throw std::runtime_error("failed to create command pool!");
-    }
-}
-
-void VulkanInterface::CreateRenderPass() {
-    VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = swapChain->GetImage(0)->GetImageFormat();
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-    VkAttachmentReference colorAttachmentRef{};
-    colorAttachmentRef.attachment = 0;
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-    VkSubpassDependency dependency{};
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependency.dstSubpass = 0;
-    dependency.srcAccessMask = 0;
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-    VkAttachmentDescription depthAttachment{};
-    depthAttachment.format = FindDepthFormat();
-    depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-    VkAttachmentReference depthAttachmentRef{};
-    depthAttachmentRef.attachment = 1;
-    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-    VkSubpassDescription subpass{};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
-    subpass.pDepthStencilAttachment = &depthAttachmentRef;
-
-    std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
-    VkRenderPassCreateInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    renderPassInfo.pAttachments = attachments.data();
-    renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpass;
-    renderPassInfo.dependencyCount = 1;
-    renderPassInfo.pDependencies = &dependency;
-
-    if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create render pass!");
     }
 }
 
@@ -699,7 +614,7 @@ void VulkanInterface::CreateGraphicsPipeline() {
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = pipelineLayout;
-    pipelineInfo.renderPass = renderPass;
+    pipelineInfo.renderPass = m_vulkanWindow->defaultRenderPass();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1; // Optional
@@ -740,7 +655,7 @@ VkShaderModule VulkanInterface::CreateShaderModule(const std::vector<char>& code
     return shaderModule;
 }
 
-void VulkanInterface::CreateSwapChain() {
+void VulkanInterface::InitializeSwapChain() {
 	SwapChain::SwapChainCreateInfo swapChainCreateInfo{};
 	swapChainCreateInfo.allocator = allocator;
 	swapChainCreateInfo.device = device;
@@ -751,6 +666,8 @@ void VulkanInterface::CreateSwapChain() {
 	swapChainCreateInfo.windowManager = m_windowManager;
     
     swapChain = std::make_shared<SwapChain>(swapChainCreateInfo);
+
+    CreateDepthResources();
 }
 
 void VulkanInterface::CreateInstance() {
@@ -974,14 +891,13 @@ void VulkanInterface::CreateLogicalDevice() {
         throw std::runtime_error("failed to create logical device!");
     }
 
-    vkGetDeviceQueue(device, indices.m_graphicsFamily.value(), 0, &graphicsQueue);
     vkGetDeviceQueue(device, indices.m_presentFamily.value(), 0, &presentQueue);
 }
 
 void VulkanInterface::CreateSurface() {
-    if (glfwCreateWindowSurface(instance, m_windowManager->GetWindow(), nullptr, &surface) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create window surface!");
-    }
+    //if (glfwCreateWindowSurface(instance, m_windowManager->GetWindow(), nullptr, &surface) != VK_SUCCESS) {
+    //    throw std::runtime_error("failed to create window surface!");
+    //}
 }
 
 std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateVertexBuffer(std::shared_ptr<MeshRenderer> meshInfo) {
@@ -1132,7 +1048,7 @@ void VulkanInterface::CreateVMAAllocator()
 
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
     allocatorCreateInfo.flags = VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
-    allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_2;
+    allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
     allocatorCreateInfo.physicalDevice = physicalDevice;
     allocatorCreateInfo.device = device;
     allocatorCreateInfo.instance = instance;
@@ -1174,7 +1090,7 @@ std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateInstanceBuffer(size_t max
 
 void VulkanInterface::UpdateInstanceBuffer(std::string objectName, std::set<VulkanCommonFunctions::ObjectHandle> objectHandles, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects)
 {
-    vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+    //vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
     std::vector<VulkanCommonFunctions::InstanceInfo> objectInfo;
 
@@ -1220,7 +1136,10 @@ void VulkanInterface::UpdateInstanceBuffer(std::string objectName, std::set<Vulk
 	instanceBuffers[currentFrame][objectName]->LoadData(objectInfo.data(), (size_t)bufferSize);
 }
 
-void VulkanInterface::DrawFrame(float deltaTime, std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> objectHandles, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects) {
+void VulkanInterface::DrawFrame(float deltaTime, std::shared_ptr<Scene> scene) {
+    std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> objectHandles = scene->GetMeshNameToObjectMap();
+    std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects = scene->GetObjects();
+    
     for (auto it = objectHandles.begin(); it != objectHandles.end(); it++)
     {
         if (it->first != MeshRenderer::kCustomMeshName)
@@ -1229,26 +1148,19 @@ void VulkanInterface::DrawFrame(float deltaTime, std::map<std::string, std::set<
         }
     }
 
-    vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+    //vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
-    vkResetFences(device, 1, &inFlightFences[currentFrame]);
+    //vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
-    uint32_t imageIndex;
-    VkResult result = vkAcquireNextImageKHR(device, swapChain->GetVkSwapChain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
-
-    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        RecreateSwapChain();
-        return;
-    }
-    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        throw std::runtime_error("failed to acquire swap chain image!");
-    }
+    uint32_t imageIndex = m_vulkanWindow->currentSwapChainImageIndex();
 
     UpdateUniformBuffer(currentFrame, objects);
 
-    vkResetCommandBuffer(frameCommandBuffers[currentFrame], 0);
+    VkCommandBuffer commandBuffer = m_vulkanWindow->currentCommandBuffer();
+    VkFramebuffer frameBuffer = m_vulkanWindow->currentFramebuffer();
+    QSize extent = m_vulkanWindow->swapChainImageSize();
 
-    BeginDrawFrameCommandBuffer(frameCommandBuffers[currentFrame], imageIndex);
+    BeginDrawFrameCommandBuffer(commandBuffer, imageIndex);
 
     for (auto it = objectHandles.begin(); it != objectHandles.end(); it++)
     {
@@ -1257,68 +1169,26 @@ void VulkanInterface::DrawFrame(float deltaTime, std::map<std::string, std::set<
             for (auto it2 = it->second.begin(); it2 != it->second.end(); it2++)
             {
 				VulkanCommonFunctions::ObjectHandle currentHandle = *it2;
-				DrawSingleObjectCommandBuffer(frameCommandBuffers[currentFrame], objects[currentHandle]);
+				DrawSingleObjectCommandBuffer(commandBuffer, objects[currentHandle]);
             }
         }
         else {
-            DrawInstancedObjectCommandBuffer(frameCommandBuffers[currentFrame], it->first, it->second.size());
+            DrawInstancedObjectCommandBuffer(commandBuffer, it->first, it->second.size());
         }
     }
 
-    EndDrawFrameCommandBuffer(frameCommandBuffers[currentFrame]);
-
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-    std::vector<VkSemaphore> waitSemaphores;
-    std::vector<VkPipelineStageFlags> waitStages;
-    waitSemaphores.push_back(imageAvailableSemaphores[currentFrame]);
-    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-
-    submitInfo.waitSemaphoreCount = waitSemaphores.size();
-    submitInfo.pWaitSemaphores = waitSemaphores.data();
-    submitInfo.pWaitDstStageMask = waitStages.data();
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &frameCommandBuffers[currentFrame];
-
-    VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
-
-    VkResult temp = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]);
-
-    if (temp != VK_SUCCESS) {
-        throw std::runtime_error("failed to submit draw command buffer!");
-    }
-
-    VkPresentInfoKHR presentInfo{};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
-
-    VkSwapchainKHR swapChains[] = { swapChain->GetVkSwapChain()};
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
-    presentInfo.pImageIndices = &imageIndex;
-    presentInfo.pResults = nullptr; // Optional
-    result = vkQueuePresentKHR(presentQueue, &presentInfo);
-
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
-        framebufferResized = false;
-        RecreateSwapChain();
-    }
-    else if (result != VK_SUCCESS) {
-        throw std::runtime_error("failed to present swap chain image!");
-    }
+    EndDrawFrameCommandBuffer(commandBuffer);
 
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     renderedFirstFrame = true;
+
+    m_vulkanWindow->frameReady();
+    m_vulkanWindow->requestUpdate();
 }
 
 void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects) {
     VulkanCommonFunctions::GlobalInfo globalInfo;
-    float aspectRatio = swapChain->GetSwapChainExtent().width / (float)swapChain->GetSwapChainExtent().height;
+    float aspectRatio = (float)m_vulkanWindow->swapChainImageSize().width() / (float)m_vulkanWindow->swapChainImageSize().height();
 
 	bool cameraFound = false;
     for (auto it = objects.begin(); it != objects.end(); it++)
@@ -1384,14 +1254,13 @@ void VulkanInterface::CleanupSwapChain() {
     swapChain->DestroySwapChain();
 }
 
-void VulkanInterface::Cleanup(std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects, std::vector<std::shared_ptr<GraphicsBuffer>> buffersToDestroy) {
+void VulkanInterface::Cleanup() {
     vkDeviceWaitIdle(device);
 
     CleanupSwapChain();
 
     vkDestroyPipeline(device, graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-    vkDestroyRenderPass(device, renderPass, nullptr);
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		uniformBuffers[i]->DestroyBuffer();
@@ -1425,40 +1294,6 @@ void VulkanInterface::Cleanup(std::map<VulkanCommonFunctions::ObjectHandle, std:
         }
     }
 
-    for (auto it = objects.begin(); it != objects.end(); it++)
-    {
-        std::shared_ptr<GraphicsBuffer> instanceBuffer = it->second->GetInstanceBuffer();
-
-        if (instanceBuffer != nullptr)
-        {
-            instanceBuffer->DestroyBuffer();
-        }
-
-		std::shared_ptr<MeshRenderer> meshComponent = it->second->GetComponent<MeshRenderer>();
-        if (meshComponent != nullptr)
-        {
-			std::shared_ptr<GraphicsBuffer> vertexBuffer = meshComponent->GetVertexBuffer();
-            if (vertexBuffer != nullptr)
-            {
-                vertexBuffer->DestroyBuffer();
-			}
-
-            std::shared_ptr<GraphicsBuffer> indexBuffer = meshComponent->GetIndexBuffer();
-            if (indexBuffer != nullptr)
-            {
-                indexBuffer->DestroyBuffer();
-			}
-        }
-    }
-
-    for (size_t i = 0; i < buffersToDestroy.size(); i++)
-    {
-        if (buffersToDestroy[i] != nullptr)
-        {
-            buffersToDestroy[i]->DestroyBuffer();
-        }
-    }
-
     vkDestroyCommandPool(device, commandPool, nullptr);
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -1486,7 +1321,7 @@ void VulkanInterface::Cleanup(std::map<VulkanCommonFunctions::ObjectHandle, std:
 
     vkDestroyInstance(instance, nullptr);
 
-    glfwDestroyWindow(m_windowManager->GetWindow());
+    //glfwDestroyWindow(m_windowManager->GetWindow());
 
-    glfwTerminate();
+    //glfwTerminate();
 }

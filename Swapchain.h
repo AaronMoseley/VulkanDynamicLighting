@@ -1,13 +1,15 @@
 #pragma once
 
 #include "GraphicsImage.h"
-#include "WindowManager.h"
 #include "VulkanCommonFunctions.h"
 
 #include <vector>
 #include <array>
 #include <algorithm>
 #include <memory>
+
+class WindowManager;
+class VulkanWindow;
 
 class SwapChain {
 public:
@@ -40,7 +42,6 @@ public:
 
 	static SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 
-	void CreateFrameBuffers(std::shared_ptr<GraphicsImage> depthImage, VkRenderPass renderPass);
 	void ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
 	void DestroySwapChain();

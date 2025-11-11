@@ -128,6 +128,8 @@
     <ClCompile Include="VulkanCommonFunctions.cpp" />
     <ClCompile Include="VulkanCommonFunctions.h" />
     <ClCompile Include="VulkanInterface.cpp" />
+    <ClCompile Include="VulkanWindow.cpp" />
+    <ClCompile Include="VulkanWindowRenderer.cpp" />
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -147,6 +149,8 @@
     <ClInclude Include="Transform.h" />
     <ClInclude Include="vk_mem_alloc.h" />
     <ClInclude Include="VulkanInterface.h" />
+    <ClInclude Include="VulkanWindow.h" />
+    <ClInclude Include="VulkanWindowRenderer.h" />
     <ClInclude Include="WindowManager.h" />
   </ItemGroup>
   <ItemGroup>

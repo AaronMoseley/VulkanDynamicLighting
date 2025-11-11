@@ -21,6 +21,7 @@
 #include <memory>
 
 class Scene;
+class WindowManager;
 
 class RenderObject : public std::enable_shared_from_this<RenderObject> {
 public:

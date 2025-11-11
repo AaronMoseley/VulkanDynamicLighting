@@ -11,9 +11,11 @@ class RenderObject;
 
 class Scene {
 public:
-	Scene(std::shared_ptr<WindowManager> windowManager);
+	Scene(std::shared_ptr<WindowManager> windowManager, std::shared_ptr<VulkanInterface> vulkanInterface);
 
-	void MainLoop();
+	void Update();
+
+	void Cleanup();
 
 	VulkanCommonFunctions::ObjectHandle AddObject(std::shared_ptr <RenderObject> newObject);
 	bool RemoveObject(VulkanCommonFunctions::ObjectHandle objectToRemove);
@@ -22,6 +24,9 @@ public:
 	void GenerateInstanceBuffer(std::shared_ptr<RenderObject> updatedObject);
 
 	void UpdateTexture(std::string newTexturePath);
+
+	std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> GetObjects() { return m_objects; };
+	std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> GetMeshNameToObjectMap() { return m_meshNameToObjectMap; }
 
 	std::shared_ptr<RenderObject> GetRenderObject(VulkanCommonFunctions::ObjectHandle handle);
 
@@ -35,7 +40,7 @@ private:
 	std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> m_objects;
 	std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> m_meshNameToObjectMap;
 	std::shared_ptr<WindowManager> m_windowManager;
-	std::unique_ptr<VulkanInterface> m_vulkanInterface;
+	std::shared_ptr<VulkanInterface> m_vulkanInterface;
 
 	VulkanCommonFunctions::ObjectHandle m_currentObjectHandle = 0;
 

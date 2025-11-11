@@ -10,65 +10,51 @@
 
 #include <glm/glm.hpp>
 
+#include <qwidget.h>
+#include <QVBoxLayout>
+#include <QVulkanInstance>
+
+class Scene;
+class VulkanWindow;
+class VulkanInterface;
+
 class WindowManager {
 public:
-	const size_t DEFAULT_WIDTH = 800;
-	const size_t DEFAULT_HEIGHT = 600;
 	const char* DEFAULT_TITLE = "GLFW Window";
 
 	WindowManager();
 
 	WindowManager(size_t width, size_t height, std::string title);
 
-	void InitializeWindow();
+	void SetVulkanInterface(std::shared_ptr<VulkanInterface> vulkanInterface) { m_vulkanInterface = vulkanInterface; }
+	void SetScene(std::shared_ptr<Scene> scene) { m_scene = scene; }
+	void BeginRendering();
+
+	void InitializeWindow(QVulkanInstance* vulkanInstance);
+
+	QWidget* GetWrappingWidget() { return m_wrappingWidget; }
+
+	size_t GetWidth() { return m_width; }
+	size_t GetHeight() { return m_height; }
 
 	glm::vec2 GetMouseDelta() { return m_mouseDelta; };
 	glm::vec2 GetScrollDelta() { return m_scrollDelta; };
+
+	std::shared_ptr<VulkanWindow> GetVulkanWindow() { return m_vulkanWindow; }
 
 	void NewFrame();
 
 	bool KeyPressed(int keyCode);
 	bool KeyPressedThisFrame(int keyCode);
 
-	GLFWwindow* GetWindow() { return m_window; };
-
 	void SetFrameBufferResized(bool resized) { m_framebufferResized = true; };
 
 private:
-	//callbacks
-	static void StaticCursorMovedCallback(GLFWwindow* window, double xpos, double ypos)
-	{
-		WindowManager* windowManager = static_cast<WindowManager*>(glfwGetWindowUserPointer(window));
-		if (windowManager != nullptr)
-		{
-			windowManager->CursorMoved(xpos, ypos);
-		}
-	};
-	void CursorMoved(double xpos, double ypos);
+	std::shared_ptr<VulkanWindow> m_vulkanWindow;
+	std::shared_ptr<VulkanInterface> m_vulkanInterface;
+	std::shared_ptr<Scene> m_scene;
 
-	static void FrameBufferResizedCallback(GLFWwindow* window, int width, int height)
-	{
-		WindowManager* windowManager = reinterpret_cast<WindowManager*>(glfwGetWindowUserPointer(window));
-		windowManager->SetFrameBufferResized(true);
-	};
-
-	static void StaticScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
-		WindowManager* windowManager = static_cast<WindowManager*>(glfwGetWindowUserPointer(window));
-		if (windowManager != nullptr)
-		{
-			windowManager->ScrollCallback(xoffset, yoffset);
-		}
-	};
-	void ScrollCallback(double xoffset, double yoffset);
-
-	static void StaticKeyPressedCallback(GLFWwindow* window, int key, int scanCode, int action, int mods) {
-		WindowManager* windowManager = static_cast<WindowManager*>(glfwGetWindowUserPointer(window));
-		if (windowManager != nullptr)
-		{
-			windowManager->KeyPressedCallback(key, scanCode, action, mods);
-		}
-	}
-	void KeyPressedCallback(int key, int scanCode, int action, int mods);
+	QWidget* m_wrappingWidget;
 
 	//members
 	bool m_framebufferResized = false;
@@ -85,6 +71,4 @@ private:
 	std::set<int> m_keysPressedThisFrame;
 
 	std::string m_title = "";
-
-	GLFWwindow* m_window;
 };

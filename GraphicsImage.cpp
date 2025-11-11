@@ -34,7 +34,7 @@ GraphicsImage::GraphicsImage(GraphicsImageCreateInfo imageCreateInfo)
     }
 }
 
-GraphicsImage::GraphicsImage(GraphicsImageCreateInfo imageCreateInfo, VkImage rawImage)
+GraphicsImage::GraphicsImage(GraphicsImageCreateInfo imageCreateInfo, VkImage rawImage, VkImageView imageView)
 {
     m_allocator = imageCreateInfo.allocator;
     m_device = imageCreateInfo.device;
@@ -43,6 +43,7 @@ GraphicsImage::GraphicsImage(GraphicsImageCreateInfo imageCreateInfo, VkImage ra
     m_graphicsQueue = imageCreateInfo.graphicsQueue;
     m_imageFormat = imageCreateInfo.format;
 	m_image = rawImage;
+    m_imageView = imageView;
 	m_imageMemory = nullptr;
 }
 

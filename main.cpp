@@ -16,26 +16,59 @@
 #include "FirstPersonController.h"
 #include "Scene.h"
 
-class VulkanLightingDemo {
-public:
-    void run() {
-        windowManager = std::make_shared<WindowManager>(800, 600, "Vulkan Demo");
+#include <QApplication>
+#include <QLoggingCategory>
+#include <QScreen>
+#include <QVulkanInstance>
+#include <QVBoxLayout>
 
-		sceneManager = std::make_shared<Scene>(windowManager);
+#include <qwidget.h>
+
+bool DebugFilter(QVulkanInstance::DebugMessageSeverityFlags severity, QVulkanInstance::DebugMessageTypeFlags type, const void* message)
+{
+    return true;
+}
+
+class VulkanLightingDemo : public QWidget {
+public:
+    VulkanLightingDemo(QWidget* parent, QVulkanInstance* vulkanInstance, int screenWidth, int screenHeight) : QWidget(parent) {
+        m_mainLayout = new QVBoxLayout(this);
+        
+        windowManager = std::make_shared<WindowManager>(screenWidth, screenHeight, "Vulkan Lighting Demo");
+
+        vulkanInterface = std::make_shared<VulkanInterface>(windowManager);
+
+        windowManager->SetVulkanInterface(vulkanInterface);
+
+        sceneManager = std::make_shared<Scene>(windowManager, vulkanInterface);
+
+        windowManager->SetScene(sceneManager);
+
+        windowManager->InitializeWindow(vulkanInstance);
+        resize(screenWidth, screenHeight);
+        m_mainLayout->addWidget(windowManager->GetWrappingWidget());
 
         auto frameCallback = std::bind(&VulkanLightingDemo::processInput, this, std::placeholders::_1);
         sceneManager->RegisterUpdateCallback(frameCallback);
 
-        CreateObjects();
-		sceneManager->MainLoop();
+        std::shared_ptr<RenderObject> cameraObject = std::make_shared<RenderObject>(windowManager);
+
+        std::shared_ptr<Transform> cameraTransform = cameraObject->AddComponent<Transform>();
+        cameraTransform->SetPosition(glm::vec3(0.0f, 0.0f, 5.0f));
+        cameraTransform->SetRotation(glm::vec3(0.0f, -90.0f, 0.0f));
+        cameraTransform->SetScale(glm::vec3(1.0f));
+        cameraObject->AddComponent<Camera>();
+        cameraObject->AddComponent<FirstPersonController>();
+        cameraObjectHandle = sceneManager->AddObject(cameraObject);
+
+        //sceneManager->MainLoop();
+        windowManager->BeginRendering();
     }
 
 private:
-    const uint32_t WIDTH = 800;
-    const uint32_t HEIGHT = 600;
-
     std::shared_ptr<WindowManager> windowManager;
 	std::shared_ptr<Scene> sceneManager;
+    std::shared_ptr<VulkanInterface> vulkanInterface;
     
     VulkanCommonFunctions::ObjectHandle lightObjectHandle = 0;
     std::set<VulkanCommonFunctions::ObjectHandle> objectHandles;
@@ -74,19 +107,13 @@ private:
         0, 1, 2, 2, 3, 0
 	};
 
+    bool temp = false;
+
+    QLayout* m_mainLayout;
+
     void CreateObjects()
     {
         std::srand(std::time(0));
-
-        std::shared_ptr<RenderObject> cameraObject = std::make_shared<RenderObject>(windowManager);
-
-		std::shared_ptr<Transform> cameraTransform = cameraObject->AddComponent<Transform>();
-		cameraTransform->SetPosition(glm::vec3(0.0f, 0.0f, 5.0f));
-		cameraTransform->SetRotation(glm::vec3(0.0f, -90.0f, 0.0f));
-		cameraTransform->SetScale(glm::vec3(1.0f));
-		cameraObject->AddComponent<Camera>();
-        cameraObject->AddComponent<FirstPersonController>();
-		cameraObjectHandle = sceneManager->AddObject(cameraObject);
 
         std::shared_ptr<RenderObject> lightCube = std::make_shared<RenderObject>(windowManager);
 
@@ -95,9 +122,9 @@ private:
 		lightTransform->SetRotation(glm::vec3(0.0f));
 		lightTransform->SetScale(glm::vec3(0.25f));
         //std::shared_ptr<Cube> lightMesh = lightCube->AddComponent<Cube>();
-		std::shared_ptr<MeshRenderer> lightMesh = lightCube->AddComponent<MeshRenderer>();
-        lightMesh->SetVertices(squareVertices);
-		lightMesh->SetIndices(squareIndices);
+		std::shared_ptr<Cube> lightMesh = lightCube->AddComponent<Cube>();
+        //lightMesh->SetVertices(squareVertices);
+		//lightMesh->SetIndices(squareIndices);
 		lightMesh->SetLit(false);
 		lightMesh->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
 		lightCube->AddComponent<LightSource>();
@@ -156,7 +183,13 @@ private:
 
     void processInput(float deltaTime)
     {
-        float currentFrameTime = glfwGetTime();
+        if (!temp)
+        {
+            CreateObjects();
+            temp = true;
+        }
+
+        /*float currentFrameTime = glfwGetTime();
 
         std::shared_ptr<RenderObject> lightObject = sceneManager->GetRenderObject(lightObjectHandle);
         if (lightObject != nullptr)
@@ -254,20 +287,37 @@ private:
             {
                 std::cout << "Error removing object, handle: " << removeObjectHandle << std::endl;
             }
-        }
+        }*/
     }
 };
 
-int main() {
-    VulkanLightingDemo app;
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
 
-    try {
-        app.run();
-    }
-    catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
-        return EXIT_FAILURE;
+    QVulkanInstance instance;
+    instance.setLayers({ "VK_LAYER_KHRONOS_validation" });
+    instance.setApiVersion(QVersionNumber(1, 3, 0));
+    instance.setExtensions({
+        VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
+#ifdef _DEBUG
+        VK_EXT_DEBUG_UTILS_EXTENSION_NAME
+#endif
+    });
+    instance.installDebugOutputFilter(DebugFilter);
+
+    bool success = instance.create();
+
+    if (!success)
+    {
+        qDebug() << "Failed to create Vulkan instance";
+        return -1;
     }
 
-    return EXIT_SUCCESS;
+    auto screenRect = QRect(0, 0, 915, 400);
+    qDebug() << "Screen Size: " << screenRect.width() << " x " << screenRect.height();
+
+    VulkanLightingDemo renderingApp(nullptr, &instance, screenRect.width(), screenRect.height());
+    renderingApp.show();
+
+    return app.exec();
 }

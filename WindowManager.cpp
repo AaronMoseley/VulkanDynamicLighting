@@ -1,50 +1,34 @@
 #include "WindowManager.h"
 #include <iostream>
+#include "Scene.h"
+#include "VulkanWindow.h"
+#include "VulkanInterface.h"
 
 WindowManager::WindowManager() :
-	m_width(DEFAULT_WIDTH), m_height(DEFAULT_HEIGHT), m_title(DEFAULT_TITLE)
+    m_width(0), m_height(0), m_title("Application")
 {
-    InitializeWindow();
+    
 }
 
 WindowManager::WindowManager(size_t width, size_t height, std::string title) :
 	m_width(width), m_height(height), m_title(title)
 {
-    InitializeWindow();
+    
 }
 
-void WindowManager::InitializeWindow()
+void WindowManager::BeginRendering()
 {
-    glfwInit();
-
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-    m_window = glfwCreateWindow(m_width, m_height, m_title.c_str(), nullptr, nullptr);
-    glfwSetWindowUserPointer(m_window, this);
-    glfwSetFramebufferSizeCallback(m_window, FrameBufferResizedCallback);
-
-    glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    glfwSetCursorPosCallback(m_window, StaticCursorMovedCallback);
-
-	glfwSetKeyCallback(m_window, StaticKeyPressedCallback);
-
-    glfwSetScrollCallback(m_window, StaticScrollCallback);
+    m_vulkanWindow->requestUpdate();
 }
 
-void WindowManager::KeyPressedCallback(int key, int scanCode, int action, int mods)
+void WindowManager::InitializeWindow(QVulkanInstance* vulkanInstance)
 {
-    if (action == GLFW_PRESS)
-    {
-        m_pressedKeys.insert(key);
-		m_keysPressedThisFrame.insert(key);
-    }
-    else if (action == GLFW_RELEASE)
-    {
-        m_pressedKeys.erase(key);
-		m_keysPressedThisFrame.erase(key);
-    }
+    m_vulkanWindow = std::make_shared<VulkanWindow>(m_vulkanInterface, m_scene);
+    m_vulkanWindow->setVulkanInstance(vulkanInstance);
+
+    m_wrappingWidget = QWidget::createWindowContainer(m_vulkanWindow.get());
+    m_wrappingWidget->resize(m_width, m_height);
+    m_wrappingWidget->show();
 }
 
 void WindowManager::NewFrame()
@@ -65,7 +49,7 @@ bool WindowManager::KeyPressedThisFrame(int keyCode)
     return m_keysPressedThisFrame.contains(keyCode);
 }
 
-void WindowManager::CursorMoved(double xpos, double ypos)
+/*void WindowManager::CursorMoved(double xpos, double ypos)
 {
     if (m_firstMouseMovement)
     {
@@ -79,9 +63,4 @@ void WindowManager::CursorMoved(double xpos, double ypos)
 	m_mouseDelta.y = -m_mouseDelta.y;
 
 	m_lastMousePos = currentPos;
-}
-
-void WindowManager::ScrollCallback(double xoffset, double yoffset)
-{
-	m_scrollDelta = glm::vec2(xoffset, yoffset);
-}
+}*/

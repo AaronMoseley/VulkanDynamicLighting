@@ -20,7 +20,7 @@ public:
 	};
 
 	GraphicsImage(GraphicsImageCreateInfo imageCreateInfo);
-	GraphicsImage(GraphicsImageCreateInfo imageCreateInfo, VkImage rawImage);
+	GraphicsImage(GraphicsImageCreateInfo imageCreateInfo, VkImage rawImage, VkImageView imageView);
 
 	VkImageView GetImageView() { return (m_createdImageView) ? m_imageView : VK_NULL_HANDLE; }
 	VkFormat GetImageFormat() { return m_imageFormat; }

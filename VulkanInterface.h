@@ -11,7 +11,6 @@
 
 #include "RenderObject.h"
 #include "Camera.h"
-#include "WindowManager.h"
 #include "VulkanCommonFunctions.h"
 #include "GraphicsBuffer.h"
 #include "GraphicsImage.h"
@@ -27,15 +26,18 @@
 #include <fstream>
 #include <algorithm>
 
+class VulkanWindow;
+class WindowManager;
+
 class VulkanInterface {
 public:
     VulkanInterface(std::shared_ptr<WindowManager> windowManager);
 
-    void DrawFrame(float deltaTime, std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> objectHandles, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects);
+    void DrawFrame(float deltaTime, std::shared_ptr<Scene> scene);
 
     bool HasRenderedFirstFrame() { return renderedFirstFrame; };
 
-    void Cleanup(std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects, std::vector<std::shared_ptr<GraphicsBuffer>> buffersToDestroy);
+    void Cleanup();
 
     std::shared_ptr<GraphicsBuffer> CreateVertexBuffer(std::shared_ptr<MeshRenderer> object);
     std::shared_ptr<GraphicsBuffer> CreateIndexBuffer(std::shared_ptr<MeshRenderer>  object);
@@ -45,8 +47,12 @@ public:
     bool HasTexture(std::string textureFilePath) { return std::find(textureFilePaths.begin(), textureFilePaths.end(), textureFilePath) != textureFilePaths.end(); };
     void UpdateTextureResources(std::string newTextureFilePath, bool alreadyInitialized=true);
 
+    void InitializeVulkan();
+    void InitializeSwapChain();
+
+    void CleanupSwapChain();
+
 private:
-	void InitializeVulkan();
 
     void CreateInstance();
     void SetupDebugMessenger();
@@ -54,8 +60,6 @@ private:
     void PickPhysicalDevice();
     void CreateLogicalDevice();
     void CreateVMAAllocator();
-    void CreateSwapChain();
-    void CreateRenderPass();
     void CreateDescriptorSetLayout();
     void CreateGraphicsPipeline();
     void CreateCommandPool();
@@ -66,12 +70,10 @@ private:
     void CreateUniformBuffers();
     void CreateDescriptorPool();
     void CreateDescriptorSets();
-    void CreateCommandBuffers();
     void CreateSyncObjects();
 
     VkFormat FindDepthFormat();
     VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-    void RecreateSwapChain();
     void BeginDrawFrameCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
     void DrawInstancedObjectCommandBuffer(VkCommandBuffer commandBuffer, std::string objectName, size_t objectCount);
     void DrawSingleObjectCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject);
@@ -89,7 +91,6 @@ private:
     void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
     void UpdateInstanceBuffer(std::string objectName, std::set<VulkanCommonFunctions::ObjectHandle> objectHandles, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects);
     void UpdateUniformBuffer(uint32_t currentImage, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects);
-    void CleanupSwapChain();
 
     static const int MAX_FRAMES_IN_FLIGHT = 3;
 
@@ -101,7 +102,6 @@ private:
     VkSurfaceKHR surface;
     VkQueue presentQueue;
     std::shared_ptr<SwapChain> swapChain;
-    VkRenderPass renderPass;
     VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     VkPipeline graphicsPipeline = VK_NULL_HANDLE;
@@ -115,8 +115,6 @@ private:
 
     std::map<std::string, uint16_t> vertexBufferSizes;
     std::map<std::string, uint16_t> indexBufferSizes;
-
-    std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> frameCommandBuffers;
 
 	std::vector< std::shared_ptr<GraphicsBuffer>> uniformBuffers;
 	std::vector< std::shared_ptr<GraphicsBuffer>> lightInfoBuffers;
@@ -143,6 +141,7 @@ private:
     VmaAllocator allocator;
 
     std::shared_ptr<WindowManager> m_windowManager;
+    std::shared_ptr<VulkanWindow> m_vulkanWindow;
 
 	const std::string customMeshName = "CustomMesh";
 

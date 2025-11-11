@@ -1,80 +1,78 @@
 #include "Scene.h"
 #include "RenderObject.h"
 
-Scene::Scene(std::shared_ptr<WindowManager> windowManager)
+Scene::Scene(std::shared_ptr<WindowManager> windowManager, std::shared_ptr<VulkanInterface> vulkanInterface)
 {
 	m_windowManager = windowManager;
-	m_vulkanInterface = std::make_unique<VulkanInterface>(windowManager);
+    m_vulkanInterface = vulkanInterface;
 }
 
-void Scene::MainLoop()
+void Scene::Update()
 {
-    while (!glfwWindowShouldClose(m_windowManager->GetWindow())) {
-        float currentFrameTime = glfwGetTime();
-        m_deltaTime = currentFrameTime - m_lastFrame;
-        m_lastFrame = currentFrameTime;
+    float currentFrameTime = glfwGetTime();
+    m_deltaTime = currentFrameTime - m_lastFrame;
+    m_lastFrame = currentFrameTime;
 
-        glfwPollEvents();
+    glfwPollEvents();
 
-        for (auto it = m_objects.begin(); it != m_objects.end(); it++)
+    for (auto it = m_objects.begin(); it != m_objects.end(); it++)
+    {
+		std::vector<std::shared_ptr<ObjectComponent>> components = it->second->GetAllComponents();
+
+        for (size_t i = 0; i < components.size(); i++)
         {
-			std::vector<std::shared_ptr<ObjectComponent>> components = it->second->GetAllComponents();
-
-            for (size_t i = 0; i < components.size(); i++)
-            {
-                if (!components[i]->IsEnabled())
-                {
-                    continue;
-                }
-
-                if (!components[i]->HasStarted())
-                {
-					components[i]->Start();
-					components[i]->SetStarted(true);
-                }
-
-				components[i]->Update(m_deltaTime);
-            }
-
-			std::shared_ptr<MeshRenderer> meshComponent = it->second->GetComponent<MeshRenderer>();
-            if (meshComponent == nullptr)
+            if (!components[i]->IsEnabled())
             {
                 continue;
             }
 
-            if (meshComponent->GetMeshName() != MeshRenderer::kCustomMeshName)
+            if (!components[i]->HasStarted())
             {
-                continue;
+				components[i]->Start();
+				components[i]->SetStarted(true);
             }
 
-            if (meshComponent->IsMeshDataDirty())
-            {
-                FinalizeMesh(it->second);
-                meshComponent->SetDirtyData(false);
-			}
-
-            if (meshComponent->IsTextureDataDirty())
-            {
-                UpdateTexture(meshComponent->GetTexturePath());
-				meshComponent->SetTextureDataDirty(false);
-            }
+			components[i]->Update(m_deltaTime);
         }
 
-        for (size_t i = 0; i < m_updateCallbacks.size(); i++)
+		std::shared_ptr<MeshRenderer> meshComponent = it->second->GetComponent<MeshRenderer>();
+        if (meshComponent == nullptr)
         {
-			m_updateCallbacks[i](m_deltaTime);
+            continue;
         }
 
-        m_vulkanInterface->DrawFrame(m_deltaTime, m_meshNameToObjectMap, m_objects);
-        m_windowManager->NewFrame();
-
-        if (m_windowManager->KeyPressed(GLFW_KEY_ESCAPE))
+        if (meshComponent->GetMeshName() != MeshRenderer::kCustomMeshName)
         {
-            glfwSetWindowShouldClose(m_windowManager->GetWindow(), true);
+            continue;
+        }
+
+        if (meshComponent->IsMeshDataDirty())
+        {
+            FinalizeMesh(it->second);
+            meshComponent->SetDirtyData(false);
+		}
+
+        if (meshComponent->IsTextureDataDirty())
+        {
+            UpdateTexture(meshComponent->GetTexturePath());
+			meshComponent->SetTextureDataDirty(false);
         }
     }
 
-    m_vulkanInterface->Cleanup(m_objects, m_buffersToDestroy);
+    for (size_t i = 0; i < m_updateCallbacks.size(); i++)
+    {
+		m_updateCallbacks[i](m_deltaTime);
+    }
+
+        //m_vulkanInterface->DrawFrame(m_deltaTime, m_meshNameToObjectMap, m_objects);
+        //m_windowManager->NewFrame();
+
+        //if (m_windowManager->KeyPressed(GLFW_KEY_ESCAPE))
+        //{
+        //    glfwSetWindowShouldClose(m_windowManager->GetWindow(), true);
+        //}
+
+    //m_vulkanInterface->Cleanup(m_objects, m_buffersToDestroy);
 }
 
 VulkanCommonFunctions::ObjectHandle Scene::AddObject(std::shared_ptr <RenderObject> newObject)
@@ -239,4 +237,41 @@ void Scene::UpdateTexture(std::string newTexturePath)
     }
 
     m_vulkanInterface->UpdateTextureResources(newTexturePath);
+}
+
+void Scene::Cleanup()
+{
+    for (auto it = m_objects.begin(); it != m_objects.end(); it++)
+    {
+        std::shared_ptr<GraphicsBuffer> instanceBuffer = it->second->GetInstanceBuffer();
+
+        if (instanceBuffer != nullptr)
+        {
+            instanceBuffer->DestroyBuffer();
+        }
+
+        std::shared_ptr<MeshRenderer> meshComponent = it->second->GetComponent<MeshRenderer>();
+        if (meshComponent != nullptr)
+        {
+            std::shared_ptr<GraphicsBuffer> vertexBuffer = meshComponent->GetVertexBuffer();
+            if (vertexBuffer != nullptr)
+            {
+                vertexBuffer->DestroyBuffer();
+            }
+
+            std::shared_ptr<GraphicsBuffer> indexBuffer = meshComponent->GetIndexBuffer();
+            if (indexBuffer != nullptr)
+            {
+                indexBuffer->DestroyBuffer();
+            }
+        }
+    }
+
+    for (size_t i = 0; i < m_buffersToDestroy.size(); i++)
+    {
+        if (m_buffersToDestroy[i] != nullptr)
+        {
+            m_buffersToDestroy[i]->DestroyBuffer();
+        }
+    }
 }

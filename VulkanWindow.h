@@ -28,4 +28,6 @@ private:
 	std::shared_ptr<VulkanWindowRenderer> m_vulkanWindowRenderer = nullptr;
 
 	std::vector<std::function<void(QMouseEvent*)>> m_mouseMoveCallbacks;
+
+	VkPhysicalDeviceDescriptorIndexingFeatures m_indexingFeatures{};
 };

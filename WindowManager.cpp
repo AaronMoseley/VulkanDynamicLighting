@@ -28,7 +28,7 @@ void WindowManager::InitializeWindow(QVulkanInstance* vulkanInstance)
 
     m_wrappingWidget = QWidget::createWindowContainer(m_vulkanWindow.get());
     m_wrappingWidget->resize(m_width, m_height);
-    m_wrappingWidget->show();
+    //m_wrappingWidget->show();
 }
 
 void WindowManager::NewFrame()

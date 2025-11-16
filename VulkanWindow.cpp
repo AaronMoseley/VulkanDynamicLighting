@@ -5,6 +5,19 @@ VulkanWindow::VulkanWindow(std::shared_ptr<VulkanInterface> vulkanInterface, std
 {
 	m_vulkanInterface = vulkanInterface;
 	m_scene = scene;
+
+	m_indexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+	m_indexingFeatures.runtimeDescriptorArray = VK_TRUE;
+	m_indexingFeatures.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+
+	setEnabledFeaturesModifier([=](VkPhysicalDeviceFeatures2& features2) {
+		// Chain it to the pNext of the main features struct
+		m_indexingFeatures.pNext = features2.pNext;
+		features2.pNext = &m_indexingFeatures;
+
+		features2.features.samplerAnisotropy = VK_TRUE;
+		});
+
 	requestUpdate();
 }
 

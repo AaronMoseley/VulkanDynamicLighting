@@ -21,18 +21,27 @@
 #include <QScreen>
 #include <QVulkanInstance>
 #include <QVBoxLayout>
+#include <vulkan/vulkan.h>
 
 #include <qwidget.h>
 
 bool DebugFilter(QVulkanInstance::DebugMessageSeverityFlags severity, QVulkanInstance::DebugMessageTypeFlags type, const void* message)
 {
-    return true;
+    auto* data = reinterpret_cast<const VkDebugUtilsMessengerCallbackDataEXT*>(message);
+
+    qDebug().noquote()
+        << "[VK]"
+        << "Severity:" << severity
+        << "Type:" << type
+        << data->pMessage;
+
+    return true;   // return true to stop Qt from printing it as well
 }
 
 class VulkanLightingDemo : public QWidget {
 public:
     VulkanLightingDemo(QWidget* parent, QVulkanInstance* vulkanInstance, int screenWidth, int screenHeight) : QWidget(parent) {
-        m_mainLayout = new QVBoxLayout(this);
+		m_mainLayout.reset(new QVBoxLayout(this));
         
         windowManager = std::make_shared<WindowManager>(screenWidth, screenHeight, "Vulkan Lighting Demo");
 
@@ -109,7 +118,7 @@ private:
 
     bool temp = false;
 
-    QLayout* m_mainLayout;
+    QScopedPointer<QVBoxLayout> m_mainLayout;
 
     void CreateObjects()
     {

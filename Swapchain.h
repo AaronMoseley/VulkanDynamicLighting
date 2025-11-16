@@ -31,25 +31,14 @@ public:
 
 	SwapChain(SwapChainCreateInfo initializationInfo);
 
-	VkExtent2D GetSwapChainExtent() { return m_swapChainExtent; }
+	VkExtent2D GetSwapChainExtent();
 	VkFramebuffer GetFrameBuffer(size_t index) { return m_swapChainFramebuffers[index]; }
 	std::shared_ptr<GraphicsImage> GetImage(size_t index) { return m_swapChainImages[index]; }
-	VkSwapchainKHR GetVkSwapChain() { return m_swapChain; }
-
-	static bool IsSwapChainAdequate(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-
-	static SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
-
-	void ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
 	void DestroySwapChain();
 
 private:
 	std::vector< std::shared_ptr<GraphicsImage>> m_swapChainImages;
-	VkSwapchainKHR m_swapChain;
-	VkExtent2D m_swapChainExtent;
 	std::vector<VkFramebuffer> m_swapChainFramebuffers;
 
 	VkDevice m_device;
@@ -61,4 +50,5 @@ private:
 	VkQueue m_graphicsQueue;
 
 	std::shared_ptr<WindowManager> m_windowManager;
+	std::shared_ptr<VulkanWindow> m_vulkanWindow;
 };

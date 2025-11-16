@@ -12,11 +12,12 @@ void VulkanInterface::InitializeVulkan()
     m_vulkanWindow = m_windowManager->GetVulkanWindow();
 
     instance = m_vulkanWindow->vulkanInstance()->vkInstance();
+    surface = m_vulkanWindow->vulkanInstance()->surfaceForWindow(m_vulkanWindow.get());
+	//PickPhysicalDevice();
     physicalDevice = m_vulkanWindow->physicalDevice();
     device = m_vulkanWindow->device();
     commandPool = m_vulkanWindow->graphicsCommandPool();
     graphicsQueue = m_vulkanWindow->graphicsQueue();
-    surface = m_vulkanWindow->vulkanInstance()->surfaceForWindow(m_vulkanWindow.get());
     //CreateInstance();
     //SetupDebugMessenger();
     //CreateSurface();
@@ -352,15 +353,6 @@ void VulkanInterface::CreateSyncObjects() {
 
 void VulkanInterface::BeginDrawFrameCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
 {
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = 0; // Optional
-    beginInfo.pInheritanceInfo = nullptr; // Optional
-
-    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
-        throw std::runtime_error("failed to begin recording command buffer!");
-    }
-
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     //renderPassInfo.renderPass = renderPass;
@@ -372,7 +364,7 @@ void VulkanInterface::BeginDrawFrameCommandBuffer(VkCommandBuffer commandBuffer,
     std::array<VkClearValue, 2> clearValues{};
 
     //clearValues[0].color = { {0.345098039f, 0.52156862f, 0.6862745098039216f, 1.0f} };
-    clearValues[0].color = { {0.51f, 0.51f, 0.51f, 1.0f} };
+    clearValues[0].color = { {0.1f, 0.1f, 0.1f, 1.0f} };
     clearValues[1].depthStencil = { 1.0f, 0 };
 
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -450,10 +442,6 @@ void VulkanInterface::DrawSingleObjectCommandBuffer(VkCommandBuffer commandBuffe
 void VulkanInterface::EndDrawFrameCommandBuffer(VkCommandBuffer commandBuffer)
 {
     vkCmdEndRenderPass(commandBuffer);
-
-    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-        throw std::runtime_error("failed to record command buffer!");
-    }
 }
 
 void VulkanInterface::CreateCommandPool() {
@@ -785,9 +773,12 @@ void VulkanInterface::PickPhysicalDevice() {
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-    for (const auto& device : devices) {
-        if (IsDeviceSuitable(device)) {
-            physicalDevice = device;
+    for (size_t i = 0; i < devices.size(); i++) {
+        if (IsDeviceSuitable(devices[i])) {
+        //if(devices[i].)
+        //{
+			m_vulkanWindow->setPhysicalDeviceIndex(i);
+			physicalDevice = m_vulkanWindow->physicalDevice();
             break;
         }
     }
@@ -802,11 +793,6 @@ bool VulkanInterface::IsDeviceSuitable(VkPhysicalDevice physicalDevice) {
 
     bool extensionsSupported = CheckDeviceExtensionSupport(physicalDevice);
 
-    bool swapChainAdequate = false;
-    if (extensionsSupported) {
-        swapChainAdequate = swapChain->IsSwapChainAdequate(physicalDevice, surface);
-    }
-
     VkPhysicalDeviceFeatures supportedFeatures;
     vkGetPhysicalDeviceFeatures(physicalDevice, &supportedFeatures);
 
@@ -820,7 +806,7 @@ bool VulkanInterface::IsDeviceSuitable(VkPhysicalDevice physicalDevice) {
 
     vkGetPhysicalDeviceFeatures2(physicalDevice, &deviceFeatures2);
 
-    return indices.IsComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy && indexingFeatures.runtimeDescriptorArray;
+    return indices.IsComplete() && extensionsSupported && supportedFeatures.samplerAnisotropy && indexingFeatures.runtimeDescriptorArray;
 }
 
 bool VulkanInterface::CheckDeviceExtensionSupport(VkPhysicalDevice device) {
@@ -1249,6 +1235,7 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage, std::map<Vulkan
 }
 
 void VulkanInterface::CleanupSwapChain() {
+    vkDeviceWaitIdle(device);
 	depthImage->DestroyImage();
 
     swapChain->DestroySwapChain();
@@ -1256,8 +1243,6 @@ void VulkanInterface::CleanupSwapChain() {
 
 void VulkanInterface::Cleanup() {
     vkDeviceWaitIdle(device);
-
-    CleanupSwapChain();
 
     vkDestroyPipeline(device, graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
@@ -1294,7 +1279,7 @@ void VulkanInterface::Cleanup() {
         }
     }
 
-    vkDestroyCommandPool(device, commandPool, nullptr);
+    //vkDestroyCommandPool(device, commandPool, nullptr);
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
@@ -1308,20 +1293,4 @@ void VulkanInterface::Cleanup() {
     }
 
     vmaDestroyAllocator(allocator);
-
-    if (enableValidationLayers)
-    {
-        DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
-    }
-
-    vkDestroySurfaceKHR(instance, surface, nullptr);
-
-    vkDeviceWaitIdle(device);
-    vkDestroyDevice(device, nullptr);
-
-    vkDestroyInstance(instance, nullptr);
-
-    //glfwDestroyWindow(m_windowManager->GetWindow());
-
-    //glfwTerminate();
 }

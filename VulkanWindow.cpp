@@ -1,7 +1,7 @@
 #include "VulkanWindow.h"
 #include "VulkanInterface.h"
 
-VulkanWindow::VulkanWindow(std::shared_ptr<VulkanInterface> vulkanInterface, std::shared_ptr<Scene> scene)
+VulkanWindow::VulkanWindow(std::shared_ptr<VulkanInterface> vulkanInterface, std::shared_ptr<Scene> scene) : QVulkanWindow(nullptr)
 {
 	m_vulkanInterface = vulkanInterface;
 	m_scene = scene;
@@ -41,7 +41,7 @@ void VulkanWindow::mouseMoveEvent(QMouseEvent* event)
 
 QVulkanWindowRenderer* VulkanWindow::createRenderer()
 {
-	m_vulkanWindowRenderer = std::make_shared<VulkanWindowRenderer>(m_vulkanInterface, m_scene);
+	m_vulkanWindowRenderer = new VulkanWindowRenderer(m_vulkanInterface, m_scene);
 
-	return m_vulkanWindowRenderer.get();
+	return m_vulkanWindowRenderer;
 }

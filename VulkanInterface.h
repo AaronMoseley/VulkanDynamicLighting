@@ -141,7 +141,7 @@ private:
     VmaAllocator allocator;
 
     std::shared_ptr<WindowManager> m_windowManager;
-    std::shared_ptr<VulkanWindow> m_vulkanWindow;
+    VulkanWindow* m_vulkanWindow;
 
 	const std::string customMeshName = "CustomMesh";
 

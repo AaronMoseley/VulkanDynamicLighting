@@ -12,7 +12,7 @@ void VulkanInterface::InitializeVulkan()
     m_vulkanWindow = m_windowManager->GetVulkanWindow();
 
     instance = m_vulkanWindow->vulkanInstance()->vkInstance();
-    surface = m_vulkanWindow->vulkanInstance()->surfaceForWindow(m_vulkanWindow.get());
+    surface = m_vulkanWindow->vulkanInstance()->surfaceForWindow(m_vulkanWindow);
 	//PickPhysicalDevice();
     physicalDevice = m_vulkanWindow->physicalDevice();
     device = m_vulkanWindow->device();

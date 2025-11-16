@@ -40,7 +40,7 @@ public:
 	glm::vec2 GetMouseDelta() { return m_mouseDelta; };
 	glm::vec2 GetScrollDelta() { return m_scrollDelta; };
 
-	std::shared_ptr<VulkanWindow> GetVulkanWindow() { return m_vulkanWindow; }
+	VulkanWindow* GetVulkanWindow() { return m_vulkanWindow; }
 
 	void NewFrame();
 
@@ -50,7 +50,7 @@ public:
 	void SetFrameBufferResized(bool resized) { m_framebufferResized = true; };
 
 private:
-	std::shared_ptr<VulkanWindow> m_vulkanWindow;
+	VulkanWindow* m_vulkanWindow;
 	std::shared_ptr<VulkanInterface> m_vulkanInterface;
 	std::shared_ptr<Scene> m_scene;
 

@@ -23,10 +23,10 @@ void WindowManager::BeginRendering()
 
 void WindowManager::InitializeWindow(QVulkanInstance* vulkanInstance)
 {
-    m_vulkanWindow = std::make_shared<VulkanWindow>(m_vulkanInterface, m_scene);
+    m_vulkanWindow = new VulkanWindow(m_vulkanInterface, m_scene);
     m_vulkanWindow->setVulkanInstance(vulkanInstance);
 
-    m_wrappingWidget = QWidget::createWindowContainer(m_vulkanWindow.get());
+    m_wrappingWidget = QWidget::createWindowContainer(m_vulkanWindow);
     m_wrappingWidget->resize(m_width, m_height);
     //m_wrappingWidget->show();
 }

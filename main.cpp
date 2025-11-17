@@ -306,7 +306,7 @@ private:
         if (windowManager->KeyPressedThisFrame(Qt::Key::Key_Escape))
         {
             windowManager->Shutdown();
-            QCoreApplication::quit();
+            QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
         }
     }
 };

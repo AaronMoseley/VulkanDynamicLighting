@@ -1,10 +1,5 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
-
 #include <string>
 #include <set>
 
@@ -13,12 +8,16 @@
 #include <qwidget.h>
 #include <QVBoxLayout>
 #include <QVulkanInstance>
+#include <QMetaMethod>
 
 class Scene;
 class VulkanWindow;
 class VulkanInterface;
 
-class WindowManager {
+class WindowManager : public QObject {
+
+	Q_OBJECT
+
 public:
 	const char* DEFAULT_TITLE = "GLFW Window";
 
@@ -44,10 +43,24 @@ public:
 
 	void NewFrame();
 
-	bool KeyPressed(int keyCode);
-	bool KeyPressedThisFrame(int keyCode);
+	bool KeyPressed(Qt::Key keyCode);
+	bool KeyPressedThisFrame(Qt::Key keyCode);
+
+	bool MouseButtonPressed(Qt::MouseButton mouseButton);
+	bool MouseButtonPressedThisFrame(Qt::MouseButton mouseButton);
 
 	void SetFrameBufferResized(bool resized) { m_framebufferResized = true; };
+
+	void Shutdown();
+
+public slots:
+	void AddKeyDown(Qt::Key pressedKey);
+	void AddKeyUp(Qt::Key releasedKey);
+
+	void AddMouseButtonDown(Qt::MouseButton pressedButton);
+	void AddMouseButtonUp(Qt::MouseButton releasedButton);
+
+	void CursorMoved(float xpos, float ypos);
 
 private:
 	VulkanWindow* m_vulkanWindow;
@@ -61,14 +74,16 @@ private:
 	size_t m_width = 0;
 	size_t m_height = 0;
 
-	glm::vec2 m_lastMousePos = glm::vec2(0.0f, 0.0f);
 	glm::vec2 m_mouseDelta = glm::vec2(0.0f, 0.0f);
 	bool m_firstMouseMovement = true;
 
 	glm::vec2 m_scrollDelta = glm::vec2(0.0f, 0.0f);
 
-	std::set<int> m_pressedKeys;
-	std::set<int> m_keysPressedThisFrame;
+	std::set<Qt::Key> m_pressedKeys;
+	std::set<Qt::Key> m_keysPressedThisFrame;
+
+	std::set<Qt::MouseButton> m_pressedMouseButtons;
+	std::set<Qt::MouseButton> m_pressedMouseButtonsThisFrame;
 
 	std::string m_title = "";
 };

@@ -32,7 +32,7 @@ public:
 	}
 
 private:
-	glm::vec3 m_color = glm::vec3(1.0f);
-	glm::vec3 m_specularColor = glm::vec3(1.0f);
+	alignas(16) glm::vec3 m_color = glm::vec3(1.0f);
+	alignas(16) glm::vec3 m_specularColor = glm::vec3(1.0f);
 	float m_maxDistance = 20.0f;
 };

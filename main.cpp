@@ -15,6 +15,7 @@
 #include "WindowManager.h"
 #include "FirstPersonController.h"
 #include "Scene.h"
+#include "VulkanWindow.h"
 
 #include <QApplication>
 #include <QLoggingCategory>
@@ -88,10 +89,12 @@ private:
     float lightOrbitRadius = 5.0f;
     float lightOrbitSpeed = 1.0f;
 
+    float currentTime = 0.0f;
+
     float deltaTime = 0.0f;	// Time between current frame and last frame
     float lastFrame = 0.0f; // Time of last frame
 
-    std::vector<glm::vec3> objectPositions = {
+    alignas(16) std::vector<glm::vec3> objectPositions = {
         glm::vec3(0.0f,  0.0f,  0.0f),
         glm::vec3(2.0f,  5.0f, -15.0f),
         glm::vec3(-1.5f, -2.2f, -2.5f),
@@ -173,6 +176,8 @@ private:
 
 			currentMesh->SetColor(color);
 
+            //currentMesh->SetColor({ 1.0f, 1.0f, 1.0f });
+
             if (sceneManager->GetObjectCount() % 3 == 0)
             {
                 currentMesh->SetTexture("textures\\SandTexture.png");
@@ -198,15 +203,15 @@ private:
             temp = true;
         }
 
-        /*float currentFrameTime = glfwGetTime();
+        currentTime += deltaTime;
 
         std::shared_ptr<RenderObject> lightObject = sceneManager->GetRenderObject(lightObjectHandle);
         if (lightObject != nullptr)
         {
-            lightObject->GetComponent<Transform>()->SetPosition(glm::vec3(lightOrbitRadius * cos(currentFrameTime), lightOrbitRadius * sin(currentFrameTime), lightOrbitRadius * cos(currentFrameTime)));
+            lightObject->GetComponent<Transform>()->SetPosition(glm::vec3(lightOrbitRadius * cos(currentTime), lightOrbitRadius * sin(currentTime), lightOrbitRadius * cos(currentTime)));
         }
 
-        if (windowManager->KeyPressedThisFrame(GLFW_KEY_T))
+        if (windowManager->KeyPressedThisFrame(Qt::Key::Key_T))
         {
             std::vector<uint16_t> triangleIndices = {
             0, 1, 2
@@ -227,7 +232,7 @@ private:
             currentObject->GetComponent<Transform>()->Rotate(glm::vec3(16.0f * deltaTime));
         }
 
-        if (windowManager->KeyPressed(GLFW_KEY_R) && sceneManager->GetObjectCount() < maxObjects)
+        if (windowManager->KeyPressed(Qt::Key::Key_R) && sceneManager->GetObjectCount() < maxObjects)
         {
             float positionRange = 100.0f;
 
@@ -286,7 +291,7 @@ private:
             objectHandles.insert(newObjectHandle);
         }
 
-        if (windowManager->KeyPressed(GLFW_KEY_E) && sceneManager->GetObjectCount() > 1)
+        if (windowManager->KeyPressed(Qt::Key::Key_E) && sceneManager->GetObjectCount() > 1)
         {
             VulkanCommonFunctions::ObjectHandle removeObjectHandle = *objectHandles.rbegin();
             bool correctlyRemoved = sceneManager->RemoveObject(removeObjectHandle);
@@ -296,7 +301,13 @@ private:
             {
                 std::cout << "Error removing object, handle: " << removeObjectHandle << std::endl;
             }
-        }*/
+        }
+
+        if (windowManager->KeyPressedThisFrame(Qt::Key::Key_Escape))
+        {
+            windowManager->Shutdown();
+            QCoreApplication::quit();
+        }
     }
 };
 

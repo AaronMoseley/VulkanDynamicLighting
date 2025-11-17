@@ -79,14 +79,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\ThirdPartyLibraries\stb-master;$(SolutionDir)..\ThirdPartyLibraries\include;$(SolutionDir)..\VulkanSDK\1.4.309.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Qt\6.10.0\msvc2022_64\include;$(SolutionDir)..\ThirdPartyLibraries\stb-master;$(SolutionDir)..\ThirdPartyLibraries\include;$(SolutionDir)..\VulkanSDK\1.4.309.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\ThirdPartyLibraries\lib;$(SolutionDir)..\VulkanSDK\1.4.309.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Qt\6.10.0\msvc2022_64\lib;$(SolutionDir)..\ThirdPartyLibraries\lib;$(SolutionDir)..\VulkanSDK\1.4.309.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <StackReserveSize>4194304 </StackReserveSize>
     </Link>
@@ -149,9 +149,9 @@
     <ClInclude Include="Transform.h" />
     <ClInclude Include="vk_mem_alloc.h" />
     <ClInclude Include="VulkanInterface.h" />
-    <ClInclude Include="VulkanWindow.h" />
+    <QtMoc Include="VulkanWindow.h" />
     <ClInclude Include="VulkanWindowRenderer.h" />
-    <ClInclude Include="WindowManager.h" />
+    <QtMoc Include="WindowManager.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\HLSL\ObjectShaders.hlsl">

@@ -76,10 +76,10 @@
       <Filter>Source Files\Management</Filter>
     </ClCompile>
     <ClCompile Include="VulkanWindow.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Vulkan Interface</Filter>
     </ClCompile>
     <ClCompile Include="VulkanWindowRenderer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Vulkan Interface</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -113,9 +113,6 @@
     <ClInclude Include="Cube.h">
       <Filter>Source Files\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="WindowManager.h">
-      <Filter>Source Files\Management</Filter>
-    </ClInclude>
     <ClInclude Include="Transform.h">
       <Filter>Source Files\Components</Filter>
     </ClInclude>
@@ -135,15 +132,20 @@
       <Filter>Source Files\Management</Filter>
     </ClInclude>
     <ClInclude Include="VulkanWindowRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanWindow.h">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files\Vulkan Interface</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\HLSL\ObjectShaders.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="WindowManager.h">
+      <Filter>Source Files\Management</Filter>
+    </QtMoc>
+    <QtMoc Include="VulkanWindow.h">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>

@@ -8,27 +8,27 @@ void FirstPersonController::Update(float deltaTime)
 
     float velocity = m_movementSpeed * deltaTime;
 
-    if (GetWindowManager()->KeyPressed(GLFW_KEY_LEFT_SHIFT))
+    if (GetWindowManager()->KeyPressed(Qt::Key::Key_Shift))
     {
         velocity *= 4.0f;
     }
 
-    if (GetWindowManager()->KeyPressed(GLFW_KEY_W))
+    if (GetWindowManager()->KeyPressed(Qt::Key::Key_W))
     {
         offset += transform->Forward() * velocity;
     }
 
-    if (GetWindowManager()->KeyPressed(GLFW_KEY_S))
+    if (GetWindowManager()->KeyPressed(Qt::Key::Key_S))
     {
         offset -= transform->Forward() * velocity;
     }
 
-    if (GetWindowManager()->KeyPressed(GLFW_KEY_A))
+    if (GetWindowManager()->KeyPressed(Qt::Key::Key_A))
     {
         offset -= transform->Right() * velocity;
     }
 
-    if (GetWindowManager()->KeyPressed(GLFW_KEY_D))
+    if (GetWindowManager()->KeyPressed(Qt::Key::Key_D))
     {
         offset += transform->Right() * velocity;
     }
@@ -37,8 +37,13 @@ void FirstPersonController::Update(float deltaTime)
 	glm::vec3 rotationDelta = glm::vec3(0.0f);
 	glm::vec2 mouseDelta = GetWindowManager()->GetMouseDelta();
 
+    if (mouseDelta.x > 0.01f)
+    {
+        int temp = 0;
+    }
+
 	rotationDelta.x = mouseDelta.y * m_mouseSensitivity;
-	rotationDelta.y = mouseDelta.x * m_mouseSensitivity;
+    rotationDelta.y = mouseDelta.x * m_mouseSensitivity;
 	transform->Rotate(rotationDelta);
 
     if (transform->GetRotation().x > 89.0f)

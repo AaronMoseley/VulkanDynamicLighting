@@ -32,15 +32,10 @@ public:
 	SwapChain(SwapChainCreateInfo initializationInfo);
 
 	VkExtent2D GetSwapChainExtent();
-	VkFramebuffer GetFrameBuffer(size_t index) { return m_swapChainFramebuffers[index]; }
-	std::shared_ptr<GraphicsImage> GetImage(size_t index) { return m_swapChainImages[index]; }
 
 	void DestroySwapChain();
 
 private:
-	std::vector< std::shared_ptr<GraphicsImage>> m_swapChainImages;
-	std::vector<VkFramebuffer> m_swapChainFramebuffers;
-
 	VkDevice m_device;
 	VkPhysicalDevice m_physicalDevice;
 	VkSurfaceKHR m_surface;

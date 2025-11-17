@@ -26,9 +26,16 @@ void WindowManager::InitializeWindow(QVulkanInstance* vulkanInstance)
     m_vulkanWindow = new VulkanWindow(m_vulkanInterface, m_scene);
     m_vulkanWindow->setVulkanInstance(vulkanInstance);
 
+    QObject::connect(m_vulkanWindow, &VulkanWindow::KeyDown, this, &WindowManager::AddKeyDown);
+    QObject::connect(m_vulkanWindow, &VulkanWindow::KeyUp, this, &WindowManager::AddKeyUp);
+
+    QObject::connect(m_vulkanWindow, &VulkanWindow::MouseButtonDown, this, &WindowManager::AddMouseButtonDown);
+    QObject::connect(m_vulkanWindow, &VulkanWindow::MouseButtonUp, this, &WindowManager::AddMouseButtonUp);
+
+    QObject::connect(m_vulkanWindow, &VulkanWindow::MouseMoved, this, &WindowManager::CursorMoved);
+
     m_wrappingWidget = QWidget::createWindowContainer(m_vulkanWindow);
     m_wrappingWidget->resize(m_width, m_height);
-    //m_wrappingWidget->show();
 }
 
 void WindowManager::NewFrame()
@@ -39,28 +46,57 @@ void WindowManager::NewFrame()
 	m_scrollDelta = glm::vec2(0.0f, 0.0f);
 }
 
-bool WindowManager::KeyPressed(int keyCode)
+bool WindowManager::KeyPressed(Qt::Key keyCode)
 {
     return m_pressedKeys.contains(keyCode);
 }
 
-bool WindowManager::KeyPressedThisFrame(int keyCode)
+bool WindowManager::KeyPressedThisFrame(Qt::Key keyCode)
 {
     return m_keysPressedThisFrame.contains(keyCode);
 }
 
-/*void WindowManager::CursorMoved(double xpos, double ypos)
+bool WindowManager::MouseButtonPressed(Qt::MouseButton mouseButton)
 {
-    if (m_firstMouseMovement)
-    {
-        m_lastMousePos = glm::vec2(xpos, ypos);
-		m_firstMouseMovement = false;
-        return;
-    }
+    return m_pressedMouseButtons.contains(mouseButton);
+}
 
-	glm::vec2 currentPos = glm::vec2(xpos, ypos);
-	m_mouseDelta = currentPos - m_lastMousePos;
+bool WindowManager::MouseButtonPressedThisFrame(Qt::MouseButton mouseButton)
+{
+    return m_pressedMouseButtonsThisFrame.contains(mouseButton);
+}
+
+void WindowManager::AddKeyDown(Qt::Key pressedKey)
+{
+    m_keysPressedThisFrame.insert(pressedKey);
+    m_pressedKeys.insert(pressedKey);
+}
+
+void WindowManager::AddKeyUp(Qt::Key releasedKey)
+{
+    m_keysPressedThisFrame.erase(releasedKey);
+    m_pressedKeys.erase(releasedKey);
+}
+
+void WindowManager::AddMouseButtonDown(Qt::MouseButton pressedButton)
+{
+    m_pressedMouseButtons.insert(pressedButton);
+    m_pressedMouseButtonsThisFrame.insert(pressedButton);
+}
+
+void WindowManager::AddMouseButtonUp(Qt::MouseButton releasedButton)
+{
+    m_pressedMouseButtons.erase(releasedButton);
+    m_pressedMouseButtonsThisFrame.erase(releasedButton);
+}
+
+void WindowManager::CursorMoved(float xpos, float ypos)
+{
+    m_mouseDelta = {xpos, ypos};
 	m_mouseDelta.y = -m_mouseDelta.y;
+}
 
-	m_lastMousePos = currentPos;
-}*/
+void WindowManager::Shutdown()
+{
+    m_vulkanWindow->Shutdown();
+}

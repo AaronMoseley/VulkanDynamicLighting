@@ -39,7 +39,8 @@ private:
 	VkDevice m_device = VK_NULL_HANDLE;
 	VkCommandPool m_commandPool = VK_NULL_HANDLE;
 	VkQueue m_graphicsQueue = VK_NULL_HANDLE;
-	void* m_mappedData = nullptr;
 
 	size_t m_maxSize = 0;
+
+	void* m_mappedData = nullptr;
 };

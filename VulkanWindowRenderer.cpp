@@ -36,5 +36,14 @@ void VulkanWindowRenderer::releaseSwapChainResources()
 void VulkanWindowRenderer::startNextFrame()
 {
 	m_scene->Update();
-	m_vulkanInterface->DrawFrame(0.0f, m_scene);
+
+	if (!m_isShuttingDown)
+	{
+		m_vulkanInterface->DrawFrame(0.0f, m_scene);
+	}
+}
+
+void VulkanWindowRenderer::Shutdown()
+{
+	m_isShuttingDown = true;
 }

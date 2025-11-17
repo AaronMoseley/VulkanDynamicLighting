@@ -9,11 +9,16 @@ Scene::Scene(std::shared_ptr<WindowManager> windowManager, std::shared_ptr<Vulka
 
 void Scene::Update()
 {
-    float currentFrameTime = glfwGetTime();
-    m_deltaTime = currentFrameTime - m_lastFrame;
+    float currentFrameTime = m_lastFrame + 0.02f;
+    m_deltaTime = 0.02f;
     m_lastFrame = currentFrameTime;
 
-    glfwPollEvents();
+    if (m_lastFrame > 0.0f)
+    {
+        m_deltaTime = currentFrameTime - m_lastFrame;
+    }
+
+    m_lastFrame = currentFrameTime;
 
     for (auto it = m_objects.begin(); it != m_objects.end(); it++)
     {
@@ -32,7 +37,7 @@ void Scene::Update()
 				components[i]->SetStarted(true);
             }
 
-			components[i]->Update(m_deltaTime);
+			components[i]->Update(0.02f);
         }
 
 		std::shared_ptr<MeshRenderer> meshComponent = it->second->GetComponent<MeshRenderer>();
@@ -64,15 +69,7 @@ void Scene::Update()
 		m_updateCallbacks[i](m_deltaTime);
     }
 
-        //m_vulkanInterface->DrawFrame(m_deltaTime, m_meshNameToObjectMap, m_objects);
-        //m_windowManager->NewFrame();
-
-        //if (m_windowManager->KeyPressed(GLFW_KEY_ESCAPE))
-        //{
-        //    glfwSetWindowShouldClose(m_windowManager->GetWindow(), true);
-        //}
-
-    //m_vulkanInterface->Cleanup(m_objects, m_buffersToDestroy);
+    m_windowManager->NewFrame();
 }
 
 VulkanCommonFunctions::ObjectHandle Scene::AddObject(std::shared_ptr <RenderObject> newObject)

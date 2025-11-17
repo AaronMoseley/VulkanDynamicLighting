@@ -19,24 +19,45 @@ VulkanWindow::VulkanWindow(std::shared_ptr<VulkanInterface> vulkanInterface, std
 		});
 
 	requestUpdate();
+
+	//setMouseGrabEnabled(true);
+	setCursor(Qt::BlankCursor);
 }
 
 void VulkanWindow::mousePressEvent(QMouseEvent* event)
 {
+	Qt::MouseButton button = event->button();
 
+	emit MouseButtonDown(button);
 }
 
 void VulkanWindow::mouseReleaseEvent(QMouseEvent* event)
 {
+	Qt::MouseButton button = event->button();
 
+	emit MouseButtonUp(button);
 }
 
 void VulkanWindow::mouseMoveEvent(QMouseEvent* event)
 {
-	for (size_t i = 0; i < m_mouseMoveCallbacks.size(); i++)
-	{
-		m_mouseMoveCallbacks[i](event);
-	}
+	emit MouseMoved(((float)event->pos().x() / size().width()) - 0.5f, ((float)event->pos().y() / size().height()) - 0.5f);
+
+	QPoint center = mapToGlobal(QPoint(width() / 2, height() / 2));
+	QCursor::setPos(center);
+}
+
+void VulkanWindow::keyPressEvent(QKeyEvent* event)
+{
+	Qt::Key key = static_cast<Qt::Key>(event->key());
+
+	emit KeyDown(key);
+}
+
+void VulkanWindow::keyReleaseEvent(QKeyEvent* event)
+{
+	Qt::Key key = static_cast<Qt::Key>(event->key());
+
+	emit KeyUp(key);
 }
 
 QVulkanWindowRenderer* VulkanWindow::createRenderer()
@@ -44,4 +65,9 @@ QVulkanWindowRenderer* VulkanWindow::createRenderer()
 	m_vulkanWindowRenderer = new VulkanWindowRenderer(m_vulkanInterface, m_scene);
 
 	return m_vulkanWindowRenderer;
+}
+
+void VulkanWindow::Shutdown()
+{
+	m_vulkanWindowRenderer->Shutdown();
 }

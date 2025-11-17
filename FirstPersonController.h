@@ -17,5 +17,5 @@ private:
     // camera options
 
     float m_movementSpeed = 4.0f;
-    float m_mouseSensitivity = 0.1f;
+    float m_mouseSensitivity = 100.0f;
 };

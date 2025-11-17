@@ -6,9 +6,6 @@
 class VulkanInterface;
 
 class VulkanWindowRenderer : public QVulkanWindowRenderer {
-
-	//Q_OBJECT
-
 public:
 	VulkanWindowRenderer(std::shared_ptr<VulkanInterface> vulkanInterface, std::shared_ptr<Scene> scene);
 
@@ -19,7 +16,11 @@ public:
 	void releaseResources() override;
 	void startNextFrame() override;
 
+	void Shutdown();
+
 private:
 	std::shared_ptr<VulkanInterface> m_vulkanInterface;
 	std::shared_ptr<Scene> m_scene;
+
+	bool m_isShuttingDown = false;
 };

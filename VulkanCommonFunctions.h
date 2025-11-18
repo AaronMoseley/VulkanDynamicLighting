@@ -22,7 +22,7 @@ namespace VulkanCommonFunctions {
         glm::mat4 view;
         glm::mat4 proj;
         glm::vec4 cameraPosition;
-        uint32_t lightCount;
+        alignas(4) uint32_t lightCount;
     };
 
     struct alignas(16) LightInfo {

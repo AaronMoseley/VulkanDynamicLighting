@@ -10,7 +10,7 @@
 
 class RenderObject;
 
-class Scene {
+class alignas(16) Scene {
 public:
 	Scene(std::shared_ptr<WindowManager> windowManager, std::shared_ptr<VulkanInterface> vulkanInterface);
 
@@ -38,17 +38,19 @@ public:
 	}
 
 private:
-	std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> m_objects;
-	std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> m_meshNameToObjectMap;
-	std::shared_ptr<WindowManager> m_windowManager;
-	std::shared_ptr<VulkanInterface> m_vulkanInterface;
+	alignas(16) std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> m_objects = {};
+	alignas(16) std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> m_meshNameToObjectMap;
+	alignas(16) std::shared_ptr<WindowManager> m_windowManager;
+	alignas(16) std::shared_ptr<VulkanInterface> m_vulkanInterface;
 
-	VulkanCommonFunctions::ObjectHandle m_currentObjectHandle = 0;
+	alignas(16) VulkanCommonFunctions::ObjectHandle m_currentObjectHandle = 0;
 
-	std::vector<std::function<void(float)>> m_updateCallbacks;
+	alignas(16) std::vector<std::function<void(float)>> m_updateCallbacks;
 
-	std::vector<std::shared_ptr<GraphicsBuffer>> m_buffersToDestroy;
+	alignas(16) std::vector<std::shared_ptr<GraphicsBuffer>> m_buffersToDestroy;
 
-	float m_deltaTime = 0.0f;	// Time between current frame and last frame
-	float m_lastFrame = -1.0f; // Time of last frame
+	alignas(16) double m_deltaTime = 0.0f;	// Time between current frame and last frame
+	alignas(16) double m_lastFrame = -1.0f; // Time of last frame
+
+	bool temp = false;
 };

@@ -53,16 +53,9 @@ public:
     void CleanupSwapChain();
 
 private:
-
-    void CreateInstance();
-    void SetupDebugMessenger();
-    void CreateSurface();
-    void PickPhysicalDevice();
-    void CreateLogicalDevice();
     void CreateVMAAllocator();
     void CreateDescriptorSetLayout();
     void CreateGraphicsPipeline();
-    void CreateCommandPool();
     void CreateDepthResources();
     void CreateTextureImage(std::string textureFilePath);
     void CreateTextureImageView(std::string textureFilePath);
@@ -70,11 +63,10 @@ private:
     void CreateUniformBuffers();
     void CreateDescriptorPool();
     void CreateDescriptorSets();
-    void CreateSyncObjects();
 
     VkFormat FindDepthFormat();
     VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-    void BeginDrawFrameCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+    void BeginDrawFrameCommandBuffer(VkCommandBuffer commandBuffer);
     void DrawInstancedObjectCommandBuffer(VkCommandBuffer commandBuffer, std::string objectName, size_t objectCount);
     void DrawSingleObjectCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject);
     void EndDrawFrameCommandBuffer(VkCommandBuffer commandBuffer);
@@ -82,12 +74,7 @@ private:
     void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
     bool CheckValidationLayerSupport();
-    bool IsDeviceSuitable(VkPhysicalDevice device);
-    bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
-    uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     std::vector<char> ReadFile(const std::string& filename);
-    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
-    void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
     void UpdateInstanceBuffer(std::string objectName, std::set<VulkanCommonFunctions::ObjectHandle> objectHandles, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects);
     void UpdateUniformBuffer(uint32_t currentImage, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects);
 
@@ -105,9 +92,6 @@ private:
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     VkPipeline graphicsPipeline = VK_NULL_HANDLE;
     VkCommandPool commandPool;
-    std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> imageAvailableSemaphores;
-    std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> renderFinishedSemaphores;
-    std::array<VkFence, MAX_FRAMES_IN_FLIGHT> inFlightFences;
 
     std::map<std::string, std::shared_ptr<GraphicsBuffer>> vertexBuffers;
     std::map<std::string, std::shared_ptr<GraphicsBuffer>> indexBuffers;

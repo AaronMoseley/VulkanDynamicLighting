@@ -23,7 +23,7 @@
 class Scene;
 class WindowManager;
 
-class RenderObject : public std::enable_shared_from_this<RenderObject> {
+class alignas(16) RenderObject : public std::enable_shared_from_this<RenderObject> {
 public:
 	RenderObject(std::shared_ptr<WindowManager> windowManager);
 
@@ -36,8 +36,6 @@ public:
 		newComponent->SetOwner(shared_from_this());
 
 		newComponent->SetWindowManager(m_windowManager);
-
-		newComponent->Start();
 
 		return newComponent;
 	}

@@ -16,6 +16,7 @@
 #include "FirstPersonController.h"
 #include "Scene.h"
 #include "VulkanWindow.h"
+#include "DemoBehavior.h"
 
 #include <QApplication>
 #include <QLoggingCategory>
@@ -69,10 +70,12 @@ public:
         cameraTransform->SetScale(glm::vec3(1.0f));
         cameraObject->AddComponent<Camera>();
         cameraObject->AddComponent<FirstPersonController>();
+		cameraObject->AddComponent<DemoBehavior>();
         cameraObjectHandle = sceneManager->AddObject(cameraObject);
 
         //sceneManager->MainLoop();
         windowManager->BeginRendering();
+        //CreateObjects();
     }
 
 private:

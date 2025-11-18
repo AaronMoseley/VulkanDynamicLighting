@@ -36,7 +36,7 @@ namespace VulkanCommonFunctions {
         alignas(4) float maxLightDistance;
     };
 
-    struct InstanceInfo {
+    struct alignas(16) InstanceInfo {
         glm::mat4 modelMatrix;
         glm::mat4 modelMatrixInverse;
 
@@ -55,7 +55,7 @@ namespace VulkanCommonFunctions {
         alignas(4) uint32_t isBillboarded;
     };
 
-    struct Vertex {
+    struct alignas(16) Vertex {
         alignas(16) glm::vec3 pos;
         alignas(16) glm::vec3 normal;
         alignas(8) glm::vec2 texCoord;

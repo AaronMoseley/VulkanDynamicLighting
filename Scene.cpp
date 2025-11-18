@@ -1,5 +1,6 @@
 #include "Scene.h"
 #include "RenderObject.h"
+#include "Cube.h"
 
 Scene::Scene(std::shared_ptr<WindowManager> windowManager, std::shared_ptr<VulkanInterface> vulkanInterface)
 {
@@ -9,14 +10,17 @@ Scene::Scene(std::shared_ptr<WindowManager> windowManager, std::shared_ptr<Vulka
 
 void Scene::Update()
 {
-    float currentFrameTime = m_lastFrame + 0.02f;
-    m_deltaTime = 0.02f;
-    m_lastFrame = currentFrameTime;
+    auto now = std::chrono::high_resolution_clock::now();
+    auto epoch = now.time_since_epoch();
+
+    double currentFrameTime = std::chrono::duration<double>(epoch).count();
 
     if (m_lastFrame > 0.0f)
     {
         m_deltaTime = currentFrameTime - m_lastFrame;
     }
+
+	qDebug() << "Delta Time: " << m_deltaTime;
 
     m_lastFrame = currentFrameTime;
 
@@ -37,7 +41,7 @@ void Scene::Update()
 				components[i]->SetStarted(true);
             }
 
-			components[i]->Update(0.02f);
+			components[i]->Update(m_deltaTime);
         }
 
 		std::shared_ptr<MeshRenderer> meshComponent = it->second->GetComponent<MeshRenderer>();
@@ -64,9 +68,29 @@ void Scene::Update()
         }
     }
 
+    if (!temp)
+    {
+        /*std::shared_ptr<RenderObject> lightCube = std::make_shared<RenderObject>(m_windowManager);
+
+        std::shared_ptr<Transform> lightTransform = lightCube->AddComponent<Transform>();
+        lightTransform->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+        lightTransform->SetRotation(glm::vec3(0.0f));
+        lightTransform->SetScale(glm::vec3(0.25f));
+        //std::shared_ptr<Cube> lightMesh = lightCube->AddComponent<Cube>();
+        std::shared_ptr<Cube> lightMesh = lightCube->AddComponent<Cube>();
+        //lightMesh->SetVertices(squareVertices);
+        //lightMesh->SetIndices(squareIndices);
+        lightMesh->SetLit(false);
+        lightMesh->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
+        lightCube->AddComponent<LightSource>();
+
+        AddObject(lightCube);*/
+        temp = true;
+    }
+
     for (size_t i = 0; i < m_updateCallbacks.size(); i++)
     {
-		m_updateCallbacks[i](m_deltaTime);
+		//m_updateCallbacks[i](0.02f);
     }
 
     m_windowManager->NewFrame();

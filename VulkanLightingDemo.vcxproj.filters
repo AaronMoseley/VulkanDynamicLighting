@@ -81,6 +81,9 @@
     <ClCompile Include="VulkanWindowRenderer.cpp">
       <Filter>Source Files\Vulkan Interface</Filter>
     </ClCompile>
+    <ClCompile Include="DemoBehavior.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vk_mem_alloc.h">
@@ -133,6 +136,9 @@
     </ClInclude>
     <ClInclude Include="VulkanWindowRenderer.h">
       <Filter>Source Files\Vulkan Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="DemoBehavior.h">
+      <Filter>Source Files\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

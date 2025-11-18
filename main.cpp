@@ -59,8 +59,8 @@ public:
         resize(screenWidth, screenHeight);
         m_mainLayout->addWidget(windowManager->GetWrappingWidget());
 
-        auto frameCallback = std::bind(&VulkanLightingDemo::processInput, this, std::placeholders::_1);
-        sceneManager->RegisterUpdateCallback(frameCallback);
+        //auto frameCallback = std::bind(&VulkanLightingDemo::processInput, this, std::placeholders::_1);
+        //sceneManager->RegisterUpdateCallback(frameCallback);
 
         std::shared_ptr<RenderObject> cameraObject = std::make_shared<RenderObject>(windowManager);
 
@@ -73,9 +73,7 @@ public:
 		cameraObject->AddComponent<DemoBehavior>();
         cameraObjectHandle = sceneManager->AddObject(cameraObject);
 
-        //sceneManager->MainLoop();
         windowManager->BeginRendering();
-        //CreateObjects();
     }
 
 private:

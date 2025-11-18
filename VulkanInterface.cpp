@@ -945,9 +945,7 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage, std::map<Vulkan
             continue;
         }
 
-        //should not have to do this
         VulkanCommonFunctions::LightInfo lightInfo = light->GetLightInfo();
-        //lightInfo.maxLightDistance = 20.0f;
 		lightInfos.push_back(lightInfo);
     }
 

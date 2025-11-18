@@ -66,29 +66,9 @@ void Scene::Update()
         }
     }
 
-    if (!temp)
-    {
-        /*std::shared_ptr<RenderObject> lightCube = std::make_shared<RenderObject>(m_windowManager);
-
-        std::shared_ptr<Transform> lightTransform = lightCube->AddComponent<Transform>();
-        lightTransform->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-        lightTransform->SetRotation(glm::vec3(0.0f));
-        lightTransform->SetScale(glm::vec3(0.25f));
-        //std::shared_ptr<Cube> lightMesh = lightCube->AddComponent<Cube>();
-        std::shared_ptr<Cube> lightMesh = lightCube->AddComponent<Cube>();
-        //lightMesh->SetVertices(squareVertices);
-        //lightMesh->SetIndices(squareIndices);
-        lightMesh->SetLit(false);
-        lightMesh->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
-        lightCube->AddComponent<LightSource>();
-
-        AddObject(lightCube);*/
-        temp = true;
-    }
-
     for (size_t i = 0; i < m_updateCallbacks.size(); i++)
     {
-		//m_updateCallbacks[i](0.02f);
+		m_updateCallbacks[i](m_deltaTime);
     }
 
     m_windowManager->NewFrame();

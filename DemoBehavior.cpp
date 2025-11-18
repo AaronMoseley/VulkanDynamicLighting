@@ -11,10 +11,13 @@ void DemoBehavior::Start()
     lightTransform->SetPosition(glm::vec3(lightOrbitRadius, lightOrbitRadius, lightOrbitRadius));
     lightTransform->SetRotation(glm::vec3(0.0f));
     lightTransform->SetScale(glm::vec3(0.25f));
-    //std::shared_ptr<Cube> lightMesh = lightCube->AddComponent<Cube>();
     std::shared_ptr<Cube> lightMesh = lightCube->AddComponent<Cube>();
+
+    //used for testing dynamic mesh updates
+	//std::shared_ptr<MeshRenderer> lightMesh = lightCube->AddComponent<MeshRenderer>();
     //lightMesh->SetVertices(squareVertices);
     //lightMesh->SetIndices(squareIndices);
+
     lightMesh->SetLit(false);
     lightMesh->SetColor(glm::vec3(1.0f, 1.0f, 1.0f));
     lightCube->AddComponent<LightSource>();
@@ -83,14 +86,15 @@ void DemoBehavior::Update(float deltaTime)
         lightObject->GetComponent<Transform>()->SetPosition(glm::vec3(lightOrbitRadius * cos(currentTime), lightOrbitRadius * sin(currentTime), lightOrbitRadius * cos(currentTime)));
     }
 
-    if (GetWindowManager()->KeyPressedThisFrame(Qt::Key::Key_T))
+	//used for testing dynamic mesh updates
+    /*if (GetWindowManager()->KeyPressedThisFrame(Qt::Key::Key_T))
     {
         std::vector<uint16_t> triangleIndices = {
         0, 1, 2
         };
 
         lightObject->GetComponent<MeshRenderer>()->SetIndices(triangleIndices);
-    }
+    }*/
 
     for (auto it = objectHandles.begin(); it != objectHandles.end(); it++)
     {

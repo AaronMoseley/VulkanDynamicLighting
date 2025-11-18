@@ -23,7 +23,7 @@ public:
 
 	WindowManager();
 
-	WindowManager(size_t width, size_t height, std::string title);
+	WindowManager(QWidget* parentProgram, size_t width, size_t height, std::string title);
 
 	void SetVulkanInterface(std::shared_ptr<VulkanInterface> vulkanInterface) { m_vulkanInterface = vulkanInterface; }
 	void SetScene(std::shared_ptr<Scene> scene) { m_scene = scene; }
@@ -63,10 +63,11 @@ public slots:
 	void CursorMoved(float xpos, float ypos);
 
 private:
-	VulkanWindow* m_vulkanWindow;
-	std::shared_ptr<VulkanInterface> m_vulkanInterface;
-	std::shared_ptr<Scene> m_scene;
+	VulkanWindow* m_vulkanWindow = nullptr;
+	std::shared_ptr<VulkanInterface> m_vulkanInterface = nullptr;
+	std::shared_ptr<Scene> m_scene = nullptr;
 
+	QWidget* m_parentProgram;
 	QWidget* m_wrappingWidget;
 
 	//members

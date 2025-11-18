@@ -5,13 +5,13 @@
 #include "VulkanInterface.h"
 
 WindowManager::WindowManager() :
-    m_width(0), m_height(0), m_title("Application")
+    m_parentProgram(nullptr), m_width(0), m_height(0), m_title("Application")
 {
     
 }
 
-WindowManager::WindowManager(size_t width, size_t height, std::string title) :
-	m_width(width), m_height(height), m_title(title)
+WindowManager::WindowManager(QWidget* parentProgram, size_t width, size_t height, std::string title) :
+	m_parentProgram(parentProgram), m_width(width), m_height(height), m_title(title)
 {
     
 }
@@ -99,4 +99,5 @@ void WindowManager::CursorMoved(float xpos, float ypos)
 void WindowManager::Shutdown()
 {
     m_vulkanWindow->Shutdown();
+    QMetaObject::invokeMethod(m_parentProgram, "close", Qt::QueuedConnection);
 }

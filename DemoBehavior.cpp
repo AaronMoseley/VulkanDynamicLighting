@@ -181,7 +181,6 @@ void DemoBehavior::Update(float deltaTime)
 
     if (GetWindowManager()->KeyPressedThisFrame(Qt::Key::Key_Escape))
     {
-        //windowManager->Shutdown();
-        //QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
+        GetWindowManager()->Shutdown();
     }
 }

@@ -45,7 +45,7 @@ public:
     VulkanLightingDemo(QWidget* parent, QVulkanInstance* vulkanInstance, int screenWidth, int screenHeight) : QWidget(parent) {
 		m_mainLayout.reset(new QVBoxLayout(this));
         
-        windowManager = std::make_shared<WindowManager>(screenWidth, screenHeight, "Vulkan Lighting Demo");
+        windowManager = std::make_shared<WindowManager>(this, screenWidth, screenHeight, "Vulkan Lighting Demo");
 
         vulkanInterface = std::make_shared<VulkanInterface>(windowManager);
 

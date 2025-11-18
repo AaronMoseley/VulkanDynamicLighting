@@ -913,7 +913,7 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage, std::map<Vulkan
 		globalInfo.view = camera->GetViewMatrix();
 		globalInfo.proj = glm::perspective(glm::radians(camera->GetFOV()), aspectRatio, camera->GetNearPlane(), camera->GetFarPlane());
         globalInfo.proj[1][1] *= -1;
-		globalInfo.cameraPosition = it->second->GetComponent<Transform>()->GetPosition();
+		globalInfo.cameraPosition = glm::vec4(it->second->GetComponent<Transform>()->GetPosition(), 1.0f);
 		cameraFound = true;
         break;
     }
@@ -945,7 +945,10 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage, std::map<Vulkan
             continue;
         }
 
-		lightInfos.push_back(it->second->GetComponent<LightSource>()->GetLightInfo());
+        //should not have to do this
+        VulkanCommonFunctions::LightInfo lightInfo = light->GetLightInfo();
+        //lightInfo.maxLightDistance = 20.0f;
+		lightInfos.push_back(lightInfo);
     }
 
     globalInfo.lightCount = lightInfos.size();

@@ -68,8 +68,6 @@ void DemoBehavior::Start()
             currentMesh->SetTextured(false);
         }
 
-        currentMesh->SetLit(false);
-
         VulkanCommonFunctions::ObjectHandle newObjectHandle = GetScene()->AddObject(newObject);
         objectHandles.insert(newObjectHandle);
     }

@@ -18,11 +18,11 @@ namespace VulkanCommonFunctions {
     static const VulkanCommonFunctions::ObjectHandle INVALID_OBJECT_HANDLE = 0;
     static const size_t MAX_OBJECTS = 10000;
     
-    struct alignas(16) GlobalInfo {
+    struct GlobalInfo {
         glm::mat4 view;
         glm::mat4 proj;
-        alignas(16) glm::vec3 cameraPosition;
-        alignas(4) uint32_t lightCount;
+        glm::vec4 cameraPosition;
+        uint32_t lightCount;
     };
 
     struct alignas(16) LightInfo {

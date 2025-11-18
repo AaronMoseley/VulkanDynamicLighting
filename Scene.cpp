@@ -20,8 +20,6 @@ void Scene::Update()
         m_deltaTime = currentFrameTime - m_lastFrame;
     }
 
-	qDebug() << "Delta Time: " << m_deltaTime;
-
     m_lastFrame = currentFrameTime;
 
     for (auto it = m_objects.begin(); it != m_objects.end(); it++)

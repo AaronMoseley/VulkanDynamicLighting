@@ -1,5 +1,4 @@
 #include "RenderObject.h"
-#include "Transform.h"
 #include "Scene.h"
 #include "WindowManager.h"
 
@@ -27,11 +26,11 @@ VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()
 	}
 
 	result.modelMatrix = glm::mat4(1.0f);
-	result.modelMatrix = glm::translate(result.modelMatrix, transform->GetPosition());
+	result.modelMatrix = glm::translate(result.modelMatrix, transform->GetWorldPosition());
 
-	result.modelMatrix = glm::scale(result.modelMatrix, transform->GetScale());
+	result.modelMatrix = glm::scale(result.modelMatrix, transform->GetWorldScale());
 
-	glm::vec3 rotation = transform->GetRotation();
+	glm::vec3 rotation = transform->GetWorldRotation();
 
 	result.modelMatrix = glm::rotate(result.modelMatrix, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
 	result.modelMatrix = glm::rotate(result.modelMatrix, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -42,7 +41,7 @@ VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()
 
 	result.modelMatrixInverse = glm::inverse(result.modelMatrix);
 
-	result.scale = transform->GetScale();
+	result.scale = transform->GetWorldScale();
 
 	result.ambient = meshRenderer->GetColor();
 	result.diffuse = meshRenderer->GetColor();

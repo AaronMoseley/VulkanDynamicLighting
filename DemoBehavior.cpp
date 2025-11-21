@@ -37,6 +37,8 @@ void DemoBehavior::Start()
         newObjectTransform->SetRotation(glm::vec3(((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f, ((double)rand() / (RAND_MAX)) * 360.0f));
         newObjectTransform->SetScale(glm::vec3(0.5f));
 
+        newObjectTransform->SetParent(lightTransform);
+
         if ((double)rand() / (RAND_MAX) >= 0.5f)
         {
             newObject->AddComponent<Cube>();
@@ -47,7 +49,7 @@ void DemoBehavior::Start()
 
         std::shared_ptr<MeshRenderer> currentMesh = newObject->GetComponent<MeshRenderer>();
 
-        currentMesh->SetOpacity(((double)rand() / (RAND_MAX)));
+        //currentMesh->SetOpacity(((double)rand() / (RAND_MAX)));
 
         if ((double)rand() / (RAND_MAX) >= 0.5f)
         {
@@ -71,6 +73,8 @@ void DemoBehavior::Start()
             currentMesh->SetTextured(false);
         }
 
+        currentMesh->SetLit(false);
+
         VulkanCommonFunctions::ObjectHandle newObjectHandle = GetScene()->AddObject(newObject);
         objectHandles.insert(newObjectHandle);
     }
@@ -83,7 +87,10 @@ void DemoBehavior::Update(float deltaTime)
     std::shared_ptr<RenderObject> lightObject = GetScene()->GetRenderObject(lightObjectHandle);
     if (lightObject != nullptr)
     {
-        lightObject->GetComponent<Transform>()->SetPosition(glm::vec3(lightOrbitRadius * cos(currentTime), lightOrbitRadius * sin(currentTime), lightOrbitRadius * cos(currentTime)));
+        //lightObject->GetComponent<Transform>()->SetPosition(glm::vec3(lightOrbitRadius * cos(currentTime), lightOrbitRadius * sin(currentTime), lightOrbitRadius * cos(currentTime)));
+        lightObject->GetComponent<Transform>()->Rotate(glm::vec3(0.0f, deltaTime * 10.0f, 0.0f));
+        //auto temp = lightObject->GetComponent<Transform>()->GetWorldRotation();
+        //int temp1 = 0;
     }
 
 	//used for testing dynamic mesh updates
@@ -129,7 +136,7 @@ void DemoBehavior::Update(float deltaTime)
 
         std::shared_ptr<MeshRenderer> currentMesh = newObject->GetComponent<MeshRenderer>();
 
-        currentMesh->SetOpacity(((double)rand() / (RAND_MAX)));
+        currentMesh->SetOpacity((double)rand() / (RAND_MAX));
 
         if ((double)rand() / (RAND_MAX) >= 0.5f)
         {

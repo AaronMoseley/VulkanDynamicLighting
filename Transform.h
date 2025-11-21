@@ -2,6 +2,7 @@
 
 #include "ObjectComponent.h"
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 class Transform : public ObjectComponent {
 public:
@@ -10,6 +11,46 @@ public:
 	glm::vec3 GetPosition() { return m_position; }
 	glm::vec3 GetRotation() { return m_rotation; }
 	glm::vec3 GetScale() { return m_scale; }
+
+	glm::vec3 GetWorldPosition() 
+	{
+		std::shared_ptr<Transform> parent = GetParent();
+		if (parent == nullptr)
+		{
+			return GetPosition();
+		}
+
+		glm::quat parentRotation = glm::quat(glm::radians(parent->GetWorldRotation()));
+
+		glm::vec3 rotatedLocalPos = parentRotation * GetPosition();
+
+		return parent->GetWorldPosition() + rotatedLocalPos;
+	}
+
+	glm::vec3 GetWorldRotation()
+	{
+		std::shared_ptr<Transform> parent = GetParent();
+		if (parent == nullptr)
+		{
+			return GetRotation();
+		}
+
+		return parent->GetWorldRotation() + GetRotation();
+	}
+
+	glm::vec3 GetWorldScale()
+	{
+		std::shared_ptr<Transform> parent = GetParent();
+		if (parent == nullptr)
+		{
+			return GetScale();
+		}
+
+		return parent->GetWorldScale() * GetScale();
+	}
+
+	void SetParent(std::shared_ptr<Transform> parentTransform) { m_parentTransform = parentTransform; }
+	std::shared_ptr<Transform> GetParent() { return m_parentTransform; }
 
 	void SetRotation(glm::vec3 rotation) { m_rotation = glm::vec4(rotation, 1.0f); }
 	void SetPosition(glm::vec3 position) { m_position = glm::vec4(position, 1.0f); }
@@ -40,6 +81,8 @@ public:
 
 private:
 	using ObjectComponent::SetEnabled;
+
+	std::shared_ptr<Transform> m_parentTransform = nullptr;
 
 	glm::vec4 m_position = glm::vec4(0.0f);
 	glm::vec4 m_rotation = glm::vec4(0.0f);

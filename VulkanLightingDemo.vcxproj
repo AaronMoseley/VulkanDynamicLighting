@@ -123,7 +123,6 @@
     <ClCompile Include="ObjectComponent.cpp" />
     <ClCompile Include="RenderObject.cpp" />
     <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="Swapchain.cpp" />
     <ClCompile Include="TextureImage.cpp" />
     <ClCompile Include="Transform.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -148,7 +147,6 @@
     <ClInclude Include="ObjectComponent.h" />
     <ClInclude Include="RenderObject.h" />
     <ClInclude Include="Scene.h" />
-    <ClInclude Include="Swapchain.h" />
     <ClInclude Include="Tetrahedron.h" />
     <ClInclude Include="TextureImage.h" />
     <ClInclude Include="Transform.h" />

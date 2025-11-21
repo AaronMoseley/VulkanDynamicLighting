@@ -15,7 +15,6 @@
 #include "GraphicsBuffer.h"
 #include "GraphicsImage.h"
 #include "TextureImage.h"
-#include "Swapchain.h"
 #include "LightSource.h"
 
 #include <map>
@@ -46,9 +45,9 @@ public:
     void UpdateObjectBuffers(std::shared_ptr<MeshRenderer> objectMesh);
     bool HasTexture(std::string textureFilePath) { return std::find(textureFilePaths.begin(), textureFilePaths.end(), textureFilePath) != textureFilePaths.end(); };
     void UpdateTextureResources(std::string newTextureFilePath, bool alreadyInitialized=true);
+    void CreateDepthResources();
 
     void InitializeVulkan();
-    void InitializeSwapChain();
 
     void CleanupSwapChain();
 
@@ -56,7 +55,6 @@ private:
     void CreateVMAAllocator();
     void CreateDescriptorSetLayout();
     void CreateGraphicsPipeline();
-    void CreateDepthResources();
     void CreateTextureImage(std::string textureFilePath);
     void CreateTextureImageView(std::string textureFilePath);
     void CreateTextureSampler(std::string textureFilePath);
@@ -87,7 +85,6 @@ private:
     VkQueue graphicsQueue;
     VkSurfaceKHR surface;
     VkQueue presentQueue;
-    std::shared_ptr<SwapChain> swapChain;
     VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
     VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
     VkPipeline graphicsPipeline = VK_NULL_HANDLE;

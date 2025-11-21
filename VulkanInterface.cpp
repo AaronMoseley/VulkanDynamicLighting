@@ -588,21 +588,6 @@ VkShaderModule VulkanInterface::CreateShaderModule(const std::vector<char>& code
     return shaderModule;
 }
 
-void VulkanInterface::InitializeSwapChain() {
-	SwapChain::SwapChainCreateInfo swapChainCreateInfo{};
-	swapChainCreateInfo.allocator = allocator;
-	swapChainCreateInfo.device = device;
-	swapChainCreateInfo.physicalDevice = physicalDevice;
-	swapChainCreateInfo.commandPool = commandPool;
-	swapChainCreateInfo.graphicsQueue = graphicsQueue;
-	swapChainCreateInfo.surface = surface;
-	swapChainCreateInfo.windowManager = m_windowManager;
-    
-    swapChain = std::make_shared<SwapChain>(swapChainCreateInfo);
-
-    CreateDepthResources();
-}
-
 void VulkanInterface::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -958,8 +943,6 @@ void VulkanInterface::UpdateUniformBuffer(uint32_t currentImage, std::map<Vulkan
 void VulkanInterface::CleanupSwapChain() {
     vkDeviceWaitIdle(device);
 	depthImage->DestroyImage();
-
-    swapChain->DestroySwapChain();
 }
 
 void VulkanInterface::Cleanup() {

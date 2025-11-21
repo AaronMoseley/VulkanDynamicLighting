@@ -29,6 +29,7 @@ public:
 	std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> GetObjects() { return m_objects; };
 	std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> GetMeshNameToObjectMap() { return m_meshNameToObjectMap; }
 
+	VulkanCommonFunctions::ObjectHandle GetObjectByTag(std::string tag);
 	std::shared_ptr<RenderObject> GetRenderObject(VulkanCommonFunctions::ObjectHandle handle);
 
 	size_t GetObjectCount() { return m_objects.size(); };

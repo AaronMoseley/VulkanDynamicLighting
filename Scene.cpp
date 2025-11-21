@@ -238,6 +238,20 @@ void Scene::UpdateTexture(std::string newTexturePath)
     m_vulkanInterface->UpdateTextureResources(newTexturePath);
 }
 
+VulkanCommonFunctions::ObjectHandle Scene::GetObjectByTag(std::string tag)
+{
+    for (auto it = m_objects.begin(); it != m_objects.end(); it++)
+    {
+        std::shared_ptr<RenderObject> currentObject = it->second;
+        
+        if (currentObject->GetTag() == tag)
+        {
+            return it->first;
+        }
+    }
+    return VulkanCommonFunctions::INVALID_OBJECT_HANDLE;
+}
+
 void Scene::Cleanup()
 {
     for (auto it = m_objects.begin(); it != m_objects.end(); it++)

@@ -73,6 +73,7 @@ public:
         cameraObject->AddComponent<Camera>();
         cameraObject->AddComponent<FirstPersonController>();
 		cameraObject->AddComponent<DemoBehavior>();
+        cameraObject->SetTag("Player");
         sceneManager->AddObject(cameraObject);
 
         windowManager->BeginRendering();

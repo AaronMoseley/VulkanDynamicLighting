@@ -67,12 +67,17 @@ public:
 
 	bool IsInitialized() { return m_initialized; }
 
+	void SetTag(std::string tag) { m_tag = tag; }
+	std::string GetTag() { return m_tag; }
+
 private:
 	std::vector<std::shared_ptr<ObjectComponent>> m_components;
 	std::shared_ptr<WindowManager> m_windowManager = nullptr;
 	std::shared_ptr<GraphicsBuffer> m_instanceBuffer = nullptr;
 	
 	Scene* m_sceneManager = nullptr;
+
+	std::string m_tag = "";
 
 	bool m_initialized = false;
 };

@@ -39,9 +39,6 @@
     <ClCompile Include="GraphicsImage.cpp">
       <Filter>Source Files\Vulkan Interface</Filter>
     </ClCompile>
-    <ClCompile Include="Swapchain.cpp">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClCompile>
     <ClCompile Include="TextureImage.cpp">
       <Filter>Source Files\Vulkan Interface</Filter>
     </ClCompile>
@@ -93,9 +90,6 @@
       <Filter>Source Files\Vulkan Interface</Filter>
     </ClInclude>
     <ClInclude Include="GraphicsImage.h">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="Swapchain.h">
       <Filter>Source Files\Vulkan Interface</Filter>
     </ClInclude>
     <ClInclude Include="TextureImage.h">

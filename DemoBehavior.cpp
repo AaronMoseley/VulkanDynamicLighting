@@ -3,12 +3,16 @@
 
 void DemoBehavior::Start()
 {
+	VulkanCommonFunctions::ObjectHandle cameraObjectHandle = GetScene()->GetObjectByTag("Player");
+	std::shared_ptr<RenderObject> cameraObject = GetScene()->GetRenderObject(cameraObjectHandle);
+	std::shared_ptr<Transform> cameraTransform = cameraObject->GetComponent<Transform>();
+
     std::srand(std::time(0));
 
     std::shared_ptr<RenderObject> lightCube = std::make_shared<RenderObject>(GetWindowManager());
 
     std::shared_ptr<Transform> lightTransform = lightCube->AddComponent<Transform>();
-    lightTransform->SetPosition(glm::vec3(lightOrbitRadius, lightOrbitRadius, lightOrbitRadius));
+    lightTransform->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
     lightTransform->SetRotation(glm::vec3(0.0f));
     lightTransform->SetScale(glm::vec3(0.25f));
     std::shared_ptr<Cube> lightMesh = lightCube->AddComponent<Cube>();
@@ -28,7 +32,7 @@ void DemoBehavior::Start()
     glm::vec3 color = glm::vec3(0.6588f, 0.2235f, 0.0392f);
     //glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 
-    for (int i = 0; i < objectPositions.size(); i++)
+    for (int i = 0; i < 1; i++)
     {
         std::shared_ptr<RenderObject> newObject = std::make_shared<RenderObject>(GetWindowManager());
 

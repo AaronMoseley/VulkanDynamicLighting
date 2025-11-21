@@ -19,7 +19,7 @@ void VulkanWindowRenderer::initResources()
 
 void VulkanWindowRenderer::initSwapChainResources()
 {
-	m_vulkanInterface->InitializeSwapChain();
+	m_vulkanInterface->CreateDepthResources();
 }
 
 void VulkanWindowRenderer::releaseResources()

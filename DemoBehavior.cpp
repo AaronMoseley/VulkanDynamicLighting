@@ -9,7 +9,7 @@ void DemoBehavior::Start()
 
     std::srand(std::time(0));
 
-    std::shared_ptr<RenderObject> lightCube = std::make_shared<RenderObject>(GetWindowManager());
+    std::shared_ptr<RenderObject> lightCube = std::make_shared<RenderObject>();
 
     std::shared_ptr<Transform> lightTransform = lightCube->AddComponent<Transform>();
     lightTransform->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -34,7 +34,7 @@ void DemoBehavior::Start()
 
     for (int i = 0; i < 1; i++)
     {
-        std::shared_ptr<RenderObject> newObject = std::make_shared<RenderObject>(GetWindowManager());
+        std::shared_ptr<RenderObject> newObject = std::make_shared<RenderObject>();
 
         std::shared_ptr<Transform> newObjectTransform = newObject->AddComponent<Transform>();
         newObjectTransform->SetPosition(objectPositions[i]);
@@ -123,7 +123,7 @@ void DemoBehavior::Update(float deltaTime)
     {
         float positionRange = 100.0f;
 
-        std::shared_ptr<RenderObject> newObject = std::make_shared<RenderObject>(GetWindowManager());
+        std::shared_ptr<RenderObject> newObject = std::make_shared<RenderObject>();
 
         std::shared_ptr<Transform> newObjectTransform = newObject->AddComponent<Transform>();
         newObjectTransform->SetPosition(glm::vec3(((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange, ((double)rand() / (RAND_MAX)) * positionRange));

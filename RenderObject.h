@@ -25,7 +25,7 @@ class WindowManager;
 
 class alignas(16) RenderObject : public std::enable_shared_from_this<RenderObject> {
 public:
-	RenderObject(std::shared_ptr<WindowManager> windowManager);
+	RenderObject();
 
 	template <typename T>
 	std::shared_ptr<T> AddComponent()
@@ -34,8 +34,6 @@ public:
 		m_components.push_back(newComponent);
 
 		newComponent->SetOwner(shared_from_this());
-
-		newComponent->SetWindowManager(m_windowManager);
 
 		return newComponent;
 	}
@@ -64,6 +62,9 @@ public:
 
 	void SetSceneManager(Scene* sceneManager) { m_sceneManager = sceneManager; }
 	Scene* GetSceneManager() { return m_sceneManager; }
+
+	void SetWindowManager(std::shared_ptr<WindowManager> windowManager) { m_windowManager = windowManager; }
+	std::shared_ptr<WindowManager> GetWindowManager() { return m_windowManager; }
 
 	bool IsInitialized() { return m_initialized; }
 

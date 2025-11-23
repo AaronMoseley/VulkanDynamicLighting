@@ -2,9 +2,9 @@
 #include "Scene.h"
 #include "WindowManager.h"
 
-RenderObject::RenderObject(std::shared_ptr<WindowManager> windowManager)
+RenderObject::RenderObject()
 {
-	m_windowManager = windowManager;
+
 }
 
 VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()

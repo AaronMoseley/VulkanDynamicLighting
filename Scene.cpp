@@ -85,6 +85,7 @@ VulkanCommonFunctions::ObjectHandle Scene::AddObject(std::shared_ptr <RenderObje
 
     m_objects[m_currentObjectHandle] = newObject;
     newObject->SetSceneManager(this);
+    newObject->SetWindowManager(m_windowManager);
 
     std::shared_ptr<MeshRenderer> meshComponent = newObject->GetComponent<MeshRenderer>();
 

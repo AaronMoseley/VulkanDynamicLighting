@@ -46,10 +46,9 @@ int main(int argc, char* argv[]) {
 
     VoltEngine renderingApp(nullptr, &instance, screenRect.width(), screenRect.height());
 
-	std::shared_ptr<WindowManager> windowManager = renderingApp.GetWindowManager();
 	std::shared_ptr<Scene> sceneManager = renderingApp.GetCurrentScene();
 
-    std::shared_ptr<RenderObject> cameraObject = std::make_shared<RenderObject>(windowManager);
+    std::shared_ptr<RenderObject> cameraObject = std::make_shared<RenderObject>();
 
     std::shared_ptr<Transform> cameraTransform = cameraObject->AddComponent<Transform>();
     cameraTransform->SetPosition(glm::vec3(0.0f, 0.0f, 5.0f));

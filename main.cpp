@@ -45,6 +45,24 @@ int main(int argc, char* argv[]) {
     qDebug() << "Screen Size: " << screenRect.width() << " x " << screenRect.height();
 
     VoltEngine renderingApp(nullptr, &instance, screenRect.width(), screenRect.height());
+
+	std::shared_ptr<WindowManager> windowManager = renderingApp.GetWindowManager();
+	std::shared_ptr<Scene> sceneManager = renderingApp.GetCurrentScene();
+
+    std::shared_ptr<RenderObject> cameraObject = std::make_shared<RenderObject>(windowManager);
+
+    std::shared_ptr<Transform> cameraTransform = cameraObject->AddComponent<Transform>();
+    cameraTransform->SetPosition(glm::vec3(0.0f, 0.0f, 5.0f));
+    cameraTransform->SetRotation(glm::vec3(0.0f, -90.0f, 0.0f));
+    cameraTransform->SetScale(glm::vec3(1.0f));
+    cameraObject->AddComponent<Camera>();
+    cameraObject->AddComponent<FirstPersonController>();
+    cameraObject->AddComponent<DemoBehavior>();
+    cameraObject->SetTag("Player");
+    sceneManager->AddObject(cameraObject);
+
+	renderingApp.BeginRendering();
+
     renderingApp.show();
 
     return app.exec();

@@ -20,19 +20,12 @@ VoltEngine::VoltEngine(QWidget* parent, QVulkanInstance* vulkanInstance, int scr
     //can add custom callbacks that get called each frame
     //auto frameCallback = std::bind(&VulkanLightingDemo::processInput, this, std::placeholders::_1);
     //sceneManager->RegisterUpdateCallback(frameCallback);
+}
 
-    //need to create a camera objects before initializing rendering
-    std::shared_ptr<RenderObject> cameraObject = std::make_shared<RenderObject>(m_windowManager);
-
-    std::shared_ptr<Transform> cameraTransform = cameraObject->AddComponent<Transform>();
-    cameraTransform->SetPosition(glm::vec3(0.0f, 0.0f, 5.0f));
-    cameraTransform->SetRotation(glm::vec3(0.0f, -90.0f, 0.0f));
-    cameraTransform->SetScale(glm::vec3(1.0f));
-    cameraObject->AddComponent<Camera>();
-    cameraObject->AddComponent<FirstPersonController>();
-    cameraObject->AddComponent<DemoBehavior>();
-    cameraObject->SetTag("Player");
-    m_sceneManager->AddObject(cameraObject);
-
+void VoltEngine::BeginRendering() {
     m_windowManager->BeginRendering();
+}
+
+void VoltEngine::RegisterUpdateCallback(std::function<void(float)> callback) {
+    m_sceneManager->RegisterUpdateCallback(callback);
 }

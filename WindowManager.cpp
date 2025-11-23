@@ -17,6 +17,9 @@ void WindowManager::BeginRendering()
 
 void WindowManager::InitializeWindow(QVulkanInstance* vulkanInstance)
 {
+	m_buttonLayout = new QHBoxLayout();
+	addLayout(m_buttonLayout);
+
     m_vulkanWindow = new VulkanWindow(m_vulkanInterface, m_scene);
     m_vulkanWindow->setVulkanInstance(vulkanInstance);
 
@@ -31,7 +34,7 @@ void WindowManager::InitializeWindow(QVulkanInstance* vulkanInstance)
     m_wrappingWidget = QWidget::createWindowContainer(m_vulkanWindow);
     m_wrappingWidget->resize(m_width, m_height);
 
-	this->addWidget(m_wrappingWidget);
+	addWidget(m_wrappingWidget);
 }
 
 void WindowManager::NewFrame()
@@ -116,4 +119,19 @@ void WindowManager::SetIsTrackingMouse(bool isTrackingMouse)
 bool WindowManager::IsTrackingMouse()
 {
     return m_vulkanWindow->IsTrackingMouse();
+}
+
+void WindowManager::AddButton(std::string title, const std::function<void()>& callback)
+{
+    if (m_buttons.contains(title))
+    {
+		qDebug() << "Button with title " << title << " already exists!";
+    }
+
+    QPushButton* newButton = new QPushButton(QString::fromStdString(title));
+    connect(newButton, &QPushButton::clicked, [callback]() {
+        callback();
+    });
+
+	m_buttonLayout->addWidget(newButton);
 }

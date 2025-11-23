@@ -15,6 +15,8 @@ public:
     void Start() override;
     void Update(float deltaTime) override;
 
+    void WriteDebugText();
+
 private:
     alignas(16) std::vector<glm::vec3> objectPositions = {
         glm::vec3(10.0f, 0.0f, 0.0f)

@@ -9,6 +9,7 @@
 #include <QVBoxLayout>
 #include <QVulkanInstance>
 #include <QMetaMethod>
+#include <QPushButton>
 
 class Scene;
 class VulkanWindow;
@@ -26,6 +27,8 @@ public:
 	void SetVulkanInterface(std::shared_ptr<VulkanInterface> vulkanInterface) { m_vulkanInterface = vulkanInterface; }
 	void SetScene(std::shared_ptr<Scene> scene) { m_scene = scene; }
 	void BeginRendering();
+
+	void AddButton(std::string title, const std::function<void()>& callback);
 
 	void InitializeWindow(QVulkanInstance* vulkanInstance);
 
@@ -73,6 +76,9 @@ private:
 
 	QWidget* m_parentProgram;
 	QWidget* m_wrappingWidget;
+	QHBoxLayout* m_buttonLayout;
+
+	std::map<std::string, QPushButton*> m_buttons;
 
 	//members
 	bool m_framebufferResized = false;

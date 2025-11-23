@@ -3,6 +3,9 @@
 
 void DemoBehavior::Start()
 {
+	std::function<void()> debugTextCallback = std::bind(&DemoBehavior::WriteDebugText, this);
+	GetWindowManager()->AddButton("Write Debug Text", debugTextCallback);
+
 	VulkanCommonFunctions::ObjectHandle cameraObjectHandle = GetScene()->GetObjectByTag("Player");
 	std::shared_ptr<RenderObject> cameraObject = GetScene()->GetRenderObject(cameraObjectHandle);
 	std::shared_ptr<Transform> cameraTransform = cameraObject->GetComponent<Transform>();
@@ -194,4 +197,9 @@ void DemoBehavior::Update(float deltaTime)
     {
         GetWindowManager()->Shutdown();
     }
+}
+
+void DemoBehavior::WriteDebugText()
+{
+    qDebug() << "This is a test of the button system.";
 }

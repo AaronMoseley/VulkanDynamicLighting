@@ -53,6 +53,12 @@ public:
 
 	void Shutdown();
 
+	void SetLockCursor(bool lockCursor);
+	bool IsCursorLocked();
+
+	void SetIsTrackingMouse(bool isTracking);
+	bool IsTrackingMouse();
+
 public slots:
 	void AddKeyDown(Qt::Key pressedKey);
 	void AddKeyUp(Qt::Key releasedKey);

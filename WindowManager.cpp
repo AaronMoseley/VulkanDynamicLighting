@@ -101,3 +101,23 @@ void WindowManager::Shutdown()
     m_vulkanWindow->Shutdown();
     QMetaObject::invokeMethod(m_parentProgram, "close", Qt::QueuedConnection);
 }
+
+void WindowManager::SetLockCursor(bool lockCursor)
+{
+    m_vulkanWindow->SetLockCursor(lockCursor);
+}
+
+bool WindowManager::IsCursorLocked()
+{
+    return m_vulkanWindow->IsCursorLocked();
+}
+
+void WindowManager::SetIsTrackingMouse(bool isTrackingMouse)
+{
+    m_vulkanWindow->SetTrackingMouse(isTrackingMouse);
+}
+
+bool WindowManager::IsTrackingMouse()
+{
+    return m_vulkanWindow->IsTrackingMouse();
+}

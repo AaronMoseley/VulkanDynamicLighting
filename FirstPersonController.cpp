@@ -1,5 +1,15 @@
 #include "FirstPersonController.h"
 
+void FirstPersonController::Start()
+{
+    //hide cursor and capture it within the window
+    if (m_rightClickToLook)
+    {
+        GetWindowManager()->SetIsTrackingMouse(false);
+        GetWindowManager()->SetLockCursor(false);
+    }
+}
+
 void FirstPersonController::Update(float deltaTime)
 {
 	std::shared_ptr<Transform> transform = GetOwner()->GetComponent<Transform>();
@@ -33,6 +43,16 @@ void FirstPersonController::Update(float deltaTime)
         offset += transform->Right() * velocity;
     }
 	transform->Move(offset);
+
+    if (GetWindowManager()->MouseButtonPressed(Qt::MouseButton::RightButton) && m_rightClickToLook && !GetWindowManager()->IsCursorLocked())
+    {
+		GetWindowManager()->SetLockCursor(true);
+		GetWindowManager()->SetIsTrackingMouse(true);
+    }
+    else if(m_rightClickToLook && !GetWindowManager()->MouseButtonPressed(Qt::MouseButton::RightButton) && GetWindowManager()->IsCursorLocked()) {
+        GetWindowManager()->SetLockCursor(false);
+        GetWindowManager()->SetIsTrackingMouse(false);
+    }
 
 	glm::vec3 rotationDelta = glm::vec3(0.0f);
 	glm::vec2 mouseDelta = GetWindowManager()->GetMouseDelta();

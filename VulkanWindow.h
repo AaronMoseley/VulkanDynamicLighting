@@ -3,12 +3,12 @@
 #include "VulkanWindowRenderer.h"
 
 #include <QVulkanWindow>
-#include "Scene.h"
 
 #include <QKeyEvent>
 #include <QMouseEvent>
 
 class VulkanInterface;
+class Scene;
 
 class VulkanWindow : public QVulkanWindow {
 
@@ -31,6 +31,12 @@ public:
 
 	void Shutdown();
 
+	void SetLockCursor(bool lock);
+	bool IsCursorLocked() { return m_lockCursor; }
+
+	void SetTrackingMouse(bool isTracking) { m_isTrackingMouse = isTracking; };
+	bool IsTrackingMouse() { return m_isTrackingMouse; }
+
 signals:
 	void KeyDown(Qt::Key pressedKey);
 	void KeyUp(Qt::Key releasedKey);
@@ -48,4 +54,7 @@ private:
 	std::vector<std::function<void(QMouseEvent*)>> m_mouseMoveCallbacks;
 
 	VkPhysicalDeviceDescriptorIndexingFeatures m_indexingFeatures{};
+
+	bool m_lockCursor = false;
+	bool m_isTrackingMouse = true;
 };

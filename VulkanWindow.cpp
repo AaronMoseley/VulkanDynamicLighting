@@ -19,9 +19,6 @@ VulkanWindow::VulkanWindow(std::shared_ptr<VulkanInterface> vulkanInterface, std
 		});
 
 	requestUpdate();
-
-	//setMouseGrabEnabled(true);
-	setCursor(Qt::BlankCursor);
 }
 
 void VulkanWindow::mousePressEvent(QMouseEvent* event)
@@ -40,10 +37,16 @@ void VulkanWindow::mouseReleaseEvent(QMouseEvent* event)
 
 void VulkanWindow::mouseMoveEvent(QMouseEvent* event)
 {
-	emit MouseMoved(((float)event->pos().x() / size().width()) - 0.5f, ((float)event->pos().y() / size().height()) - 0.5f);
+	if (m_isTrackingMouse)
+	{
+		emit MouseMoved(((float)event->pos().x() / size().width()) - 0.5f, ((float)event->pos().y() / size().height()) - 0.5f);
+	}
 
-	QPoint center = mapToGlobal(QPoint(width() / 2, height() / 2));
-	QCursor::setPos(center);
+	if (m_lockCursor)
+	{
+		QPoint center = mapToGlobal(QPoint(width() / 2, height() / 2));
+		QCursor::setPos(center);
+	}
 }
 
 void VulkanWindow::keyPressEvent(QKeyEvent* event)
@@ -70,4 +73,17 @@ QVulkanWindowRenderer* VulkanWindow::createRenderer()
 void VulkanWindow::Shutdown()
 {
 	m_vulkanWindowRenderer->Shutdown();
+}
+
+void VulkanWindow::SetLockCursor(bool lock)
+{
+	m_lockCursor = lock;
+
+	if (m_lockCursor)
+	{
+		setCursor(Qt::BlankCursor);
+	}
+	else {
+		setCursor(Qt::ArrowCursor);
+	}
 }

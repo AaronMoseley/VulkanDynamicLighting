@@ -29,6 +29,7 @@ public:
 	void BeginRendering();
 
 	void AddButton(std::string title, const std::function<void()>& callback);
+	void RemoveButton(std::string title);
 
 	void InitializeWindow(QVulkanInstance* vulkanInstance);
 

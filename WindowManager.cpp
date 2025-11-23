@@ -134,4 +134,18 @@ void WindowManager::AddButton(std::string title, const std::function<void()>& ca
     });
 
 	m_buttonLayout->addWidget(newButton);
+    m_buttons[title] = newButton;
+}
+
+void WindowManager::RemoveButton(std::string title)
+{
+    if (!m_buttons.contains(title))
+    {
+        qDebug() << "Button with title " << title << " does not exist!";
+        return;
+    }
+    QPushButton* buttonToRemove = m_buttons[title];
+    m_buttonLayout->removeWidget(buttonToRemove);
+    delete buttonToRemove;
+    m_buttons.erase(title);
 }

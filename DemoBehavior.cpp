@@ -193,6 +193,11 @@ void DemoBehavior::Update(float deltaTime)
         }
     }
 
+    if (GetWindowManager()->KeyPressedThisFrame(Qt::Key::Key_L))
+    {
+        GetWindowManager()->RemoveButton("Write Debug Text");
+    }
+
     if (GetWindowManager()->KeyPressedThisFrame(Qt::Key::Key_Escape))
     {
         GetWindowManager()->Shutdown();

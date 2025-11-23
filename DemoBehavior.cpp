@@ -30,12 +30,11 @@ void DemoBehavior::Start()
     lightCube->AddComponent<LightSource>();
 
     lightObjectHandle = GetScene()->AddObject(lightCube);
-    objectHandles.insert(lightObjectHandle);
 
     glm::vec3 color = glm::vec3(0.6588f, 0.2235f, 0.0392f);
     //glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f);
 
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < objectPositions.size(); i++)
     {
         std::shared_ptr<RenderObject> newObject = std::make_shared<RenderObject>();
 
@@ -56,7 +55,7 @@ void DemoBehavior::Start()
 
         std::shared_ptr<MeshRenderer> currentMesh = newObject->GetComponent<MeshRenderer>();
 
-        //currentMesh->SetOpacity(((double)rand() / (RAND_MAX)));
+        currentMesh->SetOpacity(((double)rand() / (RAND_MAX)));
 
         if ((double)rand() / (RAND_MAX) >= 0.5f)
         {
@@ -65,8 +64,6 @@ void DemoBehavior::Start()
         }
 
         currentMesh->SetColor(color);
-
-        //currentMesh->SetColor({ 1.0f, 1.0f, 1.0f });
 
         if (GetScene()->GetObjectCount() % 3 == 0)
         {
@@ -94,10 +91,7 @@ void DemoBehavior::Update(float deltaTime)
     std::shared_ptr<RenderObject> lightObject = GetScene()->GetRenderObject(lightObjectHandle);
     if (lightObject != nullptr)
     {
-        //lightObject->GetComponent<Transform>()->SetPosition(glm::vec3(lightOrbitRadius * cos(currentTime), lightOrbitRadius * sin(currentTime), lightOrbitRadius * cos(currentTime)));
         lightObject->GetComponent<Transform>()->Rotate(glm::vec3(0.0f, deltaTime * 10.0f, 0.0f));
-        //auto temp = lightObject->GetComponent<Transform>()->GetWorldRotation();
-        //int temp1 = 0;
     }
 
 	//used for testing dynamic mesh updates

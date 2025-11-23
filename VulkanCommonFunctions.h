@@ -3,8 +3,6 @@
 #ifndef VULKAN_COMMON_FUNCTIONS
 #define VULKAN_COMMON_FUNCTIONS
 
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-
 #include "vk_mem_alloc.h"
 
 #include "glm/glm.hpp"

@@ -1,13 +1,7 @@
 #pragma once
 
-#define VK_USE_PLATFORM_WIN32_KHR
-
-#include "vk_mem_alloc.h"
+//#include "vk_mem_alloc.h"
 #include "stb_image.h"
-
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include "RenderObject.h"
 #include "Camera.h"

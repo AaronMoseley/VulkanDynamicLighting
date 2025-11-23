@@ -11,7 +11,7 @@ Scene* ObjectComponent::GetScene()
 	return m_owner->GetSceneManager();
 }
 
-std::shared_ptr<WindowManager> ObjectComponent::GetWindowManager()
+WindowManager* ObjectComponent::GetWindowManager()
 {
 	return GetOwner()->GetWindowManager();
 }

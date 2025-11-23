@@ -2,7 +2,7 @@
 #include "VulkanWindow.h"
 #include "WindowManager.h"
 
-VulkanInterface::VulkanInterface(std::shared_ptr<WindowManager> windowManager)
+VulkanInterface::VulkanInterface(WindowManager* windowManager)
 {
     m_windowManager = windowManager;
 }

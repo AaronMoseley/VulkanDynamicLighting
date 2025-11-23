@@ -20,8 +20,7 @@ public:
 	void SetOwner(std::shared_ptr<RenderObject> owner) { m_owner = std::shared_ptr<RenderObject>(owner); }
 	Scene* GetScene();
 
-	std::shared_ptr<WindowManager> GetWindowManager();
-	void SetWindowManager(std::shared_ptr<WindowManager> windowManager) { m_windowManager = windowManager; }
+	WindowManager* GetWindowManager();
 
 	void SetEnabled(bool enabled) { m_enabled = enabled; }
 	bool IsEnabled() { return m_enabled; }
@@ -31,7 +30,6 @@ public:
 
 private:
 	std::shared_ptr<RenderObject> m_owner = nullptr;
-	std::shared_ptr<WindowManager> m_windowManager = nullptr;
 	bool m_enabled = true;
 	bool m_started = false;
 };

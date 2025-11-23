@@ -2,7 +2,7 @@
 #include "RenderObject.h"
 #include "Cube.h"
 
-Scene::Scene(std::shared_ptr<WindowManager> windowManager, std::shared_ptr<VulkanInterface> vulkanInterface)
+Scene::Scene(WindowManager* windowManager, std::shared_ptr<VulkanInterface> vulkanInterface)
 {
 	m_windowManager = windowManager;
     m_vulkanInterface = vulkanInterface;

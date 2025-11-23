@@ -12,7 +12,7 @@ class RenderObject;
 
 class alignas(16) Scene {
 public:
-	Scene(std::shared_ptr<WindowManager> windowManager, std::shared_ptr<VulkanInterface> vulkanInterface);
+	Scene(WindowManager* windowManager, std::shared_ptr<VulkanInterface> vulkanInterface);
 
 	void Update();
 
@@ -41,7 +41,7 @@ public:
 private:
 	alignas(16) std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> m_objects = {};
 	alignas(16) std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> m_meshNameToObjectMap;
-	alignas(16) std::shared_ptr<WindowManager> m_windowManager;
+	alignas(16) WindowManager* m_windowManager;
 	alignas(16) std::shared_ptr<VulkanInterface> m_vulkanInterface;
 
 	alignas(16) VulkanCommonFunctions::ObjectHandle m_currentObjectHandle = 0;

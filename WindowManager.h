@@ -14,14 +14,12 @@ class Scene;
 class VulkanWindow;
 class VulkanInterface;
 
-class WindowManager : public QObject {
+class WindowManager : public QVBoxLayout {
 
 	Q_OBJECT
 
 public:
 	const char* DEFAULT_TITLE = "GLFW Window";
-
-	WindowManager();
 
 	WindowManager(QWidget* parentProgram, size_t width, size_t height, std::string title);
 

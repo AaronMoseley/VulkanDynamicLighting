@@ -24,7 +24,7 @@ class WindowManager;
 
 class VulkanInterface {
 public:
-    VulkanInterface(std::shared_ptr<WindowManager> windowManager);
+    VulkanInterface(WindowManager* windowManager);
 
     void DrawFrame(float deltaTime, std::shared_ptr<Scene> scene);
 
@@ -114,7 +114,7 @@ private:
 
     VmaAllocator allocator;
 
-    std::shared_ptr<WindowManager> m_windowManager;
+    WindowManager* m_windowManager;
     VulkanWindow* m_vulkanWindow;
 
 	const std::string customMeshName = "CustomMesh";

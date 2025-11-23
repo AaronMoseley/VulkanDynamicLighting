@@ -4,14 +4,8 @@
 #include "VulkanWindow.h"
 #include "VulkanInterface.h"
 
-WindowManager::WindowManager() :
-    m_parentProgram(nullptr), m_width(0), m_height(0), m_title("Application")
-{
-    
-}
-
 WindowManager::WindowManager(QWidget* parentProgram, size_t width, size_t height, std::string title) :
-	m_parentProgram(parentProgram), m_width(width), m_height(height), m_title(title)
+	QVBoxLayout(parentProgram), m_parentProgram(parentProgram), m_width(width), m_height(height), m_title(title)
 {
     
 }
@@ -36,6 +30,8 @@ void WindowManager::InitializeWindow(QVulkanInstance* vulkanInstance)
 
     m_wrappingWidget = QWidget::createWindowContainer(m_vulkanWindow);
     m_wrappingWidget->resize(m_width, m_height);
+
+	this->addWidget(m_wrappingWidget);
 }
 
 void WindowManager::NewFrame()

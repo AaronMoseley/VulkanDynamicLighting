@@ -63,8 +63,8 @@ public:
 	void SetSceneManager(Scene* sceneManager) { m_sceneManager = sceneManager; }
 	Scene* GetSceneManager() { return m_sceneManager; }
 
-	void SetWindowManager(std::shared_ptr<WindowManager> windowManager) { m_windowManager = windowManager; }
-	std::shared_ptr<WindowManager> GetWindowManager() { return m_windowManager; }
+	void SetWindowManager(WindowManager* windowManager) { m_windowManager = windowManager; }
+	WindowManager* GetWindowManager() { return m_windowManager; }
 
 	bool IsInitialized() { return m_initialized; }
 
@@ -73,7 +73,7 @@ public:
 
 private:
 	std::vector<std::shared_ptr<ObjectComponent>> m_components;
-	std::shared_ptr<WindowManager> m_windowManager = nullptr;
+	WindowManager* m_windowManager = nullptr;
 	std::shared_ptr<GraphicsBuffer> m_instanceBuffer = nullptr;
 	
 	Scene* m_sceneManager = nullptr;

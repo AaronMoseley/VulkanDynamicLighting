@@ -23,14 +23,14 @@ public:
 	void BeginRendering();
 	void RegisterUpdateCallback(std::function<void(float)> callback);
 
-	std::shared_ptr<WindowManager> GetWindowManager() { return m_windowManager; }
+	WindowManager* GetWindowManager() { return m_windowManager; }
 	std::shared_ptr<Scene> GetCurrentScene() { return m_sceneManager; }
 	std::shared_ptr<VulkanInterface> GetVulkanInterface() { return m_vulkanInterface; }
 
 private:
-	std::shared_ptr<WindowManager> m_windowManager;
+	WindowManager* m_windowManager;
 	std::shared_ptr<Scene> m_sceneManager;
 	std::shared_ptr<VulkanInterface> m_vulkanInterface;
 
-	QVBoxLayout* m_mainLayout;
+	//QVBoxLayout* m_mainLayout;
 };

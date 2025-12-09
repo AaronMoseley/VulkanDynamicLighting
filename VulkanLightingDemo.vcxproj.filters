@@ -16,9 +16,6 @@
     <Filter Include="Source Files\Vulkan Interface">
       <UniqueIdentifier>{388af24a-b32e-4c4a-9857-846b98cc5524}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders">
-      <UniqueIdentifier>{70baea43-8ab6-4a00-954f-77d3a228e1e2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Components">
       <UniqueIdentifier>{69636481-3f22-45ad-8e86-7f3b7a41e3fc}</UniqueIdentifier>
     </Filter>
@@ -27,6 +24,9 @@
     </Filter>
     <Filter Include="Source Files\Management">
       <UniqueIdentifier>{ad71c773-abcf-423b-9fd3-39afca07a5f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Shaders">
+      <UniqueIdentifier>{70baea43-8ab6-4a00-954f-77d3a228e1e2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -81,6 +81,12 @@
     <ClCompile Include="DemoBehavior.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
+    <ClCompile Include="VoltEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsPipeline.cpp">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vk_mem_alloc.h">
@@ -134,10 +140,19 @@
     <ClInclude Include="DemoBehavior.h">
       <Filter>Source Files\Components</Filter>
     </ClInclude>
+    <ClInclude Include="ThirdPartyDeclarations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VoltEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsPipeline.h">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\HLSL\ObjectShaders.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Source Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

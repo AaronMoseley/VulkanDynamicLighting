@@ -3,6 +3,8 @@
 #ifndef VULKAN_COMMON_FUNCTIONS
 #define VULKAN_COMMON_FUNCTIONS
 
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+
 #include "vk_mem_alloc.h"
 
 #include "glm/glm.hpp"
@@ -56,7 +58,7 @@ namespace VulkanCommonFunctions {
     struct alignas(16) Vertex {
         alignas(16) glm::vec3 pos;
         alignas(16) glm::vec3 normal;
-        alignas(8) glm::vec2 texCoord;
+        glm::vec2 texCoord;
 
         static std::array<VkVertexInputBindingDescription, 2> GetBindingDescriptions() {
             std::array<VkVertexInputBindingDescription, 2> result;

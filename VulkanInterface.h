@@ -10,6 +10,7 @@
 #include "GraphicsImage.h"
 #include "TextureImage.h"
 #include "LightSource.h"
+#include "GraphicsPipeline.h"
 
 #include <map>
 #include <vector>
@@ -62,11 +63,9 @@ private:
     void DrawInstancedObjectCommandBuffer(VkCommandBuffer commandBuffer, std::string objectName, size_t objectCount);
     void DrawSingleObjectCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject);
     void EndDrawFrameCommandBuffer(VkCommandBuffer commandBuffer);
-    VkShaderModule CreateShaderModule(const std::vector<char>& code);
     void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
     bool CheckValidationLayerSupport();
-    std::vector<char> ReadFile(const std::string& filename);
     void UpdateInstanceBuffer(std::string objectName, std::set<VulkanCommonFunctions::ObjectHandle> objectHandles, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects);
     void UpdateUniformBuffer(uint32_t currentImage, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects);
 
@@ -80,9 +79,9 @@ private:
     VkSurfaceKHR surface;
     VkQueue presentQueue;
     VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
-    VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
-    VkPipeline graphicsPipeline = VK_NULL_HANDLE;
     VkCommandPool commandPool;
+
+    std::shared_ptr<GraphicsPipeline> m_mainGraphicsPipeline = VK_NULL_HANDLE;
 
     std::map<std::string, std::shared_ptr<GraphicsBuffer>> vertexBuffers;
     std::map<std::string, std::shared_ptr<GraphicsBuffer>> indexBuffers;

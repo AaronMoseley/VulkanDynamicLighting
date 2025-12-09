@@ -118,6 +118,7 @@
     <ClCompile Include="FirstPersonController.cpp" />
     <ClCompile Include="GraphicsBuffer.cpp" />
     <ClCompile Include="GraphicsImage.cpp" />
+    <ClCompile Include="GraphicsPipeline.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MeshRenderer.cpp" />
     <ClCompile Include="ObjectComponent.cpp" />
@@ -143,6 +144,7 @@
     <ClInclude Include="Cube.h" />
     <ClInclude Include="GraphicsBuffer.h" />
     <ClInclude Include="GraphicsImage.h" />
+    <ClInclude Include="GraphicsPipeline.h" />
     <ClInclude Include="LightSource.h" />
     <ClInclude Include="MeshRenderer.h" />
     <ClInclude Include="ObjectComponent.h" />

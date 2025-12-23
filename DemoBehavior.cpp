@@ -13,7 +13,7 @@ void DemoBehavior::Start()
 	std::shared_ptr<RenderObject> uiImageTexture = std::make_shared<RenderObject>();
 	std::shared_ptr<Transform> imageTextureTransform = uiImageTexture->AddComponent<Transform>();
 	imageTextureTransform->SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-	imageTextureTransform->SetScale(glm::vec3(0.08f, 0.08f, 1.0f));
+	imageTextureTransform->SetScale(glm::vec3(0.05f, 0.05f, 1.0f));
 	std::shared_ptr<UIImage> uiImageComponent = uiImageTexture->AddComponent<UIImage>();
 	uiImageComponent->SetTexture("textures\\Crosshair.png");
     GetScene()->AddUIObject(uiImageTexture);

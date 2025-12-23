@@ -56,8 +56,10 @@ public:
 
 	std::vector<std::shared_ptr<ObjectComponent>> GetAllComponents() { return m_components; }
 
-    VulkanCommonFunctions::InstanceInfo GetInstanceInfo();
-	std::shared_ptr<GraphicsBuffer> GetInstanceBuffer();
+    VulkanCommonFunctions::InstanceInfo GetInstanceInfo(const std::vector<std::string>& textureFilePaths);
+	VulkanCommonFunctions::UIInstanceInfo GetUIInstanceInfo(const std::vector<std::string>& textureFilePaths);
+	std::shared_ptr<GraphicsBuffer> GetInstanceBuffer(const std::vector<std::string>& textureFilePaths);
+	std::shared_ptr<GraphicsBuffer> GetUIInstanceBuffer(const std::vector<std::string>& textureFilePaths);
 	void SetInstanceBuffer(std::shared_ptr<GraphicsBuffer> instanceBuffer) { m_instanceBuffer = instanceBuffer; }
 
 	void SetSceneManager(Scene* sceneManager) { m_sceneManager = sceneManager; }

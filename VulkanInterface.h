@@ -1,8 +1,5 @@
 #pragma once
 
-//#include "vk_mem_alloc.h"
-#include "stb_image.h"
-
 #include "RenderObject.h"
 #include "Camera.h"
 #include "VulkanCommonFunctions.h"
@@ -11,6 +8,7 @@
 #include "TextureImage.h"
 #include "LightSource.h"
 #include "GraphicsPipeline.h"
+#include "UIImage.h"
 
 #include <map>
 #include <vector>
@@ -35,6 +33,10 @@ public:
 
     std::shared_ptr<GraphicsBuffer> CreateVertexBuffer(std::shared_ptr<MeshRenderer> object);
     std::shared_ptr<GraphicsBuffer> CreateIndexBuffer(std::shared_ptr<MeshRenderer>  object);
+
+    std::shared_ptr<GraphicsBuffer> CreateUIVertexBuffer(std::shared_ptr<UIImage> imageObject);
+    std::shared_ptr<GraphicsBuffer> CreateUIIndexBuffer(std::shared_ptr<UIImage> imageObject);
+
     void CreateInstanceBuffer(std::shared_ptr<MeshRenderer> object);
 	std::shared_ptr<GraphicsBuffer> CreateInstanceBuffer(size_t maxObjects);
     void UpdateObjectBuffers(std::shared_ptr<MeshRenderer> objectMesh);
@@ -48,20 +50,35 @@ public:
 
 private:
     void CreateVMAAllocator();
-    void CreateDescriptorSetLayout();
-    void CreateGraphicsPipeline();
+
+	void CreateDescriptorSetLayouts();
+    void CreatePrimaryDescriptorSetLayout();
+	void CreateUIDescriptorSetLayout();
+
+    void CreateDescriptorPools();
+	void CreatePrimaryDescriptorPool();
+	void CreateUIDescriptorPool();
+
+    void CreateAllDescriptorSets();
+	void CreatePrimaryDescriptorSets();
+	void CreateUIDescriptorSets();
+
+    void CreateGraphicsPipelines();
+    void CreatePrimaryGraphicsPipeline();
+	void CreateUIGraphicsPipeline();
+
     void CreateTextureImage(std::string textureFilePath);
     void CreateTextureImageView(std::string textureFilePath);
     void CreateTextureSampler(std::string textureFilePath);
     void CreateUniformBuffers();
-    void CreateDescriptorPool();
-    void CreateDescriptorSets();
 
     VkFormat FindDepthFormat();
     VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
     void BeginDrawFrameCommandBuffer(VkCommandBuffer commandBuffer);
     void DrawInstancedObjectCommandBuffer(VkCommandBuffer commandBuffer, std::string objectName, size_t objectCount);
     void DrawSingleObjectCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject);
+    void SwitchToUIPipeline(VkCommandBuffer commandBuffer);
+	void DrawUIElementCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject);
     void EndDrawFrameCommandBuffer(VkCommandBuffer commandBuffer);
     void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
@@ -78,10 +95,10 @@ private:
     VkQueue graphicsQueue;
     VkSurfaceKHR surface;
     VkQueue presentQueue;
-    VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
     VkCommandPool commandPool;
 
     std::shared_ptr<GraphicsPipeline> m_mainGraphicsPipeline = VK_NULL_HANDLE;
+	std::shared_ptr<GraphicsPipeline> m_uiGraphicsPipeline = VK_NULL_HANDLE;
 
     std::map<std::string, std::shared_ptr<GraphicsBuffer>> vertexBuffers;
     std::map<std::string, std::shared_ptr<GraphicsBuffer>> indexBuffers;
@@ -89,8 +106,9 @@ private:
     std::map<std::string, uint16_t> vertexBufferSizes;
     std::map<std::string, uint16_t> indexBufferSizes;
 
-	std::vector< std::shared_ptr<GraphicsBuffer>> uniformBuffers;
-	std::vector< std::shared_ptr<GraphicsBuffer>> lightInfoBuffers;
+	std::vector<std::shared_ptr<GraphicsBuffer>> uniformBuffers;
+	std::vector<std::shared_ptr<GraphicsBuffer>> lightInfoBuffers;
+	std::vector<std::shared_ptr<GraphicsBuffer>> uiUniformBuffers;
 
     std::vector<std::string> textureFilePaths;
     std::map<std::string, size_t> texturePathToIndex;
@@ -102,8 +120,14 @@ private:
 
     uint32_t currentFrame = 0;
 
-    VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
-    std::vector<VkDescriptorSet> descriptorSets;
+    VkDescriptorSetLayout m_primaryDescriptorSetLayout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout m_uiDescriptorSetLayout = VK_NULL_HANDLE;
+
+    VkDescriptorPool m_primaryDescriptorPool = VK_NULL_HANDLE;
+	VkDescriptorPool m_uiDescriptorPool = VK_NULL_HANDLE;
+
+    std::vector<VkDescriptorSet> primaryDescriptorSets;
+	std::vector<VkDescriptorSet> uiDescriptorSets;
 
     std::shared_ptr<GraphicsImage> depthImage;
 

@@ -8,6 +8,7 @@ GraphicsPipeline::GraphicsPipeline(GraphicsPipelineCreateInfo pipelineCreateInfo
 	m_descriptorSetLayout = pipelineCreateInfo.descriptorSetLayout;
 	m_device = pipelineCreateInfo.device;
 	m_vulkanWindow = pipelineCreateInfo.vulkanWindow;
+	m_uiBasedPipeline = pipelineCreateInfo.uiBasedPipeline;
 	CreatePipeline();
 }
 
@@ -40,16 +41,35 @@ void GraphicsPipeline::CreatePipeline()
 
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
-    auto bindingDescription = VulkanCommonFunctions::Vertex::GetBindingDescriptions();
-    auto attributeDescriptions = VulkanCommonFunctions::Vertex::GetAttributeDescriptions();
+	uint32_t attributeDescriptionCount = 0;
+	VkVertexInputBindingDescription* bindingDescriptionPtr;
+	VkVertexInputAttributeDescription* attributeDescriptionsPtr;
+    if (m_uiBasedPipeline)
+    {
+        auto bindingDescription = VulkanCommonFunctions::UIVertex::GetBindingDescriptions();
+        auto attributeDescriptions = VulkanCommonFunctions::UIVertex::GetAttributeDescriptions();
+
+        attributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+
+		bindingDescriptionPtr = bindingDescription.data();
+		attributeDescriptionsPtr = attributeDescriptions.data();
+    }
+    else {
+        auto bindingDescription = VulkanCommonFunctions::Vertex::GetBindingDescriptions();
+        auto attributeDescriptions = VulkanCommonFunctions::Vertex::GetAttributeDescriptions();
+
+        attributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+        bindingDescriptionPtr = bindingDescription.data();
+        attributeDescriptionsPtr = attributeDescriptions.data();
+    }
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
     vertexInputInfo.vertexBindingDescriptionCount = 2;
-    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-    vertexInputInfo.pVertexBindingDescriptions = bindingDescription.data();
-    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+    vertexInputInfo.vertexAttributeDescriptionCount = attributeDescriptionCount;
+    vertexInputInfo.pVertexBindingDescriptions = bindingDescriptionPtr;
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptionsPtr;
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

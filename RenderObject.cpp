@@ -7,7 +7,7 @@ RenderObject::RenderObject()
 
 }
 
-VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()
+VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo(const std::vector<std::string>& textureFilePaths)
 {
 	VulkanCommonFunctions::InstanceInfo result {};
 
@@ -56,20 +56,74 @@ VulkanCommonFunctions::InstanceInfo RenderObject::GetInstanceInfo()
 
 	result.isBillboarded = (meshRenderer->IsBillboarded()) ? 1 : 0;
 
+	auto iterator = std::find(textureFilePaths.begin(), textureFilePaths.end(), meshRenderer->GetTexturePath());
+
+	result.textureIndex = std::distance(textureFilePaths.begin(), iterator);
+	if (result.textureIndex > textureFilePaths.size())
+	{
+		result.textureIndex = 0;
+	}
+
 	return result;
 }
 
-std::shared_ptr<GraphicsBuffer> RenderObject::GetInstanceBuffer()
+VulkanCommonFunctions::UIInstanceInfo RenderObject::GetUIInstanceInfo(const std::vector<std::string>& textureFilePaths)
+{
+	VulkanCommonFunctions::UIInstanceInfo result {};
+	std::shared_ptr<Transform> transform = GetComponent<Transform>();
+	if (transform == nullptr)
+	{
+		return result;
+	}
+	std::shared_ptr<UIImage> imageComponent = GetComponent<UIImage>();
+	if (imageComponent == nullptr)
+	{
+		return result;
+	}
+	result.objectPosition = transform->GetWorldPosition();
+	result.scale = transform->GetWorldScale();
+	result.color = imageComponent->GetColor();
+	result.opacity = imageComponent->GetOpacity();
+	result.textured = (imageComponent->GetTextured()) ? 1 : 0;
+
+	auto iterator = std::find(textureFilePaths.begin(), textureFilePaths.end(), imageComponent->GetTexturePath());
+
+	result.textureIndex = std::distance(textureFilePaths.begin(), iterator);
+	if (result.textureIndex > textureFilePaths.size())
+	{
+		result.textureIndex = 0;
+	}
+
+	return result;
+}
+
+std::shared_ptr<GraphicsBuffer> RenderObject::GetInstanceBuffer(const std::vector<std::string>& textureFilePaths)
 {
 	if (m_instanceBuffer == nullptr)
 	{
 		return nullptr;
 	}
 
-	VulkanCommonFunctions::InstanceInfo info = GetInstanceInfo();
+	VulkanCommonFunctions::InstanceInfo info = GetInstanceInfo(textureFilePaths);
+
 	std::array<VulkanCommonFunctions::InstanceInfo, 1> infoArray = { info };
 
 	m_instanceBuffer->LoadData(infoArray.data(), sizeof(VulkanCommonFunctions::InstanceInfo));
+
+	return m_instanceBuffer;
+}
+
+std::shared_ptr<GraphicsBuffer> RenderObject::GetUIInstanceBuffer(const std::vector<std::string>& textureFilePaths)
+{
+	if (m_instanceBuffer == nullptr)
+	{
+		return nullptr;
+	}
+
+	VulkanCommonFunctions::UIInstanceInfo info = GetUIInstanceInfo(textureFilePaths);
+	std::array<VulkanCommonFunctions::UIInstanceInfo, 1> infoArray = { info };
+
+	m_instanceBuffer->LoadData(infoArray.data(), sizeof(VulkanCommonFunctions::UIInstanceInfo));
 
 	return m_instanceBuffer;
 }

@@ -87,6 +87,12 @@
     <ClCompile Include="GraphicsPipeline.cpp">
       <Filter>Source Files\Vulkan Interface</Filter>
     </ClCompile>
+    <ClCompile Include="stb_image_implementation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UIImage.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vk_mem_alloc.h">
@@ -149,9 +155,15 @@
     <ClInclude Include="GraphicsPipeline.h">
       <Filter>Source Files\Vulkan Interface</Filter>
     </ClInclude>
+    <ClInclude Include="UIImage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\HLSL\ObjectShaders.hlsl">
+      <Filter>Source Files\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders\HLSL\UIObjectShaders.hlsl">
       <Filter>Source Files\Shaders</Filter>
     </FxCompile>
   </ItemGroup>

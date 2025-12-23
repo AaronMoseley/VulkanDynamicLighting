@@ -12,6 +12,7 @@ struct GraphicsPipelineCreateInfo {
 	VkDescriptorSetLayout descriptorSetLayout;
 	VkDevice device;
 	VulkanWindow* vulkanWindow;
+	bool uiBasedPipeline = false;
 };
 
 class GraphicsPipeline {
@@ -38,6 +39,8 @@ private:
 
 	std::string m_vertexShaderFilePath;
 	std::string m_fragmentShaderFilePath;
+
+	bool m_uiBasedPipeline = false;
 
 	VulkanWindow* m_vulkanWindow;
 };

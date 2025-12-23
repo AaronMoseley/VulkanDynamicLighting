@@ -124,11 +124,16 @@
     <ClCompile Include="ObjectComponent.cpp" />
     <ClCompile Include="RenderObject.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="stb_image_implementation.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="TextureImage.cpp" />
     <ClCompile Include="Transform.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="UIImage.cpp" />
     <ClCompile Include="VoltEngine.cpp" />
     <ClCompile Include="VulkanCommonFunctions.cpp" />
     <ClCompile Include="VulkanCommonFunctions.h" />
@@ -154,6 +159,7 @@
     <ClInclude Include="TextureImage.h" />
     <ClInclude Include="ThirdPartyDeclarations.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="UIImage.h" />
     <ClInclude Include="vk_mem_alloc.h" />
     <ClInclude Include="VoltEngine.h" />
     <ClInclude Include="VulkanInterface.h" />
@@ -163,6 +169,10 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\HLSL\ObjectShaders.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="shaders\HLSL\UIObjectShaders.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

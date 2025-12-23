@@ -42,28 +42,30 @@ void Scene::Update()
 			components[i]->Update(m_deltaTime);
         }
 
-		std::shared_ptr<MeshRenderer> meshComponent = it->second->GetComponent<MeshRenderer>();
-        if (meshComponent == nullptr)
+        UpdateMeshData(it->second);
+    }
+
+    for (auto it = m_uiObjects.begin(); it != m_uiObjects.end(); it++)
+    {
+        std::vector<std::shared_ptr<ObjectComponent>> components = it->second->GetAllComponents();
+
+        for (size_t i = 0; i < components.size(); i++)
         {
-            continue;
+            if (!components[i]->IsEnabled())
+            {
+                continue;
+            }
+
+            if (!components[i]->HasStarted())
+            {
+                components[i]->Start();
+                components[i]->SetStarted(true);
+            }
+
+            components[i]->Update(m_deltaTime);
         }
 
-        if (meshComponent->GetMeshName() != MeshRenderer::kCustomMeshName)
-        {
-            continue;
-        }
-
-        if (meshComponent->IsMeshDataDirty())
-        {
-            FinalizeMesh(it->second);
-            meshComponent->SetDirtyData(false);
-		}
-
-        if (meshComponent->IsTextureDataDirty())
-        {
-            UpdateTexture(meshComponent->GetTexturePath());
-			meshComponent->SetTextureDataDirty(false);
-        }
+        UpdateUIData(it->second);
     }
 
     for (size_t i = 0; i < m_updateCallbacks.size(); i++)
@@ -72,6 +74,60 @@ void Scene::Update()
     }
 
     m_windowManager->NewFrame();
+}
+
+void Scene::UpdateUIData(std::shared_ptr<RenderObject> currentObject)
+{
+    if (currentObject == nullptr)
+    {
+        return;
+    }
+
+    std::shared_ptr<UIImage> imageComponent = currentObject->GetComponent<UIImage>();
+
+    if (imageComponent->IsMeshDataDirty())
+    {
+        FinalizeUIMesh(currentObject);
+        imageComponent->SetDirtyData(false);
+    }
+
+    if (imageComponent->IsTextureDataDirty())
+    {
+        UpdateTexture(imageComponent->GetTexturePath());
+        imageComponent->SetTextureDataDirty(false);
+    }
+}
+
+void Scene::UpdateMeshData(std::shared_ptr<RenderObject> currentObject)
+{
+    if (currentObject == nullptr)
+    {
+        return;
+    }
+
+    std::shared_ptr<MeshRenderer> meshComponent = currentObject->GetComponent<MeshRenderer>();
+
+    if (meshComponent == nullptr)
+    {
+        return;
+    }
+
+    if (meshComponent->GetMeshName() != MeshRenderer::kCustomMeshName)
+    {
+        return;
+    }
+
+    if (meshComponent->IsMeshDataDirty())
+    {
+        FinalizeMesh(currentObject);
+        meshComponent->SetDirtyData(false);
+    }
+
+    if (meshComponent->IsTextureDataDirty())
+    {
+        UpdateTexture(meshComponent->GetTexturePath());
+        meshComponent->SetTextureDataDirty(false);
+    }
 }
 
 VulkanCommonFunctions::ObjectHandle Scene::AddObject(std::shared_ptr <RenderObject> newObject)
@@ -107,6 +163,34 @@ VulkanCommonFunctions::ObjectHandle Scene::AddObject(std::shared_ptr <RenderObje
     return m_currentObjectHandle;
 }
 
+VulkanCommonFunctions::ObjectHandle Scene::AddUIObject(std::shared_ptr <RenderObject> newObject)
+{
+    if (m_uiObjects.size() >= VulkanCommonFunctions::MAX_OBJECTS)
+    {
+        return VulkanCommonFunctions::INVALID_OBJECT_HANDLE;
+    }
+
+    m_currentUIObjectHandle++;
+
+    m_uiObjects[m_currentUIObjectHandle] = newObject;
+    newObject->SetSceneManager(this);
+    newObject->SetWindowManager(m_windowManager);
+
+    std::shared_ptr<UIImage> imageComponent = newObject->GetComponent<UIImage>();
+
+    if (imageComponent == nullptr)
+    {
+        return m_currentUIObjectHandle;
+    }
+
+    if (imageComponent->GetTextured())
+    {
+        UpdateTexture(imageComponent->GetTexturePath());
+    }
+
+    return m_currentUIObjectHandle;
+}
+
 bool Scene::RemoveObject(VulkanCommonFunctions::ObjectHandle objectToRemove)
 {
     std::shared_ptr<RenderObject> currentObject = GetRenderObject(objectToRemove);
@@ -122,7 +206,7 @@ bool Scene::RemoveObject(VulkanCommonFunctions::ObjectHandle objectToRemove)
 
     removalSuccessful = m_objects.erase(objectToRemove);
 
-	std::shared_ptr<GraphicsBuffer> instanceBuffer = currentObject->GetInstanceBuffer();
+    std::shared_ptr<GraphicsBuffer> instanceBuffer = currentObject->GetInstanceBuffer({});
     if (instanceBuffer != nullptr)
     {
 		m_buffersToDestroy.push_back(instanceBuffer);
@@ -157,6 +241,49 @@ bool Scene::RemoveObject(VulkanCommonFunctions::ObjectHandle objectToRemove)
     return removalSuccessful;
 }
 
+bool Scene::RemoveUIObject(VulkanCommonFunctions::ObjectHandle objectToRemove)
+{
+    std::shared_ptr<RenderObject> currentObject = GetUIRenderObject(objectToRemove);
+
+    if (currentObject == nullptr)
+    {
+        return false;
+    }
+
+    currentObject->SetSceneManager(nullptr);
+
+    bool removalSuccessful = true;
+
+    removalSuccessful = m_uiObjects.erase(objectToRemove);
+
+    std::shared_ptr<GraphicsBuffer> instanceBuffer = currentObject->GetInstanceBuffer({});
+    if (instanceBuffer != nullptr)
+    {
+        m_buffersToDestroy.push_back(instanceBuffer);
+    }
+
+    std::shared_ptr<MeshRenderer> meshComponent = currentObject->GetComponent<MeshRenderer>();
+
+    if (meshComponent == nullptr)
+    {
+        return removalSuccessful;
+    }
+
+    std::shared_ptr<GraphicsBuffer> vertexBuffer = meshComponent->GetVertexBuffer();
+    if (vertexBuffer != nullptr)
+    {
+        m_buffersToDestroy.push_back(vertexBuffer);
+    }
+
+    std::shared_ptr<GraphicsBuffer> indexBuffer = meshComponent->GetIndexBuffer();
+    if (indexBuffer != nullptr)
+    {
+        m_buffersToDestroy.push_back(indexBuffer);
+    }
+
+    return removalSuccessful;
+}
+
 std::shared_ptr<RenderObject> Scene::GetRenderObject(VulkanCommonFunctions::ObjectHandle handle)
 {
     if (handle == VulkanCommonFunctions::INVALID_OBJECT_HANDLE)
@@ -168,6 +295,56 @@ std::shared_ptr<RenderObject> Scene::GetRenderObject(VulkanCommonFunctions::Obje
         return nullptr;
     }
     return m_objects[handle];
+}
+
+std::shared_ptr<RenderObject> Scene::GetUIRenderObject(VulkanCommonFunctions::ObjectHandle handle)
+{
+    if (handle == VulkanCommonFunctions::INVALID_OBJECT_HANDLE)
+    {
+        return nullptr;
+    }
+    if (!m_uiObjects.contains(handle))
+    {
+        return nullptr;
+    }
+    return m_uiObjects[handle];
+}
+
+void Scene::FinalizeUIMesh(std::shared_ptr<RenderObject> updatedObject)
+{
+    if (updatedObject == nullptr)
+    {
+        return;
+    }
+
+    std::shared_ptr<UIImage> imageComponent = updatedObject->GetComponent<UIImage>();
+    if (imageComponent == nullptr)
+    {
+        return;
+    }
+
+    std::shared_ptr<GraphicsBuffer> oldVertexBuffer = imageComponent->GetVertexBuffer();
+    if (oldVertexBuffer != nullptr)
+    {
+        m_buffersToDestroy.push_back(oldVertexBuffer);
+    }
+
+    std::shared_ptr<GraphicsBuffer> oldIndexBuffer = imageComponent->GetIndexBuffer();
+    if (oldIndexBuffer != nullptr)
+    {
+        m_buffersToDestroy.push_back(oldIndexBuffer);
+    }
+
+    std::shared_ptr<GraphicsBuffer> vertexBuffer = m_vulkanInterface->CreateUIVertexBuffer(imageComponent);
+    std::shared_ptr<GraphicsBuffer> indexBuffer = m_vulkanInterface->CreateUIIndexBuffer(imageComponent);
+
+    imageComponent->SetVertexBuffer(vertexBuffer);
+    imageComponent->SetIndexBuffer(indexBuffer);
+
+    if (updatedObject->GetInstanceBuffer({}) == nullptr)
+    {
+        GenerateInstanceBuffer(updatedObject);
+    }
 }
 
 void Scene::FinalizeMesh(std::shared_ptr<RenderObject> updatedObject)
@@ -206,7 +383,7 @@ void Scene::FinalizeMesh(std::shared_ptr<RenderObject> updatedObject)
 	meshComponent->SetVertexBuffer(vertexBuffer);
 	meshComponent->SetIndexBuffer(indexBuffer);
 
-    if (updatedObject->GetInstanceBuffer() == nullptr)
+    if (updatedObject->GetInstanceBuffer({}) == nullptr)
     {
 		GenerateInstanceBuffer(updatedObject);
     }
@@ -215,12 +392,6 @@ void Scene::FinalizeMesh(std::shared_ptr<RenderObject> updatedObject)
 void Scene::GenerateInstanceBuffer(std::shared_ptr<RenderObject> newObject)
 {
     if (newObject == nullptr)
-    {
-        return;
-    }
-
-    std::shared_ptr<MeshRenderer> meshComponent = newObject->GetComponent<MeshRenderer>();
-    if (meshComponent == nullptr)
     {
         return;
     }
@@ -257,7 +428,7 @@ void Scene::Cleanup()
 {
     for (auto it = m_objects.begin(); it != m_objects.end(); it++)
     {
-        std::shared_ptr<GraphicsBuffer> instanceBuffer = it->second->GetInstanceBuffer();
+        std::shared_ptr<GraphicsBuffer> instanceBuffer = it->second->GetInstanceBuffer({});
 
         if (instanceBuffer != nullptr)
         {
@@ -274,6 +445,32 @@ void Scene::Cleanup()
             }
 
             std::shared_ptr<GraphicsBuffer> indexBuffer = meshComponent->GetIndexBuffer();
+            if (indexBuffer != nullptr)
+            {
+                indexBuffer->DestroyBuffer();
+            }
+        }
+    }
+
+    for (auto it = m_uiObjects.begin(); it != m_uiObjects.end(); it++)
+    {
+        std::shared_ptr<GraphicsBuffer> instanceBuffer = it->second->GetInstanceBuffer({});
+
+        if (instanceBuffer != nullptr)
+        {
+            instanceBuffer->DestroyBuffer();
+        }
+
+        std::shared_ptr<UIImage> uiImageComponent = it->second->GetComponent<UIImage>();
+        if (uiImageComponent != nullptr)
+        {
+            std::shared_ptr<GraphicsBuffer> vertexBuffer = uiImageComponent->GetVertexBuffer();
+            if (vertexBuffer != nullptr)
+            {
+                vertexBuffer->DestroyBuffer();
+            }
+
+            std::shared_ptr<GraphicsBuffer> indexBuffer = uiImageComponent->GetIndexBuffer();
             if (indexBuffer != nullptr)
             {
                 indexBuffer->DestroyBuffer();

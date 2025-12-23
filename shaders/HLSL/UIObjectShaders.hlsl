@@ -41,10 +41,9 @@ VSOutput VSMain(UIVSInputVertex vertexInput)
 {
     VSOutput output;
     
-    float2 uiPos = vertexInput.objectPosition.xy;
-    uiPos = uiPos + (vertexInput.position.xy * vertexInput.scale.xy);
+    float2 uiPos = vertexInput.position.xy;
     
-    if(screenWidth > screenHeight)
+    if (screenWidth > screenHeight)
     {
         float ratio = (float) screenHeight / (float) screenWidth;
         uiPos.x = uiPos.x * ratio;
@@ -55,7 +54,10 @@ VSOutput VSMain(UIVSInputVertex vertexInput)
         uiPos.y = uiPos.y * ratio;
     }
     
-        float3 clipPos;
+    uiPos = uiPos * vertexInput.scale.xy;
+    uiPos = uiPos + vertexInput.objectPosition.xy;
+    
+    float3 clipPos;
     clipPos.x = uiPos.x;
     clipPos.y = 1 - ((uiPos.y + 1.0));
     clipPos.z = vertexInput.objectPosition.z;

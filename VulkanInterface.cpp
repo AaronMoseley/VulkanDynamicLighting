@@ -620,7 +620,7 @@ bool VulkanInterface::CheckValidationLayerSupport() {
     return true;
 }
 
-std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateUIVertexBuffer(std::shared_ptr<UIImage> imageObject)
+std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateUIVertexBuffer(std::shared_ptr<UIMeshRenderer> imageObject)
 {
     VkDeviceSize bufferSize = sizeof(VulkanCommonFunctions::UIVertex) * imageObject->GetVertices().size();
 
@@ -712,7 +712,7 @@ void VulkanInterface::UpdateObjectBuffers(std::shared_ptr<MeshRenderer> objectMe
     CreateInstanceBuffer(objectMesh);
 }
 
-std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateUIIndexBuffer(std::shared_ptr<UIImage> imageObject) {
+std::shared_ptr<GraphicsBuffer> VulkanInterface::CreateUIIndexBuffer(std::shared_ptr<UIMeshRenderer> imageObject) {
     VkDeviceSize bufferSize = sizeof(uint16_t) * imageObject->GetIndices().size();
 
     GraphicsBuffer::BufferCreateInfo stagingBufferCreateInfo = {};
@@ -875,15 +875,9 @@ void VulkanInterface::SwitchToUIPipeline(VkCommandBuffer commandBuffer)
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_uiGraphicsPipeline->GetVkPipelineLayout(), 0, 1, &uiDescriptorSets[currentFrame], 0, nullptr);
 }
 
-void VulkanInterface::DrawUIElementCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject)
+void VulkanInterface::DrawUIImageCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject)
 {
     std::shared_ptr<UIImage> imageComponent = currentObject->GetComponent<UIImage>();
-
-    if (imageComponent == nullptr)
-    {
-        return;
-    }
-
     VkBuffer objectVertexBuffer[] = { imageComponent->GetVertexBuffer()->GetVkBuffer(), currentObject->GetUIInstanceBuffer(textureFilePaths)->GetVkBuffer() };
     VkDeviceSize offsets[] = { 0, 0 };
     vkCmdBindVertexBuffers(commandBuffer, 0, 2, objectVertexBuffer, offsets);
@@ -893,7 +887,66 @@ void VulkanInterface::DrawUIElementCommandBuffer(VkCommandBuffer commandBuffer, 
     vkCmdDrawIndexed(commandBuffer, imageComponent->GetIndexBufferSize(), 1, 0, 0, 0);
 }
 
-void VulkanInterface::DrawFrame(float deltaTime, std::shared_ptr<Scene> scene) {
+void VulkanInterface::DrawUITextCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject, std::shared_ptr<FontManager> fontManager)
+{
+    std::shared_ptr<Text> textComponent = currentObject->GetComponent<Text>();
+
+    GraphicsBuffer::BufferCreateInfo createInfo;
+    createInfo.allocator = allocator;
+    createInfo.commandPool = commandPool;
+    createInfo.device = device;
+    createInfo.graphicsQueue = graphicsQueue;
+    createInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    createInfo.properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+    std::pair<size_t, size_t> screenSize = {m_vulkanWindow->swapChainImageSize().width(), m_vulkanWindow->swapChainImageSize().height() };
+
+    std::string fontName = textComponent->GetFontName();
+    std::shared_ptr<Font> font = fontManager->GetFontByName(fontName);
+
+    std::string atlasFilePath = font->GetAtlasFilePath();
+
+    if (!texturePathToIndex.contains(atlasFilePath))
+    {
+        std::cerr << "Font atlas hasn't been loaded as a texture image: " << atlasFilePath << std::endl;
+        return;
+    }
+
+    size_t textureIndex = texturePathToIndex[atlasFilePath];
+
+    textComponent->UpdateInstanceBuffer(screenSize, font, textureIndex, createInfo);
+
+    auto temp1 = textComponent->GetVertexBuffer()->GetVkBuffer();
+    auto temp2 = textComponent->GetInstanceBuffer();
+    auto temp3 = temp2->GetVkBuffer();
+
+    VkBuffer objectVertexBuffer[] = { textComponent->GetVertexBuffer()->GetVkBuffer(), textComponent->GetInstanceBuffer()->GetVkBuffer()};
+    VkDeviceSize offsets[] = { 0, 0 };
+    vkCmdBindVertexBuffers(commandBuffer, 0, 2, objectVertexBuffer, offsets);
+
+    vkCmdBindIndexBuffer(commandBuffer, textComponent->GetIndexBuffer()->GetVkBuffer(), 0, VK_INDEX_TYPE_UINT16);
+
+    vkCmdDrawIndexed(commandBuffer, textComponent->GetIndexBufferSize(), textComponent->GetTextString().size(), 0, 0, 0);
+}
+
+void VulkanInterface::DrawUIElementCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject, std::shared_ptr<FontManager> fontManager)
+{
+    std::shared_ptr<UIImage> imageComponent = currentObject->GetComponent<UIImage>();
+
+    if (imageComponent != nullptr)
+    {
+        DrawUIImageCommandBuffer(commandBuffer, currentObject);
+    }
+
+    std::shared_ptr<Text> textComponent = currentObject->GetComponent<Text>();
+    
+    if (textComponent != nullptr)
+    {
+        DrawUITextCommandBuffer(commandBuffer, currentObject, fontManager);
+    }
+}
+
+void VulkanInterface::DrawFrame(float deltaTime, std::shared_ptr<Scene> scene, std::shared_ptr<FontManager> fontManager) {
     std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> objectHandles = scene->GetMeshNameToObjectMap();
     std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects = scene->GetObjects();
     std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> uiObjects = scene->GetUIObjects();
@@ -938,9 +991,9 @@ void VulkanInterface::DrawFrame(float deltaTime, std::shared_ptr<Scene> scene) {
 	SwitchToUIPipeline(commandBuffer);
 
     //draw UI elements
-    for (size_t i = 0; i < uiObjects.size(); i++)
+    for (auto it = uiObjects.begin(); it != uiObjects.end(); it++)
     {
-		DrawUIElementCommandBuffer(commandBuffer, uiObjects.begin()->second);
+		DrawUIElementCommandBuffer(commandBuffer, it->second, fontManager);
     }
 
     EndDrawFrameCommandBuffer(commandBuffer);

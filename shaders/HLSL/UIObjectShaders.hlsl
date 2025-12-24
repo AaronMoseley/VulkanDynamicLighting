@@ -8,10 +8,16 @@ struct UIVSInputVertex
     [[vk::location(2)]] float3 objectPosition : TEXCOORD1;
     [[vk::location(3)]] float3 scale : TEXCOORD2;
     [[vk::location(4)]] float3 color : COLOR3;
-    [[vk::location(5)]] float opacity : COLOR4;
     
-    [[vk::location(6)]] uint textured : TEXTCOORD5;
-    [[vk::location(7)]] uint textureIndex : TEXCOORD5;
+    [[vk::location(5)]] float2 textureOffset : TEXTCOORD8;
+    [[vk::location(6)]] float2 characterTextureSize : TEXTCOORD9;
+    
+    [[vk::location(7)]] float opacity : COLOR4;
+    
+    [[vk::location(8)]] uint textured : TEXTCOORD5;
+    [[vk::location(9)]] uint textureIndex : TEXCOORD6;
+    
+    [[vk::location(10)]] uint isTextCharacter : TEXTCOORD7;
 };
 
 //Vertex shader output to fragment shader input
@@ -61,9 +67,19 @@ VSOutput VSMain(UIVSInputVertex vertexInput)
     clipPos.x = uiPos.x;
     clipPos.y = 1 - ((uiPos.y + 1.0));
     clipPos.z = vertexInput.objectPosition.z;
-    
     output.position = float4(clipPos, 1.0);
-    output.texCoord = vertexInput.texCoord;
+    
+    if (vertexInput.isTextCharacter == 0)
+    {
+        output.texCoord = vertexInput.texCoord;
+    }
+    else
+    {
+        float2 texCoord = vertexInput.textureOffset;
+        texCoord = texCoord + (vertexInput.texCoord * vertexInput.characterTextureSize);
+        output.texCoord = texCoord;
+    }
+    
     output.color = vertexInput.color;
     output.opacity = vertexInput.opacity;
     output.textured = vertexInput.textured;
@@ -82,6 +98,4 @@ float4 PSMain(VSOutput input) : SV_TARGET
     }
     
     return float4(input.color, input.opacity) * texColor;
-    //return float4(input.texCoord.x, input.texCoord.y, 0.0, 0.0);
-
 }

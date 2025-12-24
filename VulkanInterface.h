@@ -9,6 +9,8 @@
 #include "LightSource.h"
 #include "GraphicsPipeline.h"
 #include "UIImage.h"
+#include "Text.h"
+#include "FontManager.h"
 
 #include <map>
 #include <vector>
@@ -25,7 +27,7 @@ class VulkanInterface {
 public:
     VulkanInterface(WindowManager* windowManager);
 
-    void DrawFrame(float deltaTime, std::shared_ptr<Scene> scene);
+    void DrawFrame(float deltaTime, std::shared_ptr<Scene> scene, std::shared_ptr<FontManager> fontManager);
 
     bool HasRenderedFirstFrame() { return renderedFirstFrame; };
 
@@ -34,8 +36,8 @@ public:
     std::shared_ptr<GraphicsBuffer> CreateVertexBuffer(std::shared_ptr<MeshRenderer> object);
     std::shared_ptr<GraphicsBuffer> CreateIndexBuffer(std::shared_ptr<MeshRenderer>  object);
 
-    std::shared_ptr<GraphicsBuffer> CreateUIVertexBuffer(std::shared_ptr<UIImage> imageObject);
-    std::shared_ptr<GraphicsBuffer> CreateUIIndexBuffer(std::shared_ptr<UIImage> imageObject);
+    std::shared_ptr<GraphicsBuffer> CreateUIVertexBuffer(std::shared_ptr<UIMeshRenderer> imageObject);
+    std::shared_ptr<GraphicsBuffer> CreateUIIndexBuffer(std::shared_ptr<UIMeshRenderer> imageObject);
 
     void CreateInstanceBuffer(std::shared_ptr<MeshRenderer> object);
 	std::shared_ptr<GraphicsBuffer> CreateInstanceBuffer(size_t maxObjects);
@@ -78,13 +80,15 @@ private:
     void DrawInstancedObjectCommandBuffer(VkCommandBuffer commandBuffer, std::string objectName, size_t objectCount);
     void DrawSingleObjectCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject);
     void SwitchToUIPipeline(VkCommandBuffer commandBuffer);
-	void DrawUIElementCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject);
+	void DrawUIElementCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject, std::shared_ptr<FontManager> fontManager);
     void EndDrawFrameCommandBuffer(VkCommandBuffer commandBuffer);
     void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
     bool CheckValidationLayerSupport();
     void UpdateInstanceBuffer(std::string objectName, std::set<VulkanCommonFunctions::ObjectHandle> objectHandles, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects);
     void UpdateUniformBuffer(uint32_t currentImage, std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> objects);
+    void DrawUIImageCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject);
+    void DrawUITextCommandBuffer(VkCommandBuffer commandBuffer, std::shared_ptr<RenderObject> currentObject, std::shared_ptr<FontManager> fontManager);
 
     static const int MAX_FRAMES_IN_FLIGHT = 3;
 

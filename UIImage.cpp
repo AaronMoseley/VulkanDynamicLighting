@@ -5,6 +5,9 @@ UIImage::UIImage()
 {
 	m_textured = false;
 	m_textureDataDirty = false;
+
+	SetVertices(m_squareVertices);
+	SetIndices(m_squareIndices);
 }
 
 UIImage::UIImage(std::string imageFilePath)
@@ -12,6 +15,9 @@ UIImage::UIImage(std::string imageFilePath)
 	m_texturePath = imageFilePath;
 	m_textured = true;
 	m_textureDataDirty = true;
+
+	SetVertices(m_squareVertices);
+	SetIndices(m_squareIndices);
 
 	CalculateMeshInfo();
 }
@@ -42,18 +48,4 @@ void UIImage::CalculateMeshInfo()
 	}
 
 	m_meshDataDirty = true;
-}
-
-void UIImage::SetVertices(std::vector<VulkanCommonFunctions::UIVertex> vertices)
-{
-	m_vertices = vertices;
-
-	SetDirtyData(true);
-}
-
-void UIImage::SetIndices(std::vector<uint16_t> indices)
-{
-	m_indices = indices;
-
-	SetDirtyData(true);
 }

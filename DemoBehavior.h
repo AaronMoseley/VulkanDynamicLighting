@@ -7,6 +7,7 @@
 #include "Cube.h"
 #include "Tetrahedron.h"
 #include "LightSource.h"
+#include "Text.h"
 
 class DemoBehavior : public ObjectComponent {
 public:

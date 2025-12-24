@@ -39,7 +39,7 @@ void VulkanWindowRenderer::startNextFrame()
 
 	if (!m_isShuttingDown)
 	{
-		m_vulkanInterface->DrawFrame(0.0f, m_scene);
+		m_vulkanInterface->DrawFrame(0.0f, m_scene, m_scene->GetFontManager());
 	}
 }
 

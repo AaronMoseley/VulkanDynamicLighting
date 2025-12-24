@@ -28,6 +28,9 @@
     <Filter Include="Source Files\Shaders">
       <UniqueIdentifier>{70baea43-8ab6-4a00-954f-77d3a228e1e2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Text Rendering">
+      <UniqueIdentifier>{56b24e84-f8b3-46e0-a54a-f2e2d6db1674}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -91,6 +94,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UIImage.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Font.cpp">
+      <Filter>Source Files\Text Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="Text.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="FontManager.cpp">
+      <Filter>Source Files\Text Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="UIMeshRenderer.cpp">
       <Filter>Source Files\Components</Filter>
     </ClCompile>
   </ItemGroup>
@@ -157,6 +172,18 @@
     </ClInclude>
     <ClInclude Include="UIImage.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Font.h">
+      <Filter>Source Files\Text Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="Text.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="FontManager.h">
+      <Filter>Source Files\Text Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="UIMeshRenderer.h">
+      <Filter>Source Files\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

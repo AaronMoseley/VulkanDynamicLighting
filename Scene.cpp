@@ -6,6 +6,7 @@ Scene::Scene(WindowManager* windowManager, std::shared_ptr<VulkanInterface> vulk
 {
 	m_windowManager = windowManager;
     m_vulkanInterface = vulkanInterface;
+	m_fontManager = std::make_shared<FontManager>();
 }
 
 void Scene::Update()
@@ -83,12 +84,24 @@ void Scene::UpdateUIData(std::shared_ptr<RenderObject> currentObject)
         return;
     }
 
-    std::shared_ptr<UIImage> imageComponent = currentObject->GetComponent<UIImage>();
+    std::shared_ptr<UIMeshRenderer> meshComponent = currentObject->GetComponent<UIMeshRenderer>();
 
-    if (imageComponent->IsMeshDataDirty())
+    if(meshComponent == nullptr)
+    {
+        return;
+    }
+
+    if (meshComponent->IsMeshDataDirty())
     {
         FinalizeUIMesh(currentObject);
-        imageComponent->SetDirtyData(false);
+        meshComponent->SetDirtyData(false);
+    }
+
+    std::shared_ptr<UIImage> imageComponent = currentObject->GetComponent<UIImage>();
+
+    if (imageComponent == nullptr)
+    {
+        return;
     }
 
     if (imageComponent->IsTextureDataDirty())
@@ -262,7 +275,7 @@ bool Scene::RemoveUIObject(VulkanCommonFunctions::ObjectHandle objectToRemove)
         m_buffersToDestroy.push_back(instanceBuffer);
     }
 
-    std::shared_ptr<MeshRenderer> meshComponent = currentObject->GetComponent<MeshRenderer>();
+    std::shared_ptr<UIMeshRenderer> meshComponent = currentObject->GetComponent<UIMeshRenderer>();
 
     if (meshComponent == nullptr)
     {
@@ -317,29 +330,29 @@ void Scene::FinalizeUIMesh(std::shared_ptr<RenderObject> updatedObject)
         return;
     }
 
-    std::shared_ptr<UIImage> imageComponent = updatedObject->GetComponent<UIImage>();
-    if (imageComponent == nullptr)
+    std::shared_ptr<UIMeshRenderer> meshComponent = updatedObject->GetComponent<UIMeshRenderer>();
+    if (meshComponent == nullptr)
     {
         return;
     }
 
-    std::shared_ptr<GraphicsBuffer> oldVertexBuffer = imageComponent->GetVertexBuffer();
+    std::shared_ptr<GraphicsBuffer> oldVertexBuffer = meshComponent->GetVertexBuffer();
     if (oldVertexBuffer != nullptr)
     {
         m_buffersToDestroy.push_back(oldVertexBuffer);
     }
 
-    std::shared_ptr<GraphicsBuffer> oldIndexBuffer = imageComponent->GetIndexBuffer();
+    std::shared_ptr<GraphicsBuffer> oldIndexBuffer = meshComponent->GetIndexBuffer();
     if (oldIndexBuffer != nullptr)
     {
         m_buffersToDestroy.push_back(oldIndexBuffer);
     }
 
-    std::shared_ptr<GraphicsBuffer> vertexBuffer = m_vulkanInterface->CreateUIVertexBuffer(imageComponent);
-    std::shared_ptr<GraphicsBuffer> indexBuffer = m_vulkanInterface->CreateUIIndexBuffer(imageComponent);
+    std::shared_ptr<GraphicsBuffer> vertexBuffer = m_vulkanInterface->CreateUIVertexBuffer(meshComponent);
+    std::shared_ptr<GraphicsBuffer> indexBuffer = m_vulkanInterface->CreateUIIndexBuffer(meshComponent);
 
-    imageComponent->SetVertexBuffer(vertexBuffer);
-    imageComponent->SetIndexBuffer(indexBuffer);
+    meshComponent->SetVertexBuffer(vertexBuffer);
+    meshComponent->SetIndexBuffer(indexBuffer);
 
     if (updatedObject->GetInstanceBuffer({}) == nullptr)
     {
@@ -424,6 +437,12 @@ VulkanCommonFunctions::ObjectHandle Scene::GetObjectByTag(std::string tag)
     return VulkanCommonFunctions::INVALID_OBJECT_HANDLE;
 }
 
+void Scene::AddFont(std::string atlasFilePath, std::string descriptionFilePath)
+{
+	m_fontManager->AddFont(atlasFilePath, descriptionFilePath);
+    m_vulkanInterface->UpdateTextureResources(atlasFilePath);
+}
+
 void Scene::Cleanup()
 {
     for (auto it = m_objects.begin(); it != m_objects.end(); it++)
@@ -461,16 +480,26 @@ void Scene::Cleanup()
             instanceBuffer->DestroyBuffer();
         }
 
-        std::shared_ptr<UIImage> uiImageComponent = it->second->GetComponent<UIImage>();
-        if (uiImageComponent != nullptr)
+        std::shared_ptr<Text> textComponent = it->second->GetComponent<Text>();
+        if (textComponent != nullptr)
         {
-            std::shared_ptr<GraphicsBuffer> vertexBuffer = uiImageComponent->GetVertexBuffer();
+            std::shared_ptr<GraphicsBuffer> textInstanceBuffer = textComponent->GetInstanceBuffer();
+            if (textInstanceBuffer != nullptr)
+            {
+                textInstanceBuffer->DestroyBuffer();
+            }
+        }
+
+        std::shared_ptr<UIMeshRenderer> uiMeshComponent = it->second->GetComponent<UIMeshRenderer>();
+        if (uiMeshComponent != nullptr)
+        {
+            std::shared_ptr<GraphicsBuffer> vertexBuffer = uiMeshComponent->GetVertexBuffer();
             if (vertexBuffer != nullptr)
             {
                 vertexBuffer->DestroyBuffer();
             }
 
-            std::shared_ptr<GraphicsBuffer> indexBuffer = uiImageComponent->GetIndexBuffer();
+            std::shared_ptr<GraphicsBuffer> indexBuffer = uiMeshComponent->GetIndexBuffer();
             if (indexBuffer != nullptr)
             {
                 indexBuffer->DestroyBuffer();

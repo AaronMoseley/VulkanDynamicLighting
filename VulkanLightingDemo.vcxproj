@@ -116,6 +116,8 @@
   <ItemGroup>
     <ClCompile Include="DemoBehavior.cpp" />
     <ClCompile Include="FirstPersonController.cpp" />
+    <ClCompile Include="Font.cpp" />
+    <ClCompile Include="FontManager.cpp" />
     <ClCompile Include="GraphicsBuffer.cpp" />
     <ClCompile Include="GraphicsImage.cpp" />
     <ClCompile Include="GraphicsPipeline.cpp" />
@@ -128,12 +130,14 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Text.cpp" />
     <ClCompile Include="TextureImage.cpp" />
     <ClCompile Include="Transform.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="UIImage.cpp" />
+    <ClCompile Include="UIMeshRenderer.cpp" />
     <ClCompile Include="VoltEngine.cpp" />
     <ClCompile Include="VulkanCommonFunctions.cpp" />
     <ClCompile Include="VulkanCommonFunctions.h" />
@@ -147,6 +151,8 @@
     <ClInclude Include="DemoBehavior.h" />
     <ClInclude Include="FirstPersonController.h" />
     <ClInclude Include="Cube.h" />
+    <ClInclude Include="Font.h" />
+    <ClInclude Include="FontManager.h" />
     <ClInclude Include="GraphicsBuffer.h" />
     <ClInclude Include="GraphicsImage.h" />
     <ClInclude Include="GraphicsPipeline.h" />
@@ -156,10 +162,12 @@
     <ClInclude Include="RenderObject.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="Tetrahedron.h" />
+    <ClInclude Include="Text.h" />
     <ClInclude Include="TextureImage.h" />
     <ClInclude Include="ThirdPartyDeclarations.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="UIImage.h" />
+    <ClInclude Include="UIMeshRenderer.h" />
     <ClInclude Include="vk_mem_alloc.h" />
     <ClInclude Include="VoltEngine.h" />
     <ClInclude Include="VulkanInterface.h" />

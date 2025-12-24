@@ -3,6 +3,7 @@
 #include "VulkanInterface.h"
 #include "VulkanCommonFunctions.h"
 #include "UIImage.h"
+#include "FontManager.h"
 
 #include <memory>
 #include <vector>
@@ -19,6 +20,8 @@ public:
 
 	void Cleanup();
 
+	void AddFont(std::string atlasFilePath, std::string descriptionFilePath);
+
 	VulkanCommonFunctions::ObjectHandle AddObject(std::shared_ptr <RenderObject> newObject);
 	bool RemoveObject(VulkanCommonFunctions::ObjectHandle objectToRemove);
 
@@ -31,6 +34,8 @@ public:
 	void FinalizeUIMesh(std::shared_ptr<RenderObject> updatedObject);
 
 	void UpdateTexture(std::string newTexturePath);
+
+	std::shared_ptr<FontManager> GetFontManager() { return m_fontManager; }
 
 	std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> GetObjects() { return m_objects; };
 	std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> GetUIObjects() { return m_uiObjects; };
@@ -50,23 +55,24 @@ private:
 	void UpdateMeshData(std::shared_ptr<RenderObject> currentObject);
 	void UpdateUIData(std::shared_ptr<RenderObject> currentObject);
 
-	alignas(16) std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> m_objects = {};
-	alignas(16) std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> m_meshNameToObjectMap;
+	std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> m_objects = {};
+	std::map<std::string, std::set<VulkanCommonFunctions::ObjectHandle>> m_meshNameToObjectMap;
 
-	alignas(16) std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> m_uiObjects = {};
+	std::map<VulkanCommonFunctions::ObjectHandle, std::shared_ptr<RenderObject>> m_uiObjects = {};
 
-	alignas(16) WindowManager* m_windowManager;
-	alignas(16) std::shared_ptr<VulkanInterface> m_vulkanInterface;
+	WindowManager* m_windowManager;
+	std::shared_ptr<VulkanInterface> m_vulkanInterface;
+	std::shared_ptr<FontManager> m_fontManager;
 
-	alignas(16) VulkanCommonFunctions::ObjectHandle m_currentObjectHandle = 0;
-	alignas(16) VulkanCommonFunctions::ObjectHandle m_currentUIObjectHandle = 0;
+	VulkanCommonFunctions::ObjectHandle m_currentObjectHandle = 0;
+	VulkanCommonFunctions::ObjectHandle m_currentUIObjectHandle = 0;
 
-	alignas(16) std::vector<std::function<void(float)>> m_updateCallbacks;
+	std::vector<std::function<void(float)>> m_updateCallbacks;
 
-	alignas(16) std::vector<std::shared_ptr<GraphicsBuffer>> m_buffersToDestroy;
+	std::vector<std::shared_ptr<GraphicsBuffer>> m_buffersToDestroy;
 
-	alignas(16) double m_deltaTime = 0.0f;	// Time between current frame and last frame
-	alignas(16) double m_lastFrame = -1.0f; // Time of last frame
+	double m_deltaTime = 0.0f;	// Time between current frame and last frame
+	double m_lastFrame = -1.0f; // Time of last frame
 
 	bool temp = false;
 };

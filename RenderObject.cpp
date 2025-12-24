@@ -85,6 +85,7 @@ VulkanCommonFunctions::UIInstanceInfo RenderObject::GetUIInstanceInfo(const std:
 	result.color = imageComponent->GetColor();
 	result.opacity = imageComponent->GetOpacity();
 	result.textured = (imageComponent->GetTextured()) ? 1 : 0;
+	result.isTextCharacter = 0;
 
 	auto iterator = std::find(textureFilePaths.begin(), textureFilePaths.end(), imageComponent->GetTexturePath());
 

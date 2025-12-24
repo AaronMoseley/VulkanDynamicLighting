@@ -916,10 +916,6 @@ void VulkanInterface::DrawUITextCommandBuffer(VkCommandBuffer commandBuffer, std
 
     textComponent->UpdateInstanceBuffer(screenSize, font, textureIndex, createInfo);
 
-    auto temp1 = textComponent->GetVertexBuffer()->GetVkBuffer();
-    auto temp2 = textComponent->GetInstanceBuffer();
-    auto temp3 = temp2->GetVkBuffer();
-
     VkBuffer objectVertexBuffer[] = { textComponent->GetVertexBuffer()->GetVkBuffer(), textComponent->GetInstanceBuffer()->GetVkBuffer()};
     VkDeviceSize offsets[] = { 0, 0 };
     vkCmdBindVertexBuffers(commandBuffer, 0, 2, objectVertexBuffer, offsets);

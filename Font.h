@@ -6,6 +6,8 @@
 #include <iostream>
 #include <vector>
 
+//generate fonts at: https://fonts.varg.dev/
+
 class Font {
 public:
 	struct GlyphInfo {

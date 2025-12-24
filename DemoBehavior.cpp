@@ -24,8 +24,8 @@ void DemoBehavior::Start()
     uiTextObjectTransform->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
     std::shared_ptr<Text> uiTextComponent = uiTextObject->AddComponent<Text>();
     uiTextComponent->SetTextString("Testing string");
-    GetScene()->AddFont("fonts\\jetbrainsmononl-medium.png", "fonts\\jetbrainsmononl-medium.fnt");
-    uiTextComponent->SetFontName("JetBrains Mono NL Medium");
+    GetScene()->AddFont("fonts\\VeraMono.png", "fonts\\VeraMono.fnt");
+    uiTextComponent->SetFontName("Bitstream Vera Sans Mono Roman");
     GetScene()->AddUIObject(uiTextObject);
 
     std::srand(std::time(0));

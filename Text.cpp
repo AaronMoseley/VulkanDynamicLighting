@@ -27,10 +27,11 @@ void Text::UpdateInstanceBuffer(std::pair<size_t, size_t> screenSize, std::share
 
 	bufferCreateInfo.size = sizeof(VulkanCommonFunctions::UIInstanceInfo) * characterInfos.size();
 
-	//if (m_instanceBuffer == nullptr)
-	//{
-	m_instanceBuffer = std::make_shared<GraphicsBuffer>(bufferCreateInfo);
-	//}
+	//will need to account for resizing the buffer when the number of characters changes
+	if (m_instanceBuffer == nullptr)
+	{
+		m_instanceBuffer = std::make_shared<GraphicsBuffer>(bufferCreateInfo);
+	}
 
 	m_instanceBuffer->LoadData(characterInfos.data(), bufferCreateInfo.size);
 }

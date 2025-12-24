@@ -45,7 +45,7 @@ private:
 
 	float m_fontSize = 40.0f;
 
-	float m_characterSpacing = 0.04f;
+	float m_characterSpacing = 0.05f;
 	float m_lineSpacing = 0.02f;
 
 	bool m_textDataDirty = false;

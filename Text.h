@@ -20,6 +20,9 @@ public:
 	void UpdateInstanceBuffer(std::pair<size_t, size_t> screenSize, std::shared_ptr<Font> currentFont, size_t textureIndex, GraphicsBuffer::BufferCreateInfo bufferCreateInfo);
 	std::shared_ptr<GraphicsBuffer> GetInstanceBuffer() { return m_instanceBuffer; }
 
+	void SetSpaceWidthMultiplier(float newMultiplier) { m_spaceWidthMultiplier = newMultiplier; }
+	float GetSpaceWidthMultiplier() { return m_spaceWidthMultiplier; }
+
 private:
 	using UIMeshRenderer::SetVertices;
 	using UIMeshRenderer::SetIndices;
@@ -45,7 +48,9 @@ private:
 
 	float m_fontSize = 40.0f;
 
-	float m_characterSpacing = 0.05f;
+	float m_spaceWidthMultiplier = 1.0f;
+
+	float m_characterSpacing = 0.0f;
 	float m_lineSpacing = 0.02f;
 
 	bool m_textDataDirty = false;

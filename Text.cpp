@@ -44,6 +44,8 @@ void Text::GetCharacterInstanceInfo(std::pair<size_t, size_t> screenSize, std::s
 	size_t currentLineCount = 0;
 	size_t charactersInCurrentLine = 0;
 
+	VulkanCommonFunctions::UIInstanceInfo previousCharacterInfo = {};
+
 	//foreach character
 	for (size_t i = 0; i < m_textString.size(); i++)
 	{
@@ -53,6 +55,12 @@ void Text::GetCharacterInstanceInfo(std::pair<size_t, size_t> screenSize, std::s
 		{
 			currentLineCount++;
 			charactersInCurrentLine = 0;
+			continue;
+		}
+
+		if (currentCharacter == ' ' && charactersInCurrentLine > 0)
+		{
+			previousCharacterInfo.objectPosition.x += 0.01f * m_spaceWidthMultiplier;
 			continue;
 		}
 
@@ -81,7 +89,13 @@ void Text::GetCharacterInstanceInfo(std::pair<size_t, size_t> screenSize, std::s
 		//use character spacing to determine the next character's position
 		//on newline, increment the y position
 		glm::vec3 currentCharacterPosition = componentPosition;
-		currentCharacterPosition.x += charactersInCurrentLine * m_characterSpacing;
+		//currentCharacterPosition.x += charactersInCurrentLine * m_characterSpacing;
+
+		if (charactersInCurrentLine > 0)
+		{
+			currentCharacterPosition.x = previousCharacterInfo.objectPosition.x + m_characterSpacing + (previousCharacterInfo.scale.x * previousCharacterInfo.characterScaleFactor.x);
+		}
+
 		currentCharacterPosition.y -= currentLineCount * m_lineSpacing;
 		charactersInCurrentLine++;
 
@@ -94,6 +108,8 @@ void Text::GetCharacterInstanceInfo(std::pair<size_t, size_t> screenSize, std::s
 
 		currentCharacterInfo.characterScaleFactor = glm::vec2(currentGlyphInfo.scaleMultiplierX, currentGlyphInfo.scaleMultiplierY);
 		currentCharacterInfo.characterOffset = glm::vec2(currentGlyphInfo.xOffset, currentGlyphInfo.yOffset);
+
+		previousCharacterInfo = currentCharacterInfo;
 
 		outCharacterInfo.push_back(currentCharacterInfo);
 	}

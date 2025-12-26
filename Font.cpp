@@ -28,6 +28,12 @@ void Font::LoadFontData()
 	//read the description file as a vector of lines
 	std::string line;
 
+	float maxWidth = 0;
+	float maxHeight = 0;
+
+	float minXOffset = std::numeric_limits<float>().max();
+	float minYOffset = std::numeric_limits<float>().max();
+
 	//foreach line
 	while (std::getline(descFile, line))
 	{
@@ -77,11 +83,25 @@ void Font::LoadFontData()
 				{
 					int width = std::stoi(value);
 					newGlyph.width = static_cast<float>(width) / static_cast<float>(m_fontAtlasTextureWidth);
+					maxWidth = std::max(newGlyph.width, maxWidth);
 				}
 				else if (variableName == "height")
 				{
 					int height = std::stoi(value);
 					newGlyph.height = static_cast<float>(height) / static_cast<float>(m_fontAtlasTextureHeight);
+					maxHeight = std::max(newGlyph.height, maxHeight);
+				}
+				else if (variableName == "xoffset")
+				{
+					float xOffset = std::stof(value);
+					newGlyph.xOffset = xOffset;
+					minXOffset = std::min(xOffset, minXOffset);
+				}
+				else if (variableName == "yoffset")
+				{
+					float yOffset = std::stof(value);
+					newGlyph.yOffset = yOffset;
+					minYOffset = std::min(yOffset, minYOffset);
 				}
 			}
 
@@ -91,6 +111,20 @@ void Font::LoadFontData()
 			m_glyphMap[newGlyph.character] = newGlyph;
 		}
 	}
+
+	for (auto it = m_glyphMap.begin(); it != m_glyphMap.end(); it++)
+	{
+		it->second.scaleMultiplierX = it->second.width / maxWidth;
+		it->second.scaleMultiplierY = it->second.height / maxHeight;
+
+		it->second.xOffset -= minXOffset;
+		it->second.xOffset /= (maxWidth * static_cast<float>(m_fontAtlasTextureWidth));
+
+		it->second.yOffset -= minYOffset;
+		it->second.yOffset /= (maxHeight * static_cast<float>(m_fontAtlasTextureHeight));
+	}
+
+	int temp = 1;
 }
 
 void Font::SplitBySpace(const std::string& str, std::vector<std::string>& outTokens)

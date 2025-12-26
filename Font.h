@@ -18,6 +18,12 @@ public:
 
 		float locationX;
 		float locationY;
+
+		float scaleMultiplierX;
+		float scaleMultiplierY;
+
+		float xOffset;
+		float yOffset;
 	};
 
 	Font(std::string fontAtlasFilePath, std::string fontDescriptionFilePath);

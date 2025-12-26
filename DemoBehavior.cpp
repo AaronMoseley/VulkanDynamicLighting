@@ -20,12 +20,14 @@ void DemoBehavior::Start()
 
     std::shared_ptr<RenderObject> uiTextObject = std::make_shared<RenderObject>();
     std::shared_ptr<Transform> uiTextObjectTransform = uiTextObject->AddComponent<Transform>();
-    uiTextObjectTransform->SetPosition(glm::vec3(0.25f, 0.25f, 0.0f));
-    uiTextObjectTransform->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+    uiTextObjectTransform->SetPosition(glm::vec3(0.0f, 0.25f, 0.0f));
+    uiTextObjectTransform->SetScale(glm::vec3(0.25f, 0.25f, 1.0f));
     std::shared_ptr<Text> uiTextComponent = uiTextObject->AddComponent<Text>();
     uiTextComponent->SetTextString("Testing string");
     GetScene()->AddFont("fonts\\VeraMono.png", "fonts\\VeraMono.fnt");
-    uiTextComponent->SetFontName("Bitstream Vera Sans Mono Roman");
+    GetScene()->AddFont("fonts\\jetbrainsmononl-medium.png", "fonts\\jetbrainsmononl-medium.fnt");
+    uiTextComponent->SetFontName("JetBrains Mono NL Medium");
+    //uiTextComponent->SetFontName("Bitstream Vera Sans Mono Roman");
     GetScene()->AddUIObject(uiTextObject);
 
     std::srand(std::time(0));

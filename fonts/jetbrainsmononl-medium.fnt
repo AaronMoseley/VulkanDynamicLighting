@@ -73,7 +73,7 @@ char id=99 x=484 y=447 width=65 height=81 xoffset=10.75 yoffset=59 xadvance=76.8
 char id=100 x=812 y=138 width=63 height=103 xoffset=10.5 yoffset=37.25 xadvance=76.8 page=1 chnl=15
 char id=101 x=289 y=447 width=65 height=81 xoffset=10 yoffset=59 xadvance=76.8 page=1 chnl=15
 char id=102 x=883 y=242 width=70 height=102 xoffset=6.75 yoffset=37.25 xadvance=76.8 page=1 chnl=15
-char id=103 x=938 y=138 width=63 height=103 xoffset=10.75 yoffset=59 xadvance=76.8 page=1 chnl=15
+char id=103 x=938 y=138 width=63 height=103 xoffset=10.75 yoffset=100 xadvance=76.8 page=1 chnl=15
 char id=104 x=726 y=345 width=63 height=102 xoffset=11.25 yoffset=37.25 xadvance=76.8 page=1 chnl=15
 char id=105 x=725 y=0 width=69 height=108 xoffset=10.5 yoffset=31 xadvance=76.8 page=1 chnl=15
 char id=106 x=68 y=0 width=56 height=131 xoffset=10.5 yoffset=31 xadvance=76.8 page=1 chnl=15

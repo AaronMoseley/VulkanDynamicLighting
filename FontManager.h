@@ -6,7 +6,7 @@ class FontManager {
 public:
 	FontManager() {};
 
-	void AddFont(std::string atlasFilePath, std::string descriptionFilePath);
+	std::shared_ptr<Font> AddFont(std::string atlasFilePath, std::string descriptionFilePath);
 
 	std::shared_ptr<Font> GetFontByName(const std::string& fontName);
 

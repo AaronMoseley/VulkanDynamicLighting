@@ -103,6 +103,11 @@ void Font::LoadFontData()
 					newGlyph.yOffset = yOffset;
 					minYOffset = std::min(yOffset, minYOffset);
 				}
+				else if (variableName == "xadvance")
+				{
+					float xAdvance = std::stof(value);
+					newGlyph.xAdvance = xAdvance;
+				}
 			}
 
 			//add to glyph map
@@ -112,16 +117,18 @@ void Font::LoadFontData()
 		}
 	}
 
+	m_pixelToScreen = { 1.0f / m_referenceResolution.x, 1.0f / m_referenceResolution.y };
+
 	for (auto it = m_glyphMap.begin(); it != m_glyphMap.end(); it++)
 	{
 		it->second.scaleMultiplierX = it->second.width / maxWidth;
 		it->second.scaleMultiplierY = it->second.height / maxHeight;
 
-		it->second.xOffset -= minXOffset;
-		it->second.xOffset /= (maxWidth * static_cast<float>(m_fontAtlasTextureWidth));
+		//it->second.xOffset -= minXOffset;
+		//it->second.xOffset /= (maxWidth * static_cast<float>(m_fontAtlasTextureWidth));
 
-		it->second.yOffset -= minYOffset;
-		it->second.yOffset /= (maxHeight * static_cast<float>(m_fontAtlasTextureHeight));
+		//it->second.yOffset -= minYOffset;
+		//it->second.yOffset /= (maxHeight * static_cast<float>(m_fontAtlasTextureHeight));
 	}
 
 	int temp = 1;

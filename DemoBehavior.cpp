@@ -20,15 +20,21 @@ void DemoBehavior::Start()
 
     std::shared_ptr<RenderObject> uiTextObject = std::make_shared<RenderObject>();
     std::shared_ptr<Transform> uiTextObjectTransform = uiTextObject->AddComponent<Transform>();
-    uiTextObjectTransform->SetPosition(glm::vec3(0.0f, 0.5f, 0.0f));
-    uiTextObjectTransform->SetScale(glm::vec3(0.25f, 0.25f, 1.0f));
+    uiTextObjectTransform->SetPosition(glm::vec3(0.0f, 0.75f, 0.0f));
+    uiTextObjectTransform->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
     std::shared_ptr<Text> uiTextComponent = uiTextObject->AddComponent<Text>();
-    uiTextComponent->SetTextString("Testing string");
+    uiTextComponent->SetTextString("the quick brown fox\njumps over the\nlazy dog\n\nTHE QUICK BROWN FOX\nJUMPS OVER THE\nLAZY DOG\n\n: ' \" / \\ . , ; ! @ # $ % ^ & * ( ) { } [ ]");
     uiTextComponent->SetSpaceWidthMultiplier(1.5f);
     GetScene()->AddFont("fonts\\VeraMono.png", "fonts\\VeraMono.fnt");
-    GetScene()->AddFont("fonts\\jetbrainsmononl-medium.png", "fonts\\jetbrainsmononl-medium.fnt");
+
+    std::shared_ptr<Font> newFont = GetScene()->AddFont("fonts\\jetbrainsmononl-medium.png", "fonts\\jetbrainsmononl-medium.fnt");
+    //newFont->SetCharacterSpacingMultiplier(0.2f);
+
+
+    GetScene()->AddFont("fonts\\osans.png", "fonts\\osans.fnt");
     uiTextComponent->SetFontName("JetBrains Mono NL Medium");
     //uiTextComponent->SetFontName("Bitstream Vera Sans Mono Roman");
+    //uiTextComponent->SetFontName("Liberation Sans Regular");
     GetScene()->AddUIObject(uiTextObject);
 
     std::srand(std::time(0));

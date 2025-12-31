@@ -5,8 +5,10 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include "glm/glm.hpp"
 
 //generate fonts at: https://fonts.varg.dev/
+//font file/rendering documentation at: https://www.angelcode.com/products/bmfont/
 
 class Font {
 public:
@@ -24,6 +26,8 @@ public:
 
 		float xOffset;
 		float yOffset;
+
+		float xAdvance;
 	};
 
 	Font(std::string fontAtlasFilePath, std::string fontDescriptionFilePath);
@@ -32,6 +36,11 @@ public:
 	GlyphInfo GetCharacterInfo(char character);
 
 	std::string GetAtlasFilePath() { return m_fontAtlasFilePath; }
+
+	glm::vec2 GetPixelToScreen() { return m_pixelToScreen; }
+
+	float GetCharacterSpacingMultiplier() { return m_characterSpacingMultiplier; }
+	void SetCharacterSpacingMultiplier(float characterSpacingMultiplier) { m_characterSpacingMultiplier = characterSpacingMultiplier; }
 
 private:
 	void LoadFontData();
@@ -44,6 +53,10 @@ private:
 
 	int m_fontAtlasTextureWidth = 0;
 	int m_fontAtlasTextureHeight = 0;
+
+	glm::vec2 m_referenceResolution = { 1920.0f, 1080.0f };
+	glm::vec2 m_pixelToScreen = { 1.0f, 1.0f };
+	float m_characterSpacingMultiplier = 1.0f;
 
 	std::map<char, GlyphInfo> m_glyphMap;
 };

@@ -45,6 +45,7 @@ void Text::GetCharacterInstanceInfo(std::pair<size_t, size_t> screenSize, std::s
 	size_t charactersInCurrentLine = 0;
 
 	VulkanCommonFunctions::UIInstanceInfo previousCharacterInfo = {};
+	float nextSpacing = 0.0f;
 
 	//foreach character
 	for (size_t i = 0; i < m_textString.size(); i++)
@@ -55,21 +56,24 @@ void Text::GetCharacterInstanceInfo(std::pair<size_t, size_t> screenSize, std::s
 		{
 			currentLineCount++;
 			charactersInCurrentLine = 0;
+			nextSpacing = 0.0f;
 			continue;
 		}
 
-		if (currentCharacter == ' ' && charactersInCurrentLine > 0)
+		/*if (currentCharacter == ' ' && charactersInCurrentLine > 0)
 		{
 			previousCharacterInfo.objectPosition.x += 0.01f * m_spaceWidthMultiplier;
+			nextSpacing = 0.0f;
 			continue;
-		}
+		}*/
 
 		Font::GlyphInfo currentGlyphInfo = currentFont->GetCharacterInfo(currentCharacter);
 
 		float characterWidth = currentGlyphInfo.width;
 		float characterHeight = currentGlyphInfo.height;
 
-		float heightScale = m_fontSize / static_cast<float>(screenSize.second);
+		//float heightScale = m_fontSize / static_cast<float>(screenSize.second);
+		float heightScale = m_fontSize * currentFont->GetPixelToScreen().y;
 		float widthToHeightRatio = characterWidth / characterHeight;
 		float widthScale = heightScale * widthToHeightRatio;
 
@@ -93,10 +97,18 @@ void Text::GetCharacterInstanceInfo(std::pair<size_t, size_t> screenSize, std::s
 
 		if (charactersInCurrentLine > 0)
 		{
-			currentCharacterPosition.x = previousCharacterInfo.objectPosition.x + m_characterSpacing + (previousCharacterInfo.scale.x * previousCharacterInfo.characterScaleFactor.x);
+			currentCharacterPosition = previousCharacterInfo.objectPosition;
+
+			//currentCharacterPosition.x = previousCharacterInfo.objectPosition.x + m_characterSpacing + (previousCharacterInfo.scale.x * previousCharacterInfo.characterScaleFactor.x);
+			//currentCharacterPosition.x -= (previousCharacterInfo.characterScaleFactor.x * previousCharacterInfo.scale.x) / 2.0f;
+
+			currentCharacterPosition.x += nextSpacing * (currentFont->GetPixelToScreen().x * currentFont->GetCharacterSpacingMultiplier());
+			//currentCharacterPosition.x -= (previousCharacterInfo.characterScaleFactor.x * previousCharacterInfo.scale.x) / 2.0f;
+		}
+		else {
+			currentCharacterPosition.y -= currentLineCount * m_lineSpacing;
 		}
 
-		currentCharacterPosition.y -= currentLineCount * m_lineSpacing;
 		charactersInCurrentLine++;
 
 		currentCharacterInfo.objectPosition = currentCharacterPosition;
@@ -107,9 +119,12 @@ void Text::GetCharacterInstanceInfo(std::pair<size_t, size_t> screenSize, std::s
 		currentCharacterInfo.textureOffset = glm::vec2(currentGlyphInfo.locationX, currentGlyphInfo.locationY);
 
 		currentCharacterInfo.characterScaleFactor = glm::vec2(currentGlyphInfo.scaleMultiplierX, currentGlyphInfo.scaleMultiplierY);
-		currentCharacterInfo.characterOffset = glm::vec2(currentGlyphInfo.xOffset, currentGlyphInfo.yOffset);
+		currentCharacterInfo.characterOffset = glm::vec2(currentGlyphInfo.xOffset * currentFont->GetPixelToScreen().x, currentGlyphInfo.yOffset * currentFont->GetPixelToScreen().y);
+
+		//currentCharacterInfo.characterOffset = glm::vec2(0.0f);
 
 		previousCharacterInfo = currentCharacterInfo;
+		nextSpacing = currentGlyphInfo.xAdvance;
 
 		outCharacterInfo.push_back(currentCharacterInfo);
 	}

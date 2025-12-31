@@ -20,7 +20,7 @@ public:
 
 	void Cleanup();
 
-	void AddFont(std::string atlasFilePath, std::string descriptionFilePath);
+	std::shared_ptr<Font> AddFont(std::string atlasFilePath, std::string descriptionFilePath);
 
 	VulkanCommonFunctions::ObjectHandle AddObject(std::shared_ptr <RenderObject> newObject);
 	bool RemoveObject(VulkanCommonFunctions::ObjectHandle objectToRemove);

@@ -437,10 +437,12 @@ VulkanCommonFunctions::ObjectHandle Scene::GetObjectByTag(std::string tag)
     return VulkanCommonFunctions::INVALID_OBJECT_HANDLE;
 }
 
-void Scene::AddFont(std::string atlasFilePath, std::string descriptionFilePath)
+std::shared_ptr<Font> Scene::AddFont(std::string atlasFilePath, std::string descriptionFilePath)
 {
-	m_fontManager->AddFont(atlasFilePath, descriptionFilePath);
+    std::shared_ptr<Font> newFont = m_fontManager->AddFont(atlasFilePath, descriptionFilePath);
     m_vulkanInterface->UpdateTextureResources(atlasFilePath);
+
+    return newFont;
 }
 
 void Scene::Cleanup()

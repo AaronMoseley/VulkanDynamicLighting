@@ -66,14 +66,15 @@ VSOutput VSMain(UIVSInputVertex vertexInput)
     {
         uiPos = uiPos * vertexInput.characterScaleFactor;
         
-        uiPos.x = uiPos.x + ((1.0 - (vertexInput.characterScaleFactor.x)) / 2.0);
-        uiPos.y = uiPos.y - ((1.0 - (vertexInput.characterScaleFactor.y)) / 2.0);
+        //uiPos.x = uiPos.x - ((1.0 - (vertexInput.characterScaleFactor.x)) / 2.0);
+        //uiPos.y = uiPos.y - ((1.0 - (vertexInput.characterScaleFactor.y)) / 2.0);
+        uiPos.y = uiPos.y + vertexInput.characterScaleFactor.y;
         
         uiPos = uiPos * vertexInput.scale.xy;
         
         //uiPos = uiPos + (vertexInput.characterOffset * vertexInput.scale.xy * vertexInput.characterScaleFactor.xy);
-        uiPos.x = uiPos.x + (vertexInput.characterOffset.x * vertexInput.scale.x * vertexInput.characterScaleFactor.x);
-        uiPos.y = uiPos.y - (vertexInput.characterOffset.y * vertexInput.scale.y * vertexInput.characterScaleFactor.y);
+        //uiPos.x = uiPos.x + (vertexInput.characterOffset.x * vertexInput.scale.x);
+        uiPos.y = uiPos.y - (vertexInput.characterOffset.y);
     }
     else
     {

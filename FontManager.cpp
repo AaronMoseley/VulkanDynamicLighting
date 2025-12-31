@@ -1,9 +1,11 @@
 #include "FontManager.h"
 
-void FontManager::AddFont(std::string atlasFilePath, std::string descriptionFilePath)
+std::shared_ptr<Font> FontManager::AddFont(std::string atlasFilePath, std::string descriptionFilePath)
 {
 	std::shared_ptr<Font> newFont = std::make_shared<Font>(atlasFilePath, descriptionFilePath);
 	m_fonts[newFont->GetFontName()] = newFont;
+
+	return newFont;
 }
 
 std::shared_ptr<Font> FontManager::GetFontByName(const std::string& fontName)

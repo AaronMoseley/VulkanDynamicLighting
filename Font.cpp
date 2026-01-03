@@ -54,6 +54,23 @@ void Font::LoadFontData()
 				}
 			}
 		}
+		else if (lineParts[0] == "common")
+		{
+			for (size_t i = 1; i < lineParts.size(); i++)
+			{
+				size_t equalPos = lineParts[i].find('=');
+				std::string variableName = lineParts[i].substr(0, equalPos);
+				std::string value = lineParts[i].substr(equalPos + 1);
+				if (variableName == "base")
+				{
+					m_baseHeight = std::stof(value);
+				}
+				else if (variableName == "lineHeight")
+				{
+					m_lineHeight = std::stof(value);
+				}
+			}
+		}
 		else if (lineParts[0] == "char")
 		{
 			GlyphInfo newGlyph;
@@ -82,6 +99,7 @@ void Font::LoadFontData()
 				else if (variableName == "width")
 				{
 					int width = std::stoi(value);
+					m_maxCharacterWidth = std::max(m_maxCharacterWidth, static_cast<float>(width));
 					newGlyph.width = static_cast<float>(width) / static_cast<float>(m_fontAtlasTextureWidth);
 					maxWidth = std::max(newGlyph.width, maxWidth);
 				}
@@ -123,15 +141,7 @@ void Font::LoadFontData()
 	{
 		it->second.scaleMultiplierX = it->second.width / maxWidth;
 		it->second.scaleMultiplierY = it->second.height / maxHeight;
-
-		//it->second.xOffset -= minXOffset;
-		//it->second.xOffset /= (maxWidth * static_cast<float>(m_fontAtlasTextureWidth));
-
-		//it->second.yOffset -= minYOffset;
-		//it->second.yOffset /= (maxHeight * static_cast<float>(m_fontAtlasTextureHeight));
 	}
-
-	int temp = 1;
 }
 
 void Font::SplitBySpace(const std::string& str, std::vector<std::string>& outTokens)

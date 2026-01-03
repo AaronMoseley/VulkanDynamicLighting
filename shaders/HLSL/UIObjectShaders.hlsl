@@ -11,15 +11,14 @@ struct UIVSInputVertex
     
     [[vk::location(5)]] float2 textureOffset : TEXTCOORD8;
     [[vk::location(6)]] float2 characterTextureSize : TEXTCOORD9;
-    [[vk::location(7)]] float2 characterScaleFactor : TEXTCOORD10;
-    [[vk::location(8)]] float2 characterOffset : TEXTCOORD11;
+    [[vk::location(7)]] float2 characterOffset : TEXTCOORD10;
     
-    [[vk::location(9)]] float opacity : COLOR4;
+    [[vk::location(8)]] float opacity : COLOR4;
     
-    [[vk::location(10)]] uint textured : TEXTCOORD5;
-    [[vk::location(11)]] uint textureIndex : TEXCOORD6;
+    [[vk::location(9)]] uint textured : TEXTCOORD5;
+    [[vk::location(10)]] uint textureIndex : TEXCOORD6;
     
-    [[vk::location(12)]] uint isTextCharacter : TEXTCOORD7;
+    [[vk::location(11)]] uint isTextCharacter : TEXTCOORD7;
 };
 
 //Vertex shader output to fragment shader input
@@ -62,23 +61,11 @@ VSOutput VSMain(UIVSInputVertex vertexInput)
         uiPos.y = uiPos.y * ratio;
     }
     
+    uiPos = uiPos * vertexInput.scale.xy;
+    
     if (vertexInput.isTextCharacter == 1)
     {
-        uiPos = uiPos * vertexInput.characterScaleFactor;
-        
-        //uiPos.x = uiPos.x - ((1.0 - (vertexInput.characterScaleFactor.x)) / 2.0);
-        //uiPos.y = uiPos.y - ((1.0 - (vertexInput.characterScaleFactor.y)) / 2.0);
-        uiPos.y = uiPos.y + vertexInput.characterScaleFactor.y;
-        
-        uiPos = uiPos * vertexInput.scale.xy;
-        
-        //uiPos = uiPos + (vertexInput.characterOffset * vertexInput.scale.xy * vertexInput.characterScaleFactor.xy);
-        //uiPos.x = uiPos.x + (vertexInput.characterOffset.x * vertexInput.scale.x);
-        uiPos.y = uiPos.y - (vertexInput.characterOffset.y);
-    }
-    else
-    {
-        uiPos = uiPos * vertexInput.scale.xy;
+        uiPos = uiPos - vertexInput.characterOffset;
     }
     
     uiPos = uiPos + vertexInput.objectPosition.xy;

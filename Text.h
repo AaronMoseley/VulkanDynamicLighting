@@ -46,7 +46,7 @@ private:
 
 	glm::vec4 m_color = glm::vec4(1.0f);
 
-	float m_fontSize = 20.0f;
+	float m_fontSize = 40.0f;
 
 	float m_spaceWidthMultiplier = 1.0f;
 

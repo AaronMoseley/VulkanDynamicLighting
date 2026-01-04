@@ -23,7 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <Keyword>QtVS_v304</Keyword>
     <ProjectGuid>{617ec4ba-7e76-473e-abb9-af73346e2c9a}</ProjectGuid>
-    <RootNamespace>VulkanLightingDemo</RootNamespace>
+    <RootNamespace>VoltEngine</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">$(MSBuildProjectDirectory)\QtMsBuild</QtMsBuild>
   </PropertyGroup>

@@ -79,15 +79,15 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Qt\6.10.0\msvc2022_64\include;$(SolutionDir)..\ThirdPartyLibraries\stb-master;$(SolutionDir)..\ThirdPartyLibraries\include;$(SolutionDir)..\VulkanSDK\1.4.309.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\ThirdPartyLibraries\VulkanSDK\1.4.309.0\Include;$(SolutionDir)..\ThirdPartyLibraries\stb-master;$(SolutionDir)..\ThirdPartyLibraries\Qt\6.10.0\msvc2022_64\include;$(SolutionDir)..\ThirdPartyLibraries\glm</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Qt\6.10.0\msvc2022_64\lib;$(SolutionDir)..\ThirdPartyLibraries\lib;$(SolutionDir)..\VulkanSDK\1.4.309.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\ThirdPartyLibraries\VulkanSDK\1.4.309.0\Lib;$(SolutionDir)..\ThirdPartyLibraries\Qt\6.10.0\msvc2022_64\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <StackReserveSize>4194304 </StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
@@ -99,7 +99,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\ThirdPartyLibraries\stb-master;$(SolutionDir)..\ThirdPartyLibraries\include;$(SolutionDir)..\VulkanSDK\1.4.309.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\ThirdPartyLibraries\VulkanSDK\1.4.309.0\Include;$(SolutionDir)..\ThirdPartyLibraries\stb-master;$(SolutionDir)..\ThirdPartyLibraries\Qt\6.10.0\msvc2022_64\include;$(SolutionDir)..\ThirdPartyLibraries\glm</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <Optimization>MaxSpeed</Optimization>
@@ -109,71 +109,42 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\ThirdPartyLibraries\lib;$(SolutionDir)..\VulkanSDK\1.4.309.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\ThirdPartyLibraries\VulkanSDK\1.4.309.0\Lib;$(SolutionDir)..\ThirdPartyLibraries\Qt\6.10.0\msvc2022_64\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DemoBehavior.cpp" />
-    <ClCompile Include="FirstPersonController.cpp" />
-    <ClCompile Include="Font.cpp" />
-    <ClCompile Include="FontManager.cpp" />
-    <ClCompile Include="GraphicsBuffer.cpp" />
-    <ClCompile Include="GraphicsImage.cpp" />
-    <ClCompile Include="GraphicsPipeline.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="MeshRenderer.cpp" />
-    <ClCompile Include="ObjectComponent.cpp" />
-    <ClCompile Include="RenderObject.cpp" />
-    <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="stb_image_implementation.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Text.cpp" />
-    <ClCompile Include="TextureImage.cpp" />
-    <ClCompile Include="Transform.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="UIImage.cpp" />
-    <ClCompile Include="UIMeshRenderer.cpp" />
-    <ClCompile Include="VoltEngine.cpp" />
-    <ClCompile Include="VulkanCommonFunctions.cpp" />
-    <ClCompile Include="VulkanCommonFunctions.h" />
-    <ClCompile Include="VulkanInterface.cpp" />
-    <ClCompile Include="VulkanWindow.cpp" />
-    <ClCompile Include="VulkanWindowRenderer.cpp" />
-    <ClCompile Include="WindowManager.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="DemoBehavior.h" />
-    <ClInclude Include="FirstPersonController.h" />
-    <ClInclude Include="Cube.h" />
-    <ClInclude Include="Font.h" />
-    <ClInclude Include="FontManager.h" />
-    <ClInclude Include="GraphicsBuffer.h" />
-    <ClInclude Include="GraphicsImage.h" />
-    <ClInclude Include="GraphicsPipeline.h" />
-    <ClInclude Include="LightSource.h" />
-    <ClInclude Include="MeshRenderer.h" />
-    <ClInclude Include="ObjectComponent.h" />
-    <ClInclude Include="RenderObject.h" />
-    <ClInclude Include="Scene.h" />
-    <ClInclude Include="Tetrahedron.h" />
-    <ClInclude Include="Text.h" />
-    <ClInclude Include="TextureImage.h" />
+    <ClInclude Include="source\Components\Camera.h" />
+    <ClInclude Include="source\Components\Cube.h" />
+    <ClInclude Include="source\Components\DemoBehavior.h" />
+    <ClInclude Include="source\Components\FirstPersonController.h" />
+    <ClInclude Include="source\Components\LightSource.h" />
+    <ClInclude Include="source\Components\MeshRenderer.h" />
+    <ClInclude Include="source\Components\Tetrahedron.h" />
+    <ClInclude Include="source\Components\Text.h" />
+    <ClInclude Include="source\Components\Transform.h" />
+    <ClInclude Include="source\Components\UIImage.h" />
+    <ClInclude Include="source\Components\UIMeshRenderer.h" />
+    <ClInclude Include="source\Management\Scene.h" />
+    <ClInclude Include="source\Management\VoltEngine.h" />
+    <QtMoc Include="source\Management\WindowManager.h" />
+    <ClInclude Include="source\Objects\ObjectComponent.h" />
+    <ClInclude Include="source\Objects\RenderObject.h" />
+    <ClInclude Include="source\Text Rendering\Font.h" />
+    <ClInclude Include="source\Text Rendering\FontManager.h" />
+    <ClInclude Include="source\ThirdParty\ThirdPartyDeclarations.h" />
+    <ClInclude Include="source\Vulkan Interface\GraphicsBuffer.h" />
+    <ClInclude Include="source\Vulkan Interface\GraphicsImage.h" />
+    <ClInclude Include="source\Vulkan Interface\GraphicsPipeline.h" />
+    <ClInclude Include="source\Vulkan Interface\TextureImage.h" />
+    <ClInclude Include="source\Vulkan Interface\VulkanCommonFunctions.h" />
+    <ClInclude Include="source\Vulkan Interface\VulkanInterface.h" />
+    <QtMoc Include="source\Vulkan Interface\VulkanWindow.h" />
+    <ClInclude Include="source\Vulkan Interface\VulkanWindowRenderer.h" />
     <ClInclude Include="ThirdPartyDeclarations.h" />
-    <ClInclude Include="Transform.h" />
     <ClInclude Include="UIImage.h" />
-    <ClInclude Include="UIMeshRenderer.h" />
     <ClInclude Include="vk_mem_alloc.h" />
     <ClInclude Include="VoltEngine.h" />
-    <ClInclude Include="VulkanInterface.h" />
-    <QtMoc Include="VulkanWindow.h" />
-    <ClInclude Include="VulkanWindowRenderer.h" />
-    <QtMoc Include="WindowManager.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\HLSL\ObjectShaders.hlsl">
@@ -184,6 +155,32 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\Components\DemoBehavior.cpp" />
+    <ClCompile Include="source\Components\FirstPersonController.cpp" />
+    <ClCompile Include="source\Components\MeshRenderer.cpp" />
+    <ClCompile Include="source\Components\Text.cpp" />
+    <ClCompile Include="source\Components\Transform.cpp" />
+    <ClCompile Include="source\Components\UIImage.cpp" />
+    <ClCompile Include="source\Components\UIMeshRenderer.cpp" />
+    <ClCompile Include="source\main.cpp" />
+    <ClCompile Include="source\Management\Scene.cpp" />
+    <ClCompile Include="source\Management\VoltEngine.cpp" />
+    <ClCompile Include="source\Management\WindowManager.cpp" />
+    <ClCompile Include="source\Objects\ObjectComponent.cpp" />
+    <ClCompile Include="source\Objects\RenderObject.cpp" />
+    <ClCompile Include="source\Text Rendering\Font.cpp" />
+    <ClCompile Include="source\Text Rendering\FontManager.cpp" />
+    <ClCompile Include="source\ThirdParty\stb_image_implementation.cpp" />
+    <ClCompile Include="source\Vulkan Interface\GraphicsBuffer.cpp" />
+    <ClCompile Include="source\Vulkan Interface\GraphicsImage.cpp" />
+    <ClCompile Include="source\Vulkan Interface\GraphicsPipeline.cpp" />
+    <ClCompile Include="source\Vulkan Interface\TextureImage.cpp" />
+    <ClCompile Include="source\Vulkan Interface\VulkanCommonFunctions.cpp" />
+    <ClCompile Include="source\Vulkan Interface\VulkanInterface.cpp" />
+    <ClCompile Include="source\Vulkan Interface\VulkanWindow.cpp" />
+    <ClCompile Include="source\Vulkan Interface\VulkanWindowRenderer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

@@ -31,135 +31,13 @@
     <Filter Include="Source Files\Text Rendering">
       <UniqueIdentifier>{56b24e84-f8b3-46e0-a54a-f2e2d6db1674}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsBuffer.cpp">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsImage.cpp">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureImage.cpp">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanCommonFunctions.cpp">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanCommonFunctions.h">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanInterface.cpp">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectComponent.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderObject.cpp">
-      <Filter>Source Files\Objects</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowManager.cpp">
-      <Filter>Source Files\Management</Filter>
-    </ClCompile>
-    <ClCompile Include="Transform.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="MeshRenderer.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="FirstPersonController.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Source Files\Management</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanWindow.cpp">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanWindowRenderer.cpp">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="DemoBehavior.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="VoltEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsPipeline.cpp">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="stb_image_implementation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="UIImage.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Font.cpp">
-      <Filter>Source Files\Text Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="Text.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="FontManager.cpp">
-      <Filter>Source Files\Text Rendering</Filter>
-    </ClCompile>
-    <ClCompile Include="UIMeshRenderer.cpp">
-      <Filter>Source Files\Components</Filter>
-    </ClCompile>
+    <Filter Include="Source Files\Third Party">
+      <UniqueIdentifier>{458fa3c0-6bd8-4ef0-8c96-7af2a6a87aba}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vk_mem_alloc.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsBuffer.h">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsImage.h">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureImage.h">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanInterface.h">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectComponent.h">
-      <Filter>Source Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderObject.h">
-      <Filter>Source Files\Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="Tetrahedron.h">
-      <Filter>Source Files\Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="Cube.h">
-      <Filter>Source Files\Objects</Filter>
-    </ClInclude>
-    <ClInclude Include="Transform.h">
-      <Filter>Source Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshRenderer.h">
-      <Filter>Source Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="LightSource.h">
-      <Filter>Source Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="FirstPersonController.h">
-      <Filter>Source Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Source Files\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Source Files\Management</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanWindowRenderer.h">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="DemoBehavior.h">
-      <Filter>Source Files\Components</Filter>
     </ClInclude>
     <ClInclude Include="ThirdPartyDeclarations.h">
       <Filter>Header Files</Filter>
@@ -167,23 +45,83 @@
     <ClInclude Include="VoltEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GraphicsPipeline.h">
-      <Filter>Source Files\Vulkan Interface</Filter>
-    </ClInclude>
     <ClInclude Include="UIImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Font.h">
-      <Filter>Source Files\Text Rendering</Filter>
-    </ClInclude>
-    <ClInclude Include="Text.h">
+    <ClInclude Include="source\Components\Camera.h">
       <Filter>Source Files\Components</Filter>
     </ClInclude>
-    <ClInclude Include="FontManager.h">
+    <ClInclude Include="source\Components\Cube.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\DemoBehavior.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\FirstPersonController.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\LightSource.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\MeshRenderer.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\Tetrahedron.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\Text.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\Transform.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\UIImage.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Components\UIMeshRenderer.h">
+      <Filter>Source Files\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Management\Scene.h">
+      <Filter>Source Files\Management</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Management\VoltEngine.h">
+      <Filter>Source Files\Management</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Objects\ObjectComponent.h">
+      <Filter>Source Files\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Objects\RenderObject.h">
+      <Filter>Source Files\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Text Rendering\Font.h">
       <Filter>Source Files\Text Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="UIMeshRenderer.h">
-      <Filter>Source Files\Components</Filter>
+    <ClInclude Include="source\Text Rendering\FontManager.h">
+      <Filter>Source Files\Text Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Vulkan Interface\GraphicsBuffer.h">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Vulkan Interface\GraphicsImage.h">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Vulkan Interface\GraphicsPipeline.h">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Vulkan Interface\TextureImage.h">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Vulkan Interface\VulkanCommonFunctions.h">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Vulkan Interface\VulkanInterface.h">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Vulkan Interface\VulkanWindowRenderer.h">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ThirdParty\ThirdPartyDeclarations.h">
+      <Filter>Source Files\Third Party</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -195,10 +133,84 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="WindowManager.h">
+    <ClCompile Include="source\Components\DemoBehavior.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\FirstPersonController.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\MeshRenderer.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\Text.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\Transform.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\UIImage.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Components\UIMeshRenderer.cpp">
+      <Filter>Source Files\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Management\Scene.cpp">
+      <Filter>Source Files\Management</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Management\VoltEngine.cpp">
+      <Filter>Source Files\Management</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Management\WindowManager.cpp">
+      <Filter>Source Files\Management</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Objects\ObjectComponent.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Objects\RenderObject.cpp">
+      <Filter>Source Files\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Text Rendering\Font.cpp">
+      <Filter>Source Files\Text Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Text Rendering\FontManager.cpp">
+      <Filter>Source Files\Text Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Vulkan Interface\GraphicsBuffer.cpp">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Vulkan Interface\GraphicsImage.cpp">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Vulkan Interface\GraphicsPipeline.cpp">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Vulkan Interface\TextureImage.cpp">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Vulkan Interface\VulkanCommonFunctions.cpp">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Vulkan Interface\VulkanInterface.cpp">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Vulkan Interface\VulkanWindow.cpp">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Vulkan Interface\VulkanWindowRenderer.cpp">
+      <Filter>Source Files\Vulkan Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ThirdParty\stb_image_implementation.cpp">
+      <Filter>Source Files\Third Party</Filter>
+    </ClCompile>
+    <ClCompile Include="source\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="source\Management\WindowManager.h">
       <Filter>Source Files\Management</Filter>
     </QtMoc>
-    <QtMoc Include="VulkanWindow.h">
+    <QtMoc Include="source\Vulkan Interface\VulkanWindow.h">
       <Filter>Source Files\Vulkan Interface</Filter>
     </QtMoc>
   </ItemGroup>

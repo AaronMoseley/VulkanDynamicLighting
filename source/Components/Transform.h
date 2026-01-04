@@ -1,8 +1,8 @@
 #pragma once
 
 #include "source/Objects/ObjectComponent.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include <glm.hpp>
+#include <gtc/quaternion.hpp>
 
 class Transform : public ObjectComponent {
 public:

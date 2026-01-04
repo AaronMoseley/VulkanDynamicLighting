@@ -7,7 +7,7 @@
 
 #include "source/ThirdParty/vk_mem_alloc.h"
 
-#include "glm/glm.hpp"
+#include "glm.hpp"
 
 #include <optional>
 #include <vector>

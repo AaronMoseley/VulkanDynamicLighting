@@ -5,7 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include "glm/glm.hpp"
+#include "glm.hpp"
 
 //generate fonts at: https://fonts.varg.dev/
 //font file/rendering documentation at: https://www.angelcode.com/products/bmfont/

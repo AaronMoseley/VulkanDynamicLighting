@@ -3,7 +3,7 @@
 #include <string>
 #include <set>
 
-#include <glm/glm.hpp>
+#include <glm.hpp>
 
 #include <qwidget.h>
 #include <QVBoxLayout>

@@ -4,7 +4,7 @@
 #include "source/Vulkan Interface/VulkanCommonFunctions.h"
 #include "source/Components/Transform.h"
 
-#include "glm/glm.hpp"
+#include "glm.hpp"
 
 class LightSource : public ObjectComponent {
 public:

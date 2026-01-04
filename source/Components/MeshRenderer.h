@@ -4,7 +4,7 @@
 #include "source/Vulkan Interface/VulkanCommonFunctions.h"
 #include "source/Vulkan Interface/GraphicsBuffer.h"
 
-#include <glm/glm.hpp>
+#include <glm.hpp>
 
 #include <vector>
 

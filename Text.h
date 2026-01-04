@@ -14,14 +14,18 @@ public:
 	void SetFontName(const std::string& fontName) { m_fontName = fontName; m_textDataDirty = true; }
 	std::string GetFontName() const { return m_fontName; }
 
+	void SetFontSize(float fontSize) { m_fontSize = fontSize; m_textDataDirty = true; }
+	float GetFontSize() { return m_fontSize; }
+
 	const std::vector<VulkanCommonFunctions::UIVertex>& GetVertices() override { return m_squareVertices; };
 	const std::vector<uint16_t>& GetIndices() override { return m_squareIndices; };
 
 	void UpdateInstanceBuffer(std::pair<size_t, size_t> screenSize, std::shared_ptr<Font> currentFont, size_t textureIndex, GraphicsBuffer::BufferCreateInfo bufferCreateInfo);
 	std::shared_ptr<GraphicsBuffer> GetInstanceBuffer() { return m_instanceBuffer; }
 
-	void SetSpaceWidthMultiplier(float newMultiplier) { m_spaceWidthMultiplier = newMultiplier; }
-	float GetSpaceWidthMultiplier() { return m_spaceWidthMultiplier; }
+	void SetReferenceResolution(glm::vec2 referenceResolution) { m_referenceResolution = referenceResolution; m_textDataDirty = true; }
+	glm::vec2 GetReferenceResolution() { return m_referenceResolution; }
+	glm::vec2 GetPixelToScreen() { return 1.0f / m_referenceResolution; }
 
 private:
 	using UIMeshRenderer::SetVertices;
@@ -39,6 +43,8 @@ private:
 
 	std::vector<uint16_t> m_squareIndices = { 0, 1, 2, 2, 3, 0 };
 
+	glm::vec2 m_referenceResolution = { 1920.0f, 1080.0f };
+
 	std::shared_ptr<GraphicsBuffer> m_instanceBuffer = nullptr;
 
 	std::string m_textString = "";
@@ -48,10 +54,8 @@ private:
 
 	float m_fontSize = 40.0f;
 
-	float m_spaceWidthMultiplier = 1.0f;
-
-	float m_characterSpacing = 0.0f;
-	float m_lineSpacing = 0.06f;
+	float m_additionalCharacterSpacing = 0.0f;
+	float m_additionalLineSpacing = 0.0f;
 
 	bool m_textDataDirty = false;
 };

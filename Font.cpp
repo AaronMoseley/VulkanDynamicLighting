@@ -135,8 +135,6 @@ void Font::LoadFontData()
 		}
 	}
 
-	m_pixelToScreen = { 1.0f / m_referenceResolution.x, 1.0f / m_referenceResolution.y };
-
 	for (auto it = m_glyphMap.begin(); it != m_glyphMap.end(); it++)
 	{
 		it->second.scaleMultiplierX = it->second.width / maxWidth;

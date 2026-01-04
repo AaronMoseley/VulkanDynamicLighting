@@ -54,15 +54,16 @@ void Text::GetCharacterInstanceInfo(std::pair<size_t, size_t> screenSize, std::s
 		{
 			charactersInCurrentLine = 0;
 
-			cursorPosition.y -= (currentFont->GetLineHeight() / currentFont->GetBaseHeight()) * m_fontSize * currentFont->GetPixelToScreen().y;
+			cursorPosition.y -= (currentFont->GetLineHeight() / currentFont->GetBaseHeight()) * m_fontSize * GetPixelToScreen().y;
+			cursorPosition.y -= m_additionalLineSpacing;
 			cursorPosition.x = componentPosition.x;
 			continue;
 		}
 
 		Font::GlyphInfo currentGlyphInfo = currentFont->GetCharacterInfo(currentCharacter);
 
-		float heightScale = (currentGlyphInfo.scaleMultiplierY * m_fontSize) * currentFont->GetPixelToScreen().y;
-		float widthScale = (currentGlyphInfo.scaleMultiplierX * m_fontSize) * currentFont->GetPixelToScreen().x;
+		float heightScale = (currentGlyphInfo.scaleMultiplierY * m_fontSize) * GetPixelToScreen().y;
+		float widthScale = (currentGlyphInfo.scaleMultiplierX * m_fontSize) * GetPixelToScreen().x;
 
 		//create new instance info
 		VulkanCommonFunctions::UIInstanceInfo currentCharacterInfo = {};
@@ -79,12 +80,12 @@ void Text::GetCharacterInstanceInfo(std::pair<size_t, size_t> screenSize, std::s
 		//use object position as the "left" end of the text
 		//use character spacing to determine the next character's position
 		//on newline, increment the y position
-		glm::vec2 currentCharacterPosition = cursorPosition;
-
 		if (charactersInCurrentLine > 0)
 		{
-			
+			cursorPosition.x += m_additionalCharacterSpacing;
 		}
+
+		glm::vec2 currentCharacterPosition = cursorPosition;
 
 		charactersInCurrentLine++;
 
@@ -96,11 +97,11 @@ void Text::GetCharacterInstanceInfo(std::pair<size_t, size_t> screenSize, std::s
 		currentCharacterInfo.textureOffset = glm::vec2(currentGlyphInfo.locationX, currentGlyphInfo.locationY);
 
 		currentCharacterInfo.characterOffset = glm::vec2(
-			((currentGlyphInfo.xOffset / currentFont->GetMaximumWidth()) * m_fontSize) * currentFont->GetPixelToScreen().x, 
-			((currentGlyphInfo.yOffset / currentFont->GetBaseHeight()) * m_fontSize) * currentFont->GetPixelToScreen().y
+			((currentGlyphInfo.xOffset / currentFont->GetMaximumWidth()) * m_fontSize) * GetPixelToScreen().x, 
+			((currentGlyphInfo.yOffset / currentFont->GetBaseHeight()) * m_fontSize) * GetPixelToScreen().y
 		);
 
-		cursorPosition.x += (((currentGlyphInfo.xAdvance / currentFont->GetMaximumWidth()) * m_fontSize) * currentFont->GetPixelToScreen().x);
+		cursorPosition.x += (((currentGlyphInfo.xAdvance / currentFont->GetMaximumWidth()) * m_fontSize) * GetPixelToScreen().x);
 
 		outCharacterInfo.push_back(currentCharacterInfo);
 	}

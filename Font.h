@@ -37,8 +37,6 @@ public:
 
 	std::string GetAtlasFilePath() { return m_fontAtlasFilePath; }
 
-	glm::vec2 GetPixelToScreen() { return m_pixelToScreen; }
-
 	float GetCharacterSpacingMultiplier() { return m_characterSpacingMultiplier; }
 	void SetCharacterSpacingMultiplier(float characterSpacingMultiplier) { m_characterSpacingMultiplier = characterSpacingMultiplier; }
 
@@ -58,8 +56,6 @@ private:
 	int m_fontAtlasTextureWidth = 0;
 	int m_fontAtlasTextureHeight = 0;
 
-	glm::vec2 m_referenceResolution = { 1920.0f, 1080.0f };
-	glm::vec2 m_pixelToScreen = { 1.0f, 1.0f };
 	float m_characterSpacingMultiplier = 1.0f;
 	float m_maxCharacterWidth = 0.0f;
 	float m_baseHeight = 0.0f;
